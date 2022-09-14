@@ -68,7 +68,7 @@ public abstract class TreebankTagger extends VectorTagger {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String dir = "/home/mjn/Data/UniversalDependencies/ud-treebanks-v2.2/UD_English-EWT/";
+		String dir = "../datasets/ud-treebanks-v2.10/UD_English-EWT/";
 		String trainCorpus = dir + "en_ewt-ud-train.conllu";
 		String testCorpus = dir + "en_ewt-ud-test.conllu";
 		TreebankTagger tagger = new NeuralTreebankTagger(trainCorpus, 100);

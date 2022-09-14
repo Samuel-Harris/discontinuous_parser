@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class Corpora {
 
 	public static final String universalDependencies =
-			"/home/mjn/Data/UniversalDependencies/ud-treebanks-v2.2/";
+			"../datasets/ud-treebanks-v2.10/";
 
 	/**
 	 * All directories with corpora.

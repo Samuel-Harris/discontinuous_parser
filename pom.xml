@@ -11,65 +11,57 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <dl4jVersion>1.0.0-M2.1</dl4jVersion>
     </properties>
 
 
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.deeplearning4j/deeplearning4j-core -->
         <dependency>
             <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-core</artifactId>
-            <version>1.0.0-M2.1</version>
+            <version>${dl4jVersion}</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.deeplearning4j/deeplearning4j-nlp -->
         <dependency>
             <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-nlp</artifactId>
-            <version>1.0.0-M2.1</version>
+            <version>${dl4jVersion}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.deeplearning4j/deeplearning4j-nlp-uima -->
         <dependency>
-            <groupId>org.deeplearning4j</groupId>
-            <artifactId>deeplearning4j-nlp-uima</artifactId>
-            <version>0.9.1</version>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-x86</artifactId>
+            <version>0.4-rc3.8</version>
+            <scope>test</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/de.bwaldvogel/liblinear -->
         <dependency>
             <groupId>de.bwaldvogel</groupId>
             <artifactId>liblinear</artifactId>
             <version>2.44</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.encog/encog-core -->
         <dependency>
             <groupId>org.encog</groupId>
             <artifactId>encog-core</artifactId>
             <version>3.4</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/tw.edu.ntu.csie/libsvm -->
         <dependency>
             <groupId>tw.edu.ntu.csie</groupId>
             <artifactId>libsvm</artifactId>
             <version>3.30</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.github.neuroph/neuroph-core -->
         <dependency>
             <groupId>com.github.neuroph</groupId>
             <artifactId>neuroph-core</artifactId>
             <version>2.98</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.tensorflow/tensorflow-core-platform -->
         <dependency>
             <groupId>org.tensorflow</groupId>
             <artifactId>tensorflow-core-platform</artifactId>
             <version>0.4.1</version>
         </dependency>
-
     </dependencies>
 </project>

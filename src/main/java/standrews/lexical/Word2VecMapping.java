@@ -92,7 +92,7 @@ public class Word2VecMapping extends Embedding {
 
 	public static void main(String[] args) {
 		Word2VecMapping m = new Word2VecMapping();
-		m.train(new SentenceFormIterator("/home/mjn/Data/UniversalDependencies/ud-treebanks-v2.2/UD_English-EWT/en_ewt-ud-train.conllu"), 100);
+		m.train(new SentenceFormIterator("../datasets/ud-treebanks-v2.10/UD_English-EWT/en_ewt-ud-train.conllu"), 100);
 		double[] king = m.get("king");
 		double[] queen = m.get("queen");
 		double[] actress = m.get("actress");
