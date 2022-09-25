@@ -63,5 +63,11 @@
             <artifactId>tensorflow-core-platform</artifactId>
             <version>0.4.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacpp</artifactId>
+            <version>1.5.7</version>
+        </dependency>
     </dependencies>
 </project>
