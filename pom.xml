@@ -26,11 +26,15 @@
             <artifactId>deeplearning4j-nlp</artifactId>
             <version>${dl4jVersion}</version>
         </dependency>
-
+        <!--        <dependency>-->
+        <!--            <groupId>org.nd4j</groupId>-->
+        <!--            <artifactId>nd4j-cuda-11.2</artifactId>-->
+        <!--            <version>${dl4jVersion}</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.nd4j</groupId>
             <artifactId>nd4j-native-platform</artifactId>
-            <version>1.0.0-M2.1</version>
+            <version>${dl4jVersion}</version>
         </dependency>
 
         <dependency>
