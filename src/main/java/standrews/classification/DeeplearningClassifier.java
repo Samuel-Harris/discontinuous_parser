@@ -139,7 +139,8 @@ public class DeeplearningClassifier extends Classifier {
     }
 
     public String[] predictAll(final Features feats) {
-        final double[] inputData = predictorsDoubleArray(feats);
+        final double[][] inputData = new double[1][nPredictors];
+        inputData[0] = predictorsDoubleArray(feats);
         INDArray in = Nd4j.create(inputData);
         INDArray prediction = network.output(in, false);
         final double[] scores = prediction.toDoubleVector();
