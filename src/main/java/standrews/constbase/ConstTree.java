@@ -116,7 +116,8 @@ public class ConstTree {
 		for (String id : getInternalIds()) {
 			ConstInternal internal = getInternal(id);
 			cats.add(internal.getCat());
-			labels.add(internal.getLabel());
+			String label = internal.getLabel();
+			if (label != null) labels.add(label);
 		}
 	}
 

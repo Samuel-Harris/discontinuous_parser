@@ -48,7 +48,7 @@ public class Experiments {
 	}
 
 	public static ConstTreebank tigerBank(String headSide) {
-		String path = "/home/mjn/Data/Tiger/tiger_negraformat-attach.export";
+		String path = "../datasets/tigercorpus2.1/corpus/tiger_release_aug07.export";
 		ConstTreebank bank = new NegraTreebank(path);
 		bank.removeCycles();
 		HeadFinder finder = new TigerHeadFinder();
