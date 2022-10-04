@@ -48,7 +48,7 @@ public class Experiments {
 	}
 
 	public static ConstTreebank tigerBank(String headSide) {
-		String path = "../datasets/tigercorpus2.1/corpus/tiger_release_aug07.export";
+		String path = "../datasets/tigercorpus2.1/corpus/tiger_negraformat.export";
 		ConstTreebank bank = new NegraTreebank(path);
 		bank.removeCycles();
 		HeadFinder finder = new TigerHeadFinder();
@@ -421,8 +421,8 @@ public class Experiments {
 	}
 
 	private static void convertTiger() {
-		String source = "/home/mjn/Data/Tiger/tiger_release_aug07.corrected.16012013.xml";
-		String target = "/home/mjn/Data/Tiger/tiger_negraformat.export";
+		String source = "../datasets/tigercorpus2.1/corpus/tiger_release_aug07.xml";
+		String target = "../datasets/tigercorpus2.1/corpus/tiger_negraformat.export";
 		// ConstTreebank treebank = new TigerTreebank(file);
 		TigerTreebank.convertNegra(source, target);
 	}
@@ -433,7 +433,7 @@ public class Experiments {
 		// doMethod();
 		// doWholeHat();
 		doHatAnalysis();
-		// convertTiger();
+//		 convertTiger();
 	}
 
 	private static void setLoggerHandler() {
