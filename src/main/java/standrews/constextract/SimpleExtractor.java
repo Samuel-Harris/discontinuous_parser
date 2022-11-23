@@ -23,90 +23,91 @@ import java.util.LinkedList;
 import java.util.Optional;
 
 public class SimpleExtractor {
-	public static final String shift = SimpleParser.shift;
-	public static final String reduceUp = SimpleParser.reduceUp;
-	public static final String reduceLeft = SimpleParser.reduceLeft;
-	public static final String reduceRight = SimpleParser.reduceRight;
+    public static final String shift = SimpleParser.shift;
+    public static final String reduceUp = SimpleParser.reduceUp;
+    public static final String reduceLeft = SimpleParser.reduceLeft;
+    public static final String reduceRight = SimpleParser.reduceRight;
 
-	/**
-	 * Specification uses:
-	 * stackPoss: From which stack elements is POS to be feature.
-	 * inputPoss: From which input elements is POS to be feature.
-	 * leftCat: From which stack elements is the leftmost child cat to be feature.
-	 * rightCat: From which stack elements is the rightmost child cat to be feature.
-	 */
-	public FeatureVectorGenerator featureVectorGenerator;
+    /**
+     * Specification uses:
+     * stackPoss: From which stack elements is POS to be feature.
+     * inputPoss: From which input elements is POS to be feature.
+     * leftCat: From which stack elements is the leftmost child cat to be feature.
+     * rightCat: From which stack elements is the rightmost child cat to be feature.
+     */
+    public FeatureVectorGenerator featureVectorGenerator;
 
-	/**
-	 * Factory for making classifiers.
-	 */
-	public MLPFactory mlpFactory;
+    /**
+     * Factory for making classifiers.
+     */
+    public MLPFactory mlpFactory;
 
-	/**
-	 * Continuous training of classifiers.
-	 */
-	protected boolean continuousTraining;
+    /**
+     * Continuous training of classifiers.
+     */
+    protected boolean continuousTraining;
 
-	/**
-	 * Batch size of classifiers.
-	 */
-	protected int batchSize;
+    /**
+     * Batch size of classifiers.
+     */
+    protected int batchSize;
 
-	/**
-	 * Number of epochs of classifiers.
-	 */
-	protected int nEpochs;
+    /**
+     * Number of epochs of classifiers.
+     */
+    protected int nEpochs;
 
-	/**
-	 * Classifier for actions.
-	 */
-	public MLP actionClassifier;
+    /**
+     * Classifier for actions.
+     */
+    public MLP actionClassifier;
 
-	/**
-	 * Classifier for categories.
-	 */
-	public MLP catClassifier;
+    /**
+     * Classifier for categories.
+     */
+    public MLP catClassifier;
 
-	protected SimpleExtractor() {
-		// only used by subclasses
-	}
-	public SimpleExtractor(final ConstTreebank treebank,
-						   final FeatureVectorGenerator featureVectorGenerator,
-						   final MLPFactory mlpFactory,
-						   final String actionFile, final String catFile) {
-		this.featureVectorGenerator = featureVectorGenerator;
-		this.mlpFactory = mlpFactory;
-		this.actionClassifier = mlpFactory.makeMLP(new ActionResponseVectorGenerator());
-		this.catClassifier = mlpFactory.makeMLP(new CatResponseVectorGenerator(featureVectorGenerator.getCatIndexMap()));
+    protected SimpleExtractor() {
+        // only used by subclasses
+    }
+
+    public SimpleExtractor(final ConstTreebank treebank,
+                           final FeatureVectorGenerator featureVectorGenerator,
+                           final MLPFactory mlpFactory,
+                           final String actionFile, final String catFile) {
+        this.featureVectorGenerator = featureVectorGenerator;
+        this.mlpFactory = mlpFactory;
+        this.actionClassifier = mlpFactory.makeMLP(new ActionResponseVectorGenerator());
+        this.catClassifier = mlpFactory.makeMLP(new CatResponseVectorGenerator(featureVectorGenerator.getCatIndexMap()));
 //		completeClassifiers(treebank);
-	}
+    }
 
-	public boolean getContinuousTraining() {
-		return continuousTraining;
-	}
+    public boolean getContinuousTraining() {
+        return continuousTraining;
+    }
 
-	public int getBatchSize() {
-		return batchSize;
-	}
+    public int getBatchSize() {
+        return batchSize;
+    }
 
-	public int getNEpochs() {
-		return nEpochs;
-	}
+    public int getNEpochs() {
+        return nEpochs;
+    }
 
-	public void train() {
-		actionClassifier.train();
-		catClassifier.train();
-	}
+    public void train() {
+        actionClassifier.train();
+        catClassifier.train();
+    }
 
-	public void extract(final SimpleConfig config, final String[] action) {
+    public void extract(final SimpleConfig config, final String[] action) {
 //		final Features actionFeats = extract(config);
-		final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
-		actionClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[0]);
-		if (action.length > 1) {
+        final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
+        actionClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[0]);
+        if (action.length > 1) {
 //			final Features catFeats = extract(config);
-			catClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[1]);
-		}
-	}
+            catClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[1]);
+        }
+    }
 
 //	protected Features extract(final SimpleConfig config) {
 //		final Features feats = new Features();
@@ -138,41 +139,42 @@ public class SimpleExtractor {
 //		makeAllRightCats(classifier, treebank);
 //	}
 
-	public Iterator<String[]> predict(final SimpleConfig config) {
+    public Iterator<String[]> predict(final SimpleConfig config) {
 //		final Features actionFeats = extract(config);
-		final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
-		final String[] acs = (String[]) actionClassifier.predictAll(featureVector);
-		return new ActionIterator(config, acs);
-	}
+        final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
+        final String[] acs = (String[]) actionClassifier.predictAll(featureVector);
+        return new ActionIterator(config, acs);
+    }
 
-	private class ActionIterator implements Iterator<String[]> {
-		private final SimpleConfig config;
-		private final LinkedList<String> acs;
-		public ActionIterator(final SimpleConfig config, String[] acs) {
-			this.config = config;
-			this.acs = new LinkedList(Arrays.asList(acs));
-		}
+    private class ActionIterator implements Iterator<String[]> {
+        private final SimpleConfig config;
+        private final LinkedList<String> acs;
 
-		@Override
-		public boolean hasNext() {
-			return !acs.isEmpty();
-		}
+        public ActionIterator(final SimpleConfig config, String[] acs) {
+            this.config = config;
+            this.acs = new LinkedList(Arrays.asList(acs));
+        }
 
-		@Override
-		public String[] next() {
-			if (acs.isEmpty())
-				return null;
-			final String ac = acs.removeFirst();
-			if (!ac.equals(reduceUp)) {
-				return new String[]{ac};
-			} else {
+        @Override
+        public boolean hasNext() {
+            return !acs.isEmpty();
+        }
+
+        @Override
+        public String[] next() {
+            if (acs.isEmpty())
+                return null;
+            final String ac = acs.removeFirst();
+            if (!ac.equals(reduceUp)) {
+                return new String[]{ac};
+            } else {
 //				final Features catFeats = extract(config);
-				final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
-				final String cat = (String) catClassifier.predict(featureVector);
-				return new String[]{ac, cat};
-			}
-		}
-	}
+                final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
+                final String cat = (String) catClassifier.predict(featureVector);
+                return new String[]{ac, cat};
+            }
+        }
+    }
 
 //	protected String inputPosFeature(int i) {
 //		return "inputPos_" + i;

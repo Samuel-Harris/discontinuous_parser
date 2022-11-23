@@ -24,146 +24,150 @@ import java.util.logging.Logger;
 
 public class SimpleTrainer {
 
-	protected FeatureSpecification featSpec;
+    protected FeatureSpecification featSpec;
 
-	public SimpleTrainer(final FeatureSpecification featSpec) {
-		this.featSpec = featSpec;
-	}
+    public SimpleTrainer(final FeatureSpecification featSpec) {
+        this.featSpec = featSpec;
+    }
 
-	protected boolean leftDependentsFirst = false;
+    protected boolean leftDependentsFirst = false;
 
-	protected boolean strict = false;
+    protected boolean strict = false;
 
-	protected boolean nonprojectiveAllowed = false;
+    protected boolean nonprojectiveAllowed = false;
 
-	public void setLeftDependentsFirst(final boolean b) {
-		leftDependentsFirst = b;
-	}
+    public void setLeftDependentsFirst(final boolean b) {
+        leftDependentsFirst = b;
+    }
 
-	public void setStrict(final boolean b) {
-		strict = b;
-	}
+    public void setStrict(final boolean b) {
+        strict = b;
+    }
 
-	public void setNonprojectiveAllowed(final boolean p) {
-		nonprojectiveAllowed = p;
-	}
+    public void setNonprojectiveAllowed(final boolean p) {
+        nonprojectiveAllowed = p;
+    }
 
-	public int train(final String corpus,
-					 final int n, final SimpleExtractor extractor) {
-		return train(corpus, null, n, extractor);
-	}
-	/**
-	 * Train classifiers in extractor.
-	 * @param corpus File with corpus.
-	 * @param corpusCopy Filename of copy of part of corpus used for training.
-	 * @param n	Number of sentences for training.
-	 * @param extractor Extractor of features.
-	 * @return How many sentences were used in training.                    
-	 */
-	public int train(final String corpus,
-					 final String corpusCopy,
-					 final int n, final SimpleExtractor extractor) {
-		copyTraining(corpus, corpusCopy, n);
-		final Treebank treebank = makeTreebank(corpus, n);
-		int i = 0;
-		for (int epo = 0; epo == 0 || extractor.getContinuousTraining() && epo < extractor.getNEpochs(); epo++) {
-			if (extractor.getContinuousTraining())
-				reportFine("Epoch " + epo);
-			i = 0;
-			for (DependencyStructure struct : treebank.depStructs) {
-				final Token[] tokens = retaggedTokens(struct);
-				if (allowableTree(tokens, i, n)) {
-					DeterministicParser parser = makeParser(tokens);
-					parser.observe(extractor);
-					i++;
-				}
-			}
-			extractor.train();
-		}
-		return i;
-	}
+    public int train(final String corpus,
+                     final int n, final SimpleExtractor extractor) {
+        return train(corpus, null, n, extractor);
+    }
 
-	/** Make exact copy of corpus used for training.
-	 * @param corpus
-	 * @param corpusCopy
-	 * @param n
-	 */
-	private void copyTraining(final String corpus,
-					 final String corpusCopy,
-					 final int n) {
-		final Treebank treebank = makeTreebank(corpus, n);
-		PrintWriter trainWriter = null;
-		try {
-			if (corpusCopy != null)
-				trainWriter = new PrintWriter(corpusCopy, "UTF-8");
-		} catch (FileNotFoundException e) {
-			fail("Cannot create file: " + e);
-		} catch (UnsupportedEncodingException e) {
-			fail("Unsupported encoding: " + e);
-		}
-		int i = 0;
-		for (DependencyStructure struct : treebank.depStructs) {
-			final Token[] tokens = retaggedTokens(struct);
-			if (allowableTree(tokens, i, n)) {
-				if (trainWriter != null) {
-						final DependencyStructure normalized =
-								new DependencyStructure(tokens);
-						trainWriter.println(normalized);
-					}
-					i++;
-			}
-		}
-		if (trainWriter != null)
-			trainWriter.close();
-	}
+    /**
+     * Train classifiers in extractor.
+     *
+     * @param corpus     File with corpus.
+     * @param corpusCopy Filename of copy of part of corpus used for training.
+     * @param n          Number of sentences for training.
+     * @param extractor  Extractor of features.
+     * @return How many sentences were used in training.
+     */
+    public int train(final String corpus,
+                     final String corpusCopy,
+                     final int n, final SimpleExtractor extractor) {
+        copyTraining(corpus, corpusCopy, n);
+        final Treebank treebank = makeTreebank(corpus, n);
+        int i = 0;
+        for (int epo = 0; epo == 0 || extractor.getContinuousTraining() && epo < extractor.getNEpochs(); epo++) {
+            if (extractor.getContinuousTraining())
+                reportFine("Epoch " + epo);
+            i = 0;
+            for (DependencyStructure struct : treebank.depStructs) {
+                final Token[] tokens = retaggedTokens(struct);
+                if (allowableTree(tokens, i, n)) {
+                    DeterministicParser parser = makeParser(tokens);
+                    parser.observe(extractor);
+                    i++;
+                }
+            }
+            extractor.train();
+        }
+        return i;
+    }
 
-	protected Token[] retaggedTokens(DependencyStructure struct) {
-		final Token[] tokens = struct.getNormalTokens();
-		if (!featSpec.getGoldPos()) {
-			return tokens; // featSpec.getPosTagger().retag(tokens);
-		} else {
-			return tokens;
-		}
-	}
+    /**
+     * Make exact copy of corpus used for training.
+     *
+     * @param corpus
+     * @param corpusCopy
+     * @param n
+     */
+    private void copyTraining(final String corpus,
+                              final String corpusCopy,
+                              final int n) {
+        final Treebank treebank = makeTreebank(corpus, n);
+        PrintWriter trainWriter = null;
+        try {
+            if (corpusCopy != null)
+                trainWriter = new PrintWriter(corpusCopy, "UTF-8");
+        } catch (FileNotFoundException e) {
+            fail("Cannot create file: " + e);
+        } catch (UnsupportedEncodingException e) {
+            fail("Unsupported encoding: " + e);
+        }
+        int i = 0;
+        for (DependencyStructure struct : treebank.depStructs) {
+            final Token[] tokens = retaggedTokens(struct);
+            if (allowableTree(tokens, i, n)) {
+                if (trainWriter != null) {
+                    final DependencyStructure normalized =
+                            new DependencyStructure(tokens);
+                    trainWriter.println(normalized);
+                }
+                i++;
+            }
+        }
+        if (trainWriter != null)
+            trainWriter.close();
+    }
 
-	protected Treebank makeTreebank(final String path, final int n) {
-		return new Treebank(path, 5*n);
-	}
+    protected Token[] retaggedTokens(DependencyStructure struct) {
+        final Token[] tokens = struct.getNormalTokens();
+        if (!featSpec.getGoldPos()) {
+            return tokens; // featSpec.getPosTagger().retag(tokens);
+        } else {
+            return tokens;
+        }
+    }
 
-	protected boolean allowableTree(final Token[] tokens, final int i, final int n) {
-		DependencyGraph g = new DependencyGraph(tokens);
-		return i < n && (nonprojectiveAllowed || g.isProjective());
-	}
+    protected Treebank makeTreebank(final String path, final int n) {
+        return new Treebank(path, 5 * n);
+    }
 
-	protected DeterministicParser makeParser(Token[] tokens) {
-		if (nonprojectiveAllowed)
-			tokens = OptimalProjectivizer.projectivize(tokens);
-		final SimpleParser parser = new SimpleParser(tokens);
-		parser.setLeftDependentsFirst(leftDependentsFirst);
-		return parser;
-	}
+    protected boolean allowableTree(final Token[] tokens, final int i, final int n) {
+        DependencyGraph g = new DependencyGraph(tokens);
+        return i < n && (nonprojectiveAllowed || g.isProjective());
+    }
 
-	private static Logger logger() {
-		final Logger log = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
-		log.setParent(Logger.getGlobal());
-		return log;
-	}
+    protected DeterministicParser makeParser(Token[] tokens) {
+        if (nonprojectiveAllowed)
+            tokens = OptimalProjectivizer.projectivize(tokens);
+        final SimpleParser parser = new SimpleParser(tokens);
+        parser.setLeftDependentsFirst(leftDependentsFirst);
+        return parser;
+    }
 
-	/**
-	 * Report failure.
-	 *
-	 * @param message The thing that failed.
-	 */
-	protected static void fail(final String message) {
-		logger().severe(message);
-	}
+    private static Logger logger() {
+        final Logger log = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+        log.setParent(Logger.getGlobal());
+        return log;
+    }
 
-	/**
-	 * Report fine comment.
-	 *
-	 * @param message The message.
-	 */
-	protected void reportFine(final String message) {
-		logger().fine(message);
-	}
+    /**
+     * Report failure.
+     *
+     * @param message The thing that failed.
+     */
+    protected static void fail(final String message) {
+        logger().severe(message);
+    }
+
+    /**
+     * Report fine comment.
+     *
+     * @param message The message.
+     */
+    protected void reportFine(final String message) {
+        logger().fine(message);
+    }
 }

@@ -12,9 +12,9 @@ import java.util.TreeMap;
 
 public class FeatureSpecification {
 
-    private TreeMap<String,Integer> intFeatures = new TreeMap<>();
+    private TreeMap<String, Integer> intFeatures = new TreeMap<>();
 
-    private TreeMap<String,List<Integer>> intsFeatures = new TreeMap<>();
+    private TreeMap<String, List<Integer>> intsFeatures = new TreeMap<>();
 
     private Embedding formVec = new EmptyEmbedding();
 

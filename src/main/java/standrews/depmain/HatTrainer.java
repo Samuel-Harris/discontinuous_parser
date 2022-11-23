@@ -16,24 +16,24 @@ import standrews.depmethods.HatParser;
 
 public class HatTrainer extends SimpleTrainer {
 
-	public HatTrainer(final FeatureSpecification featSpec) {
-		super(featSpec);
-	}
+    public HatTrainer(final FeatureSpecification featSpec) {
+        super(featSpec);
+    }
 
-	protected Treebank makeTreebank(final String path, final int n) {
-		return new Treebank(path, n);
-	}
+    protected Treebank makeTreebank(final String path, final int n) {
+        return new Treebank(path, n);
+    }
 
-	protected boolean allowableTree(final Token[] tokens,
-									final int i, final int n) {
-		return true;
-	}
+    protected boolean allowableTree(final Token[] tokens,
+                                    final int i, final int n) {
+        return true;
+    }
 
-	protected DeterministicParser makeParser(final Token[] tokens) {
-		final int viewMin = featSpec.getIntFeature("viewMin", 0);
-		final int viewMax = featSpec.getIntFeature("viewMax", 0);
-		final HatParser parser = new HatParser(tokens, viewMin, viewMax);
-		parser.setLeftDependentsFirst(leftDependentsFirst);
-		return parser;
-	}
+    protected DeterministicParser makeParser(final Token[] tokens) {
+        final int viewMin = featSpec.getIntFeature("viewMin", 0);
+        final int viewMax = featSpec.getIntFeature("viewMax", 0);
+        final HatParser parser = new HatParser(tokens, viewMin, viewMax);
+        parser.setLeftDependentsFirst(leftDependentsFirst);
+        return parser;
+    }
 }

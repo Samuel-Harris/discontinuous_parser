@@ -12,16 +12,16 @@ public class FellowResponseVectorGenerator implements ResponseVectorGenerator {
         fellowIndexToIndexMap = new HashMap<>();
         indexToFellowIndexMap = new HashMap<>();
         for (int i = 1; i < absMaxFellowIndex + 1; i++) {
-            fellowIndexToIndexMap.put(-i, absMaxFellowIndex-i);
-            fellowIndexToIndexMap.put(i, i+absMaxFellowIndex-1);
+            fellowIndexToIndexMap.put(-i, absMaxFellowIndex - i);
+            fellowIndexToIndexMap.put(i, i + absMaxFellowIndex - 1);
 
-            indexToFellowIndexMap.put(absMaxFellowIndex-i, -i);
-            indexToFellowIndexMap.put(i+absMaxFellowIndex-1, i);
+            indexToFellowIndexMap.put(absMaxFellowIndex - i, -i);
+            indexToFellowIndexMap.put(i + absMaxFellowIndex - 1, i);
         }
     }
 
     @Override
-    public double[] generateResponseVector (Object response) {
+    public double[] generateResponseVector(Object response) {
         double[] responseVector = new double[2 * absMaxFellowIndex];
         responseVector[fellowIndexToIndexMap.get((int) response)] = 1;
 

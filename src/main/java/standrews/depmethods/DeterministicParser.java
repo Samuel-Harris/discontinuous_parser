@@ -35,6 +35,7 @@ public abstract class DeterministicParser {
 
     /**
      * The names of the actions. Subclasses to override.
+     *
      * @return
      */
     public abstract String[] actionNames();
@@ -44,7 +45,7 @@ public abstract class DeterministicParser {
      * By default only empty string.
      */
     public String[] prefixLabels() {
-        return new String[] {""};
+        return new String[]{""};
     }
 
     /**
@@ -71,7 +72,7 @@ public abstract class DeterministicParser {
     /**
      * Make observations for parse, by default using static oracle.
      *
-     * @param extractor  Extractor of features.
+     * @param extractor Extractor of features.
      */
     public void observe(final SimpleExtractor extractor) {
         prepareTraining();
@@ -131,6 +132,7 @@ public abstract class DeterministicParser {
 
     /**
      * Weight of dependency edge from t1 to t2.
+     *
      * @param t1
      * @param t2
      * @return
@@ -173,7 +175,7 @@ public abstract class DeterministicParser {
     /**
      * Parse sentence with trained classifier.
      *
-     * @param extractor  Extractor of features.
+     * @param extractor Extractor of features.
      * @return Parse.
      */
     public Token[] parse(final SimpleExtractor extractor) {
@@ -233,6 +235,7 @@ public abstract class DeterministicParser {
 
     /**
      * In semiring, zero value.
+     *
      * @return
      */
     protected static int zero() {
@@ -244,14 +247,14 @@ public abstract class DeterministicParser {
     }
 
     protected static int times(final int a, final int b) {
-        return a > zero() && b > zero() ? a+b : zero();
+        return a > zero() && b > zero() ? a + b : zero();
     }
 
     protected static int plus(final int a, final int b) {
         return Math.max(a, b);
     }
 
-    protected TreeMap<String,Integer> scores() {
+    protected TreeMap<String, Integer> scores() {
         final TreeMap<String, Integer> scores = new TreeMap<>();
         for (String actionName : actionNames())
             scores.put(actionName, zero());
@@ -260,10 +263,11 @@ public abstract class DeterministicParser {
 
     /**
      * Get the set of actions with highest score.
+     *
      * @param scores
      * @return
      */
-    protected Vector<String> getBestActions(final TreeMap<String,Integer> scores) {
+    protected Vector<String> getBestActions(final TreeMap<String, Integer> scores) {
         int max = zero();
         for (String actionName : actionNames())
             max = plus(max, scores.get(actionName));
@@ -274,8 +278,8 @@ public abstract class DeterministicParser {
         return actions;
     }
 
-    protected boolean equalScores(final TreeMap<String,Integer> scores1,
-                                   final TreeMap<String,Integer> scores2) {
+    protected boolean equalScores(final TreeMap<String, Integer> scores1,
+                                  final TreeMap<String, Integer> scores2) {
         if (scores1.keySet().size() != scores2.keySet().size())
             return false;
         for (String action : scores1.keySet()) {
@@ -284,6 +288,7 @@ public abstract class DeterministicParser {
         }
         return true;
     }
+
     protected boolean equalActions(Vector<String> actions1, Vector<String> actions2) {
         if (actions1.size() != actions2.size())
             return false;
@@ -297,19 +302,20 @@ public abstract class DeterministicParser {
     /**
      * Get possible actions.
      */
-    protected Vector<String> getPossibleActions(final TreeMap<String,Integer> scores) {
+    protected Vector<String> getPossibleActions(final TreeMap<String, Integer> scores) {
         final Vector<String> actions = new Vector<>();
         for (String actionName : actionNames())
-        if (scores.get(actionName) > zero())
-            actions.add(actionName);
+            if (scores.get(actionName) > zero())
+                actions.add(actionName);
         return actions;
     }
 
     /**
      * Normalize to make smallest value 0.
+     *
      * @return
      */
-    protected void normalizeScores(final TreeMap<String,Integer> scores) {
+    protected void normalizeScores(final TreeMap<String, Integer> scores) {
         int min = Integer.MAX_VALUE;
         for (String actionName : actionNames()) {
             int val = scores.get(actionName);
@@ -328,12 +334,12 @@ public abstract class DeterministicParser {
     /**
      * Scores of actions as string.
      */
-    protected String toString(final TreeMap<String,Integer> scores) {
+    protected String toString(final TreeMap<String, Integer> scores) {
         String str = "";
         for (String actionName : actionNames()) {
             str += " " + actionName + "=" +
                     (scores.get(actionName) == zero() ? "-" :
-                    scores.get(actionName));
+                            scores.get(actionName));
         }
         return str;
     }
@@ -350,21 +356,21 @@ public abstract class DeterministicParser {
             System.out.print(config.getLabelLeft(i) + " ");
         }
         System.out.println();
-        for (int i = 0; i < m+n; i++) {
-            for (int j = 0; j < m+n; j++) {
+        for (int i = 0; i < m + n; i++) {
+            for (int j = 0; j < m + n; j++) {
                 final Token ti = i < m ?
                         config.getPrefixLeft(i).getToken() :
-                        config.getSuffixLeft(i-m).getToken();
+                        config.getSuffixLeft(i - m).getToken();
                 final Token tj = j < m ?
                         config.getPrefixLeft(j).getToken() :
-                        config.getSuffixLeft(j-m).getToken();
+                        config.getSuffixLeft(j - m).getToken();
                 if (isEdge(ti, tj))
                     System.out.println("" + i + " " + j);
             }
         }
     }
 
-    protected void printScores(final TreeMap<String,Integer> scores) {
+    protected void printScores(final TreeMap<String, Integer> scores) {
         for (String a : scores.keySet()) {
             System.out.println(a + " " + scores.get(a));
         }

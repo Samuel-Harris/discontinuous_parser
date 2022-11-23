@@ -98,7 +98,7 @@ public class NeurophClassifier extends Classifier {
         final int[] layersAll = new int[layers.length + 2];
         layersAll[0] = nPredictors;
         System.arraycopy(layers, 0, layersAll, 1, layers.length);
-        layersAll[layersAll.length-1] = nResponses;
+        layersAll[layersAll.length - 1] = nResponses;
         // final MultiLayerPerceptron network = new MultiLayerPerceptron(layersAll);
         // final TransferFunctionType type = TransferFunctionType.LINEAR;
         // final TransferFunctionType type = TransferFunctionType.TANH;

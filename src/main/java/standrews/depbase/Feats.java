@@ -15,28 +15,28 @@ import java.util.TreeMap;
  * CoNLL-U token FEATS.
  */
 public class Feats {
-	/**
-	 * May be null for an undefined value.
-	 */
-	public final String featsStr;
+    /**
+     * May be null for an undefined value.
+     */
+    public final String featsStr;
 
-	public Feats(final String featsStr) {
-		if (featsStr.equals("_")) {
-			this.featsStr = null;
-		} else if (featsStr.indexOf(' ') >= 0) {
-			throw new IllegalArgumentException("Wrong FEATS: " + featsStr);
-		} else {
-			this.featsStr = featsStr;
-		}
-	}
+    public Feats(final String featsStr) {
+        if (featsStr.equals("_")) {
+            this.featsStr = null;
+        } else if (featsStr.indexOf(' ') >= 0) {
+            throw new IllegalArgumentException("Wrong FEATS: " + featsStr);
+        } else {
+            this.featsStr = featsStr;
+        }
+    }
 
-	public SortedMap<String, String> mapping() {
-		return featsStr == null ? new TreeMap<>() :
-				Utils.parseMapStringString(featsStr,"|", "=");
-	}
+    public SortedMap<String, String> mapping() {
+        return featsStr == null ? new TreeMap<>() :
+                Utils.parseMapStringString(featsStr, "|", "=");
+    }
 
-	@Override
-	public String toString() {
-		return featsStr == null ? "_" : featsStr;
-	}
+    @Override
+    public String toString() {
+        return featsStr == null ? "_" : featsStr;
+    }
 }

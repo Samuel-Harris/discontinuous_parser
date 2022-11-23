@@ -17,32 +17,33 @@ import standrews.tabular.OptimalProjectivizer;
 
 public class SimpleDynamicTrainerSpeed extends SimpleDynamicTrainer {
 
-	private DataCollectionSum timings;
+    private DataCollectionSum timings;
 
-	private int counter = 0;
+    private int counter = 0;
 
-	private int fromSentence;
-	private int toSentence;
+    private int fromSentence;
+    private int toSentence;
 
-	public void setFrom(int f) {
-		fromSentence = f;
-	}
-	public void setTo(int t) {
-		toSentence = t;
-	}
+    public void setFrom(int f) {
+        fromSentence = f;
+    }
 
-	/**
-	 * Are in the phase of measuring speed of dynamic oracle?
-	 */
-	private boolean speedMeasuringPhase = false;
+    public void setTo(int t) {
+        toSentence = t;
+    }
 
-	public SimpleDynamicTrainerSpeed(final FeatureSpecification featSpec,
-									 final double strayProb, final int nIterations,
-									 final boolean dynProjective,
-									 final DataCollectionSum timings) {
-		super(featSpec, strayProb, nIterations, dynProjective);
-		this.timings = timings;
-	}
+    /**
+     * Are in the phase of measuring speed of dynamic oracle?
+     */
+    private boolean speedMeasuringPhase = false;
+
+    public SimpleDynamicTrainerSpeed(final FeatureSpecification featSpec,
+                                     final double strayProb, final int nIterations,
+                                     final boolean dynProjective,
+                                     final DataCollectionSum timings) {
+        super(featSpec, strayProb, nIterations, dynProjective);
+        this.timings = timings;
+    }
 
 	/*
 	public void list() {
@@ -56,9 +57,9 @@ public class SimpleDynamicTrainerSpeed extends SimpleDynamicTrainer {
 	}
 	*/
 
-	protected boolean allowableTree(final Token[] tokens, final int i, final int n) {
-		final int nMeasure = 100000;
-		DependencyGraph g = new DependencyGraph(tokens);
+    protected boolean allowableTree(final Token[] tokens, final int i, final int n) {
+        final int nMeasure = 100000;
+        DependencyGraph g = new DependencyGraph(tokens);
 		/*
 		if (speedMeasuringPhase) {
 			if (fromSentence-- >= 0) {
@@ -67,26 +68,26 @@ public class SimpleDynamicTrainerSpeed extends SimpleDynamicTrainer {
 			}
 		}
 		*/
-		return (!speedMeasuringPhase && i < n ||
-				// i < toSentence &&
-						i < nMeasure)
-				&& (nonprojectiveAllowed || g.isProjective());
-	}
+        return (!speedMeasuringPhase && i < n ||
+                // i < toSentence &&
+                i < nMeasure)
+                && (nonprojectiveAllowed || g.isProjective());
+    }
 
-	protected SimpleParser makeStrayingParser(Token[] tokens,
-											  final SimpleExtractor staticExtractor) {
-		speedMeasuringPhase = true;
-		if (dynProjective && nonprojectiveAllowed)
-			tokens = OptimalProjectivizer.projectivize(tokens);
-		// System.out.println("done " + (counter++));
-		final SimpleDynamicParser parser =
-				new SimpleDynamicParserTester(tokens, leftDependentsFirst, strict,
-						staticExtractor, timings);
-		parser.setStrayProb(strayProb);
-		parser.setProjective(dynProjective);
-		// parser.setChooseMode(SimpleDynamicParser.ChooseMode.PRELIM_PRELIM);
-		parser.setChooseMode(DynamicChooseMode.PRELIM);
-		return parser;
-	}
+    protected SimpleParser makeStrayingParser(Token[] tokens,
+                                              final SimpleExtractor staticExtractor) {
+        speedMeasuringPhase = true;
+        if (dynProjective && nonprojectiveAllowed)
+            tokens = OptimalProjectivizer.projectivize(tokens);
+        // System.out.println("done " + (counter++));
+        final SimpleDynamicParser parser =
+                new SimpleDynamicParserTester(tokens, leftDependentsFirst, strict,
+                        staticExtractor, timings);
+        parser.setStrayProb(strayProb);
+        parser.setProjective(dynProjective);
+        // parser.setChooseMode(SimpleDynamicParser.ChooseMode.PRELIM_PRELIM);
+        parser.setChooseMode(DynamicChooseMode.PRELIM);
+        return parser;
+    }
 
 }

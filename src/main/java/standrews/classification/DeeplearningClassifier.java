@@ -111,7 +111,7 @@ public class DeeplearningClassifier extends Classifier {
         final int[] layersAll = new int[layers.length + 2];
         layersAll[0] = nPredictors;
         System.arraycopy(layers, 0, layersAll, 1, layers.length);
-        layersAll[layersAll.length-1] = nResponses;
+        layersAll[layersAll.length - 1] = nResponses;
         int seed = 123;
         NeuralNetConfiguration.ListBuilder builder = new NeuralNetConfiguration.Builder()
                 .seed(seed)

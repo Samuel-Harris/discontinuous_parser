@@ -6,7 +6,7 @@ package standrews.aux;
 
 import java.util.TreeMap;
 
-public class Counter<T> extends TreeMap<T,Integer> {
+public class Counter<T> extends TreeMap<T, Integer> {
     public void incr(final T t) {
         put(t, get(t) + 1);
     }

@@ -12,28 +12,28 @@ package standrews.depbase;
  * CoNLL-U token XPOS.
  */
 public class Xpos {
-	/**
-	 * May be null for an undefined value.
-	 */
-	public final String xpos;
+    /**
+     * May be null for an undefined value.
+     */
+    public final String xpos;
 
-	/**
-	 * Parse a XPOS.
-	 *
-	 * @param xposStr The string to parse to a XPOS.
-	 * @throws IllegalArgumentException if the string is not a valid XPOS.
-	 */
-	public Xpos(final String xposStr) {
-		if (xposStr.equals("_"))
-			this.xpos = null;
-		else if (xposStr.indexOf(' ') >= 0)
-			throw new IllegalArgumentException("Wrong XPOS: " + xposStr);
-		else
-			this.xpos = xposStr;
-	}
+    /**
+     * Parse a XPOS.
+     *
+     * @param xposStr The string to parse to a XPOS.
+     * @throws IllegalArgumentException if the string is not a valid XPOS.
+     */
+    public Xpos(final String xposStr) {
+        if (xposStr.equals("_"))
+            this.xpos = null;
+        else if (xposStr.indexOf(' ') >= 0)
+            throw new IllegalArgumentException("Wrong XPOS: " + xposStr);
+        else
+            this.xpos = xposStr;
+    }
 
-	@Override
-	public String toString() {
-		return xpos == null ? "_" : xpos;
-	}
+    @Override
+    public String toString() {
+        return xpos == null ? "_" : xpos;
+    }
 }

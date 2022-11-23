@@ -22,16 +22,16 @@ public class FeatureVectorGenerator {
         List<String> poss = new ArrayList<>(treebank.getPoss());
         posIndexMap = new HashMap<>();
         catAndPosIndexMap = new HashMap<>();
-        for (int i=0; i<poss.size(); i++) {
+        for (int i = 0; i < poss.size(); i++) {
             posIndexMap.put(poss.get(i), i);
             catAndPosIndexMap.put(poss.get(i), i);
         }
 
         List<String> categories = new ArrayList<>(treebank.getCats());
         catIndexMap = new HashMap<>();
-        for (int i=0; i<categories.size(); i++) {
+        for (int i = 0; i < categories.size(); i++) {
             catIndexMap.put(categories.get(i), i);
-            catAndPosIndexMap.put(categories.get(i), poss.size()+i);
+            catAndPosIndexMap.put(categories.get(i), poss.size() + i);
         }
 
         hatSymbolFeatureIndex = 0;

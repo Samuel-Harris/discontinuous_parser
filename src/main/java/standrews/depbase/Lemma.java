@@ -12,14 +12,14 @@ package standrews.depbase;
  * CoNLL-U token LEMMA.
  */
 public class Lemma {
-	public final String lemma;
+    public final String lemma;
 
-	public Lemma(final String lemmaStr) {
-		lemma = lemmaStr;
-	}
+    public Lemma(final String lemmaStr) {
+        lemma = lemmaStr;
+    }
 
-	@Override
-	public String toString() {
-		return lemma;
-	}
+    @Override
+    public String toString() {
+        return lemma;
+    }
 }

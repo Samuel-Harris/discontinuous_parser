@@ -41,7 +41,7 @@ public class MLPFactory {
     }
 
     public MLP makeMLP(ResponseVectorGenerator responseVectorGenerator) {
-        layers[layers.length-1] = responseVectorGenerator.getVectorSize();
+        layers[layers.length - 1] = responseVectorGenerator.getVectorSize();
 
         NeuralNetConfiguration.ListBuilder builder = new NeuralNetConfiguration.Builder()
                 .seed(seed)

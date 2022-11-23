@@ -16,21 +16,21 @@ import standrews.depmethods.SwapParser;
 
 public class SwapTrainer extends SimpleTrainer {
 
-	public SwapTrainer(final FeatureSpecification featSpec) {
-		super(featSpec);
-	}
+    public SwapTrainer(final FeatureSpecification featSpec) {
+        super(featSpec);
+    }
 
-	protected Treebank makeTreebank(final String path, final int n) {
-		return new Treebank(path, n);
-	}
+    protected Treebank makeTreebank(final String path, final int n) {
+        return new Treebank(path, n);
+    }
 
-	protected boolean allowableTree(final Token[] tokens, final int i, final int n) {
-		return true;
-	}
+    protected boolean allowableTree(final Token[] tokens, final int i, final int n) {
+        return true;
+    }
 
-	protected DeterministicParser makeParser(final Token[] tokens) {
-		final SwapParser parser = new SwapParser(tokens);
-		parser.setLeftDependentsFirst(leftDependentsFirst);
-		return parser;
-	}
+    protected DeterministicParser makeParser(final Token[] tokens) {
+        final SwapParser parser = new SwapParser(tokens);
+        parser.setLeftDependentsFirst(leftDependentsFirst);
+        return parser;
+    }
 }

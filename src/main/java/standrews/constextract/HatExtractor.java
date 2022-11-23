@@ -24,54 +24,54 @@ import java.util.Optional;
 import java.util.TreeSet;
 
 public class HatExtractor extends SimpleExtractor {
-	public static final String shift = HatParser.shift;
-	public static final String reduceUpHat = HatParser.reduceUpHat;
-	public static final String reduceToHat = HatParser.reduceToHat;
-	public static final String reduceFromHat = HatParser.reduceFromHat;
+    public static final String shift = HatParser.shift;
+    public static final String reduceUpHat = HatParser.reduceUpHat;
+    public static final String reduceToHat = HatParser.reduceToHat;
+    public static final String reduceFromHat = HatParser.reduceFromHat;
 
-	/**
-	 * Experimental option to suppress use of compression features.
-	 */
-	private boolean suppressCompression = false;
+    /**
+     * Experimental option to suppress use of compression features.
+     */
+    private boolean suppressCompression = false;
 
-	/**
-	 * Classifier that determines fellow index.
-	 */
-	private final MLP fellowClassifier;
+    /**
+     * Classifier that determines fellow index.
+     */
+    private final MLP fellowClassifier;
 
-	public HatExtractor(final ConstTreebank treebank,
-						final FeatureVectorGenerator featureVectorGenerator,
-						final MLPFactory mlpFactory,
-						final String actionFile, final String fellowFile, final String catFile,
-						final boolean suppressCompression) {
-		super(treebank, featureVectorGenerator, mlpFactory, actionFile, catFile);
+    public HatExtractor(final ConstTreebank treebank,
+                        final FeatureVectorGenerator featureVectorGenerator,
+                        final MLPFactory mlpFactory,
+                        final String actionFile, final String fellowFile, final String catFile,
+                        final boolean suppressCompression) {
+        super(treebank, featureVectorGenerator, mlpFactory, actionFile, catFile);
 
-		this.suppressCompression = suppressCompression;
-		this.fellowClassifier = mlpFactory.makeMLP(new FellowResponseVectorGenerator());
+        this.suppressCompression = suppressCompression;
+        this.fellowClassifier = mlpFactory.makeMLP(new FellowResponseVectorGenerator());
 //		completeHatClassifiers(treebank);
-	}
+    }
 
-	public void train() {
-		super.train();
-		fellowClassifier.train();
-	}
+    public void train() {
+        super.train();
+        fellowClassifier.train();
+    }
 
-	public void extract(final SimpleConfig simpleConfig, final String[] action) {
-		final HatConfig config = (HatConfig) simpleConfig;
+    public void extract(final SimpleConfig simpleConfig, final String[] action) {
+        final HatConfig config = (HatConfig) simpleConfig;
 //		final Features actionFeats = extract(config);
-		final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
-		actionClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[0]);
-		if (action[0].equals(reduceUpHat)) {
+        final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
+        actionClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[0]);
+        if (action[0].equals(reduceUpHat)) {
 //			final Features catFeats = extract(config);
-			catClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[1]);
-		} else if (action[0].equals(reduceToHat) || action[0].equals(reduceFromHat)) {
-			final String[] actionCompressed =
-					HatParser.actionToCompression(config, action);
+            catClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[1]);
+        } else if (action[0].equals(reduceToHat) || action[0].equals(reduceFromHat)) {
+            final String[] actionCompressed =
+                    HatParser.actionToCompression(config, action);
 //			final Features fellowFeats = extract(config);
 //			fellowFeats.putString("action", action[0]);
-			fellowClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), actionCompressed[1]);
-		}
-	}
+            fellowClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), actionCompressed[1]);
+        }
+    }
 
 //	protected Features extract(final SimpleConfig simpleConfig) {
 //		final HatConfig config = (HatConfig) simpleConfig;
@@ -174,9 +174,9 @@ public class HatExtractor extends SimpleExtractor {
 //		}
 //	}
 
-	protected String hatCatFeature(int i) {
-		return "hatCat_" + i;
-	}
+    protected String hatCatFeature(int i) {
+        return "hatCat_" + i;
+    }
 
 //	protected void extractHatCats(final Features feats, final HatConfig config) {
 //		for (int i : featureVectorGenerator.getIntsFeature("hatCats")) {

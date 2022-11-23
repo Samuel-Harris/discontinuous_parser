@@ -7,17 +7,17 @@ public class CatResponseVectorGenerator implements ResponseVectorGenerator {
     private final Map<String, Integer> catIndexMap;
     private final Map<Integer, String> indexCatMap;
 
-    public CatResponseVectorGenerator (Map<String, Integer> catIndexMap) {
+    public CatResponseVectorGenerator(Map<String, Integer> catIndexMap) {
         this.catIndexMap = catIndexMap;
         indexCatMap = new HashMap<>();
 
-        for (Map.Entry<String, Integer> entry: catIndexMap.entrySet()) {
+        for (Map.Entry<String, Integer> entry : catIndexMap.entrySet()) {
             indexCatMap.put(entry.getValue(), entry.getKey());
         }
     }
 
     @Override
-    public double[] generateResponseVector (Object response) {
+    public double[] generateResponseVector(Object response) {
         double[] responseVector = new double[catIndexMap.size()];
         responseVector[catIndexMap.get((String) response)] = 1;
 

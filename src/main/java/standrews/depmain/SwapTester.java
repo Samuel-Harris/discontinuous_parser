@@ -15,11 +15,11 @@ import standrews.depmethods.SwapParser;
 
 public class SwapTester extends SimpleTester {
 
-	public SwapTester(final FeatureSpecification featSpec) {
-		super(featSpec);
-	}
+    public SwapTester(final FeatureSpecification featSpec) {
+        super(featSpec);
+    }
 
-	protected DeterministicParser makeParser(final Token[] tokens) {
-		return new SwapParser(tokens);
-	}
+    protected DeterministicParser makeParser(final Token[] tokens) {
+        return new SwapParser(tokens);
+    }
 }

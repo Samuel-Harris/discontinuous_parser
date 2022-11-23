@@ -11,18 +11,18 @@ import standrews.constmethods.HatParser;
 
 public class HatTrainer extends SimpleTrainer {
 
-	public HatTrainer(final FeatureVectorGenerator featureVectorGenerator) {
-		super(featureVectorGenerator);
-	}
+    public HatTrainer(final FeatureVectorGenerator featureVectorGenerator) {
+        super(featureVectorGenerator);
+    }
 
-	protected boolean allowableTree(final ConstTree tree) {
-		return true;
-	}
+    protected boolean allowableTree(final ConstTree tree) {
+        return true;
+    }
 
-	protected DeterministicParser makeParser(final ConstTree tree) {
-		final HatParser parser = new HatParser(tree);
-		parser.setLeftDependentsFirst(leftDependentsFirst);
-		return parser;
-	}
+    protected DeterministicParser makeParser(final ConstTree tree) {
+        final HatParser parser = new HatParser(tree);
+        parser.setLeftDependentsFirst(leftDependentsFirst);
+        return parser;
+    }
 
 }

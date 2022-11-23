@@ -17,34 +17,34 @@ import standrews.depmethods.HatParser;
 
 public class HatTester extends SimpleTester {
 
-	public HatTester(final FeatureSpecification featSpec) {
-		super(featSpec);
-	}
+    public HatTester(final FeatureSpecification featSpec) {
+        super(featSpec);
+    }
 
-	private class ParserWithCompression extends HatParser {
-		public ParserWithCompression(final Token[] tokens,
-									 final int viewMin,
-									 final int viewMax) {
-			super(tokens, viewMin, viewMax);
-		}
+    private class ParserWithCompression extends HatParser {
+        public ParserWithCompression(final Token[] tokens,
+                                     final int viewMin,
+                                     final int viewMax) {
+            super(tokens, viewMin, viewMax);
+        }
 
-		protected void apply(final SimpleConfig simpleConfig, final String[] action) {
-			HatConfig config = (HatConfig) simpleConfig;
-			final String[] actionUncompressed = actionFromCompression(config, action);
-			super.apply(config, actionUncompressed);
-		}
+        protected void apply(final SimpleConfig simpleConfig, final String[] action) {
+            HatConfig config = (HatConfig) simpleConfig;
+            final String[] actionUncompressed = actionFromCompression(config, action);
+            super.apply(config, actionUncompressed);
+        }
 
-		protected boolean applicable(final SimpleConfig simpleConfig, final String[] action) {
-			HatConfig config = (HatConfig) simpleConfig;
-			final String[] actionUncompressed = actionFromCompression(config, action);
-			return actionUncompressed.length > 0 &&
-					super.applicable(config, actionUncompressed);
-		}
-	}
+        protected boolean applicable(final SimpleConfig simpleConfig, final String[] action) {
+            HatConfig config = (HatConfig) simpleConfig;
+            final String[] actionUncompressed = actionFromCompression(config, action);
+            return actionUncompressed.length > 0 &&
+                    super.applicable(config, actionUncompressed);
+        }
+    }
 
-	protected DeterministicParser makeParser(final Token[] tokens) {
-		final int viewMin = featSpec.getIntFeature("viewMin", 0);
-		final int viewMax = featSpec.getIntFeature("viewMax", 0);
-		return new ParserWithCompression(tokens, viewMin, viewMax);
-	}
+    protected DeterministicParser makeParser(final Token[] tokens) {
+        final int viewMin = featSpec.getIntFeature("viewMin", 0);
+        final int viewMax = featSpec.getIntFeature("viewMax", 0);
+        return new ParserWithCompression(tokens, viewMin, viewMax);
+    }
 }

@@ -7,6 +7,7 @@ package standrews.lexical;
 import standrews.depbase.Token;
 
 public interface PosTagger {
-	public String[] tag(final String[] words);
-	public Token[] retag(final Token[] words);
+    public String[] tag(final String[] words);
+
+    public Token[] retag(final Token[] words);
 }

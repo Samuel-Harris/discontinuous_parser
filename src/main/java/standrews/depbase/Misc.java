@@ -15,28 +15,28 @@ import java.util.TreeMap;
  * CoNLL-U token MISC.
  */
 public class Misc {
-	/**
-	 * May be null for an undefined value.
-	 */
-	public final String miscStr;
+    /**
+     * May be null for an undefined value.
+     */
+    public final String miscStr;
 
-	public Misc(final String miscStr) {
-		if (miscStr.equals("_")) {
-			this.miscStr = null;
-		// } else if (miscStr.indexOf(' ') >= 0) {
-			// throw new IllegalArgumentException("Wrong MISC: " + miscStr);
-		} else {
-			this.miscStr = miscStr;
-		}
-	}
+    public Misc(final String miscStr) {
+        if (miscStr.equals("_")) {
+            this.miscStr = null;
+            // } else if (miscStr.indexOf(' ') >= 0) {
+            // throw new IllegalArgumentException("Wrong MISC: " + miscStr);
+        } else {
+            this.miscStr = miscStr;
+        }
+    }
 
-	public SortedMap<String, String> mapping() {
-		return miscStr == null ? new TreeMap<>() :
-				Utils.parseMapStringString(miscStr,"|", "=");
-	}
+    public SortedMap<String, String> mapping() {
+        return miscStr == null ? new TreeMap<>() :
+                Utils.parseMapStringString(miscStr, "|", "=");
+    }
 
-	@Override
-	public String toString() {
-		return miscStr == null ? "_" : miscStr;
-	}
+    @Override
+    public String toString() {
+        return miscStr == null ? "_" : miscStr;
+    }
 }

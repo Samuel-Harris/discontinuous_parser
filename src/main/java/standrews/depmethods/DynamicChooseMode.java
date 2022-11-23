@@ -5,5 +5,5 @@
 package standrews.depmethods;
 
 public enum DynamicChooseMode {
-	FIRST, LAST, RANDOM, PRELIM, PRELIM_PRELIM
+    FIRST, LAST, RANDOM, PRELIM, PRELIM_PRELIM
 }

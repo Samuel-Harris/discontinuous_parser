@@ -5,7 +5,7 @@
 package standrews.classification;
 
 public class LibLinearClassifierFactory extends ClassifierFactory {
-	public Classifier makeClassifier(final String filename) {
-		return new LibLinearClassifier(filename);
-	}
+    public Classifier makeClassifier(final String filename) {
+        return new LibLinearClassifier(filename);
+    }
 }

@@ -226,7 +226,7 @@ public class Experiments {
     public static WholeHatExtractor trainWholeHat(
             final String corpus,
             final int n) {
-        final WholeHatExtractor extractor =	new WholeHatExtractor();
+        final WholeHatExtractor extractor = new WholeHatExtractor();
         final WholeHatTrainer trainer = new WholeHatTrainer();
         trainer.train(corpus, n, extractor);
         return extractor;
@@ -478,7 +478,7 @@ public class Experiments {
         // final String[] langs = {"bg", "cs", "de", "en",
         // "fa", "fi", "fr", "grc", "hi", "hr", "id", "it", "ja",
         // "nl", "no", "pl", "pt", "ro", "sk", "sl", "sv"};
-        final String[] langs = { "ko" };
+        final String[] langs = {"ko"};
         // final String[] langs = { "ar", "cs", "de", "et", "grc", "ja", "ko", "no" , "ru" };
         final boolean leftFirst = true;
         for (String lang : langs) {
@@ -643,7 +643,7 @@ public class Experiments {
         // Languages with > 14000 projective sentences, plus de, grc
         // final String[] langs = { "ar", "cs", "de", "et", "grc"};
         // final String[] langs = { "ja", "ko", "no"};
-        final String[] langs = { "de" };
+        final String[] langs = {"de"};
         // final String[] langs = { /* "ar", "cs", "de", "et", "grc" */ "ja", "ko", "no" , "ru"};
         // final String[] langs = Corpora.someLanguages();
         // final String[] langs = Corpora.languages9000();
@@ -701,7 +701,7 @@ public class Experiments {
         // final int nTrain = 1000;
         final int nTest = Integer.MAX_VALUE;
         // final String[] langs = { "ar", "cs", "de", "et", "grc", "ja", "ko", "no" , "ru" };
-        final String[] langs = { "ko" };
+        final String[] langs = {"ko"};
         doTrainingAndTestingWholeHat(langs, nTrain, nTest);
     }
 

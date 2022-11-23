@@ -14,23 +14,23 @@ package standrews.depbase;
  * so this is not a mapping.
  */
 public class Deps {
-	/**
-	 * May be null for an undefined value.
-	 */
-	public final String depsStr;
+    /**
+     * May be null for an undefined value.
+     */
+    public final String depsStr;
 
-	public Deps(final String depsStr) {
-		if (depsStr.equals("_")) {
-			this.depsStr = null;
-		} else if (depsStr.indexOf(' ') >= 0) {
-			throw new IllegalArgumentException("Wrong DEPS: " + depsStr);
-		} else {
-			this.depsStr = depsStr;
-		}
-	}
+    public Deps(final String depsStr) {
+        if (depsStr.equals("_")) {
+            this.depsStr = null;
+        } else if (depsStr.indexOf(' ') >= 0) {
+            throw new IllegalArgumentException("Wrong DEPS: " + depsStr);
+        } else {
+            this.depsStr = depsStr;
+        }
+    }
 
-	@Override
-	public String toString() {
-		return depsStr == null ? "_" : depsStr;
-	}
+    @Override
+    public String toString() {
+        return depsStr == null ? "_" : depsStr;
+    }
 }

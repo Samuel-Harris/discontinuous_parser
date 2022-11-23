@@ -13,40 +13,40 @@ import java.util.List;
 
 public class Accuracy {
 
-	public static double unlabeledAttachmentSum(final DependencyStructure depStruct1,
-												final DependencyStructure depStruct2) {
-		List<Token> tokens1 = Arrays.asList(depStruct1.getNormalTokens());
-		List<Token> tokens2 = Arrays.asList(depStruct2.getNormalTokens());
-		if (tokens1.size() != tokens2.size()) {
-			return 0;
-		}
-		int sum = 0;
-		for (int i = 0; i < tokens1.size(); i++) {
-			Token token1 = tokens1.get(i);
-			Token token2 = tokens2.get(i);
-			if (token1.head.equals(token2.head)) {
-				sum++;
-			}
-		}
-		return sum;
-	}
+    public static double unlabeledAttachmentSum(final DependencyStructure depStruct1,
+                                                final DependencyStructure depStruct2) {
+        List<Token> tokens1 = Arrays.asList(depStruct1.getNormalTokens());
+        List<Token> tokens2 = Arrays.asList(depStruct2.getNormalTokens());
+        if (tokens1.size() != tokens2.size()) {
+            return 0;
+        }
+        int sum = 0;
+        for (int i = 0; i < tokens1.size(); i++) {
+            Token token1 = tokens1.get(i);
+            Token token2 = tokens2.get(i);
+            if (token1.head.equals(token2.head)) {
+                sum++;
+            }
+        }
+        return sum;
+    }
 
-	public static double labeledAttachmentSum(final DependencyStructure depStruct1,
-											  final DependencyStructure depStruct2) {
-		List<Token> tokens1 = Arrays.asList(depStruct1.getNormalTokens());
-		List<Token> tokens2 = Arrays.asList(depStruct2.getNormalTokens());
-		if (tokens1.size() != tokens2.size()) {
-			return 0;
-		}
-		int sum = 0;
-		for (int i = 0; i < tokens1.size(); i++) {
-			Token token1 = tokens1.get(i);
-			Token token2 = tokens2.get(i);
-			if (token1.head.equals(token2.head) &&
-					token1.deprel.equals(token2.deprel)) {
-				sum++;
-			}
-		}
-		return sum;
-	}
+    public static double labeledAttachmentSum(final DependencyStructure depStruct1,
+                                              final DependencyStructure depStruct2) {
+        List<Token> tokens1 = Arrays.asList(depStruct1.getNormalTokens());
+        List<Token> tokens2 = Arrays.asList(depStruct2.getNormalTokens());
+        if (tokens1.size() != tokens2.size()) {
+            return 0;
+        }
+        int sum = 0;
+        for (int i = 0; i < tokens1.size(); i++) {
+            Token token1 = tokens1.get(i);
+            Token token2 = tokens2.get(i);
+            if (token1.head.equals(token2.head) &&
+                    token1.deprel.equals(token2.deprel)) {
+                sum++;
+            }
+        }
+        return sum;
+    }
 }

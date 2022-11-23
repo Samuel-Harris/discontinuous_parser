@@ -13,14 +13,14 @@ package standrews.depbase;
  */
 
 public class Form {
-	public final String form;
+    public final String form;
 
-	public Form(final String formStr) {
-		form = formStr;
-	}
+    public Form(final String formStr) {
+        form = formStr;
+    }
 
-	@Override
-	public String toString() {
-		return form;
-	}
+    @Override
+    public String toString() {
+        return form;
+    }
 }
