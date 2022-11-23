@@ -85,9 +85,10 @@ public class EncogClassifier extends Classifier {
 		network = makeNetwork(nPredictors, nResponses);
 		final MLDataSet dataSet = new BasicMLDataSet();
 		for (Observation obs : observations) {
-			final BasicMLData inputData = new BasicMLData(predictorsDoubleArray(obs.features));
+			System.exit(1);
+//			final BasicMLData inputData = new BasicMLData(predictorsDoubleArray(obs.features));
 			final BasicMLData outputData = new BasicMLData(responseDoubleArray(obs.response));
-			dataSet.add(inputData, outputData);
+//			dataSet.add(inputData, outputData);
 		}
 		final MLTrain trainer = new ResilientPropagation(network, dataSet);
 		final TimerMilli timer = new TimerMilli();

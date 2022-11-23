@@ -7,6 +7,8 @@ package standrews.constextract;
 import standrews.aux.Counter;
 import standrews.classification.ClassifierFactory;
 import standrews.classification.FeatureSpecification;
+import standrews.classification.FeatureVectorGenerator;
+import standrews.classification.MLPFactory;
 import standrews.constautomata.HatConfig;
 import standrews.constautomata.SimpleConfig;
 import standrews.constbase.ConstTreebank;
@@ -23,58 +25,58 @@ public class HatExtractorAnalysis extends HatExtractor {
 	private int totalCountFrom = 0;
 
 	public HatExtractorAnalysis(final ConstTreebank treebank,
-								final FeatureSpecification featSpec,
-								final ClassifierFactory factory,
+								final FeatureVectorGenerator featureVectorGenerator,
+								final MLPFactory mlpFactory,
 								final String actionFile,
 								final String fellowFile,
 								final String deprelFile,
 								final boolean suppressCompression) {
-		super(treebank, featSpec, factory,
+		super(treebank, featureVectorGenerator, mlpFactory,
 				actionFile, fellowFile, deprelFile,
 				suppressCompression);
 	}
 
-	public void extract(final SimpleConfig simpleConfig, final String[] action) {
-		HatConfig config = (HatConfig) simpleConfig;
-		final int viewMin = featSpec.getIntFeature("viewMin", 0);
-		final int viewMax = featSpec.getIntFeature("viewMax", 0);
-		final String[] actionCompressed = HatParser.actionToCompression(config, action, viewMin, viewMax);
-		final String[] actionUncompressed = HatParser.actionFromCompression(config, actionCompressed, viewMin, viewMax);
-		if (action[0].equals("reduceToHat")) {
-			int fellow = Integer.parseInt(action[1]);
-			// System.out.println(fellow);
-			fellowCountTo.incr(fellow);
-			if (!actionEquals(action, actionCompressed)) {
-				compressionCountTo++;
-			}
-			if (!actionEquals(action, actionUncompressed)) {
-				unpreservedCountTo++;
-				if (simpleConfig.goldTree.getLeaves().length < 16) {
-					System.out.println(simpleConfig.goldTree);
-					System.out.println(actionString(actionUncompressed));
-					System.out.println(actionString(actionCompressed));
-					System.out.println(simpleConfig);
-				}
-			}
-			totalCountTo++;
-		} else if (action[0].equals("reduceFromHat")) {
-			int fellow = Integer.parseInt(action[1]);
-			fellowCountFrom.incr(fellow);
-			if (!actionEquals(action, actionCompressed)) {
-				compressionCountFrom++;
-			}
-			if (!actionEquals(action, actionUncompressed)) {
-				unpreservedCountFrom++;
-				if (simpleConfig.goldTree.getLeaves().length < 10) {
-					System.out.println(simpleConfig.goldTree);
-					System.out.println(actionString(actionUncompressed));
-					System.out.println(actionString(actionCompressed));
-					System.out.println(simpleConfig);
-				}
-			}
-			totalCountFrom++;
-		}
-	}
+//	public void extract(final SimpleConfig simpleConfig, final String[] action) {
+//		HatConfig config = (HatConfig) simpleConfig;
+//		final int viewMin = featureVectorGenerator.getIntFeature("viewMin", 0);
+//		final int viewMax = featureVectorGenerator.getIntFeature("viewMax", 0);
+//		final String[] actionCompressed = HatParser.actionToCompression(config, action, viewMin, viewMax);
+//		final String[] actionUncompressed = HatParser.actionFromCompression(config, actionCompressed, viewMin, viewMax);
+//		if (action[0].equals("reduceToHat")) {
+//			int fellow = Integer.parseInt(action[1]);
+//			// System.out.println(fellow);
+//			fellowCountTo.incr(fellow);
+//			if (!actionEquals(action, actionCompressed)) {
+//				compressionCountTo++;
+//			}
+//			if (!actionEquals(action, actionUncompressed)) {
+//				unpreservedCountTo++;
+//				if (simpleConfig.goldTree.getLeaves().length < 16) {
+//					System.out.println(simpleConfig.goldTree);
+//					System.out.println(actionString(actionUncompressed));
+//					System.out.println(actionString(actionCompressed));
+//					System.out.println(simpleConfig);
+//				}
+//			}
+//			totalCountTo++;
+//		} else if (action[0].equals("reduceFromHat")) {
+//			int fellow = Integer.parseInt(action[1]);
+//			fellowCountFrom.incr(fellow);
+//			if (!actionEquals(action, actionCompressed)) {
+//				compressionCountFrom++;
+//			}
+//			if (!actionEquals(action, actionUncompressed)) {
+//				unpreservedCountFrom++;
+//				if (simpleConfig.goldTree.getLeaves().length < 10) {
+//					System.out.println(simpleConfig.goldTree);
+//					System.out.println(actionString(actionUncompressed));
+//					System.out.println(actionString(actionCompressed));
+//					System.out.println(simpleConfig);
+//				}
+//			}
+//			totalCountFrom++;
+//		}
+//	}
 
 	private String actionString(final String[] fields) {
 		StringBuffer buf = new StringBuffer();

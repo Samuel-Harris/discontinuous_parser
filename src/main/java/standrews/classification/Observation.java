@@ -9,10 +9,10 @@
 package standrews.classification;
 
 public class Observation {
-	final public Features features;
+	final public Double[] features;
 	final public String response;
 
-	public Observation(final Features features, final String response) {
+	public Observation(final Double[] features, final String response) {
 		this.features = features;
 		this.response = response;
 	}

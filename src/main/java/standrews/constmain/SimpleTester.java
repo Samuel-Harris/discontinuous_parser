@@ -5,6 +5,7 @@
 package standrews.constmain;
 
 import standrews.classification.FeatureSpecification;
+import standrews.classification.FeatureVectorGenerator;
 import standrews.constextract.SimpleExtractor;
 import standrews.constbase.ConstTree;
 import standrews.constbase.ConstTreebank;
@@ -18,10 +19,10 @@ import java.lang.invoke.MethodHandles;
 import java.util.logging.Logger;
 
 public class SimpleTester {
-	protected FeatureSpecification featSpec;
+	protected FeatureVectorGenerator featureVectorGenerator;
 
-	public SimpleTester(final FeatureSpecification featSpec) {
-		this.featSpec = featSpec;
+	public SimpleTester(final FeatureVectorGenerator featureVectorGenerator) {
+		this.featureVectorGenerator = featureVectorGenerator;
 	}
 
 	/*

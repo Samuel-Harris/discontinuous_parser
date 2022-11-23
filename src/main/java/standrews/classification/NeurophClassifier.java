@@ -78,9 +78,10 @@ public class NeurophClassifier extends Classifier {
 
         final DataSet dataSet = new DataSet(nPredictors, nResponses);
         for (final Observation obs : observations) {
-            final double[] inputData = predictorsDoubleArray(obs.features);
+            System.exit(1);
+//            final double[] inputData = predictorsDoubleArray(obs.features);
             final double[] outputData = responseDoubleArray(obs.response);
-            dataSet.add(new DataSetRow(inputData, outputData));
+//            dataSet.add(new DataSetRow(inputData, outputData));
         }
 
         // final DataSet dataSet = DataSet.createFromFile("iris_data_normalised.txt", 4, 3, ",");

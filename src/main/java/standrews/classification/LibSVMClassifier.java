@@ -134,16 +134,17 @@ public class LibSVMClassifier extends Classifier {
 	private svm_problem createProblem() {
 		final svm_problem problem = new svm_problem();
 		problem.l = observations.size();
-		problem.x = predictorsList();
+		System.exit(1);
+//		problem.x = predictorsList();
 		problem.y = responsesList();
 		return problem;
 	}
 
-	private svm_node[][] predictorsList() {
-		return observations.stream()
-				.map(obs -> predictorsToNode(obs.features))
-				.toArray(svm_node[][]::new);
-	}
+//	private svm_node[][] predictorsList() {
+//		return observations.stream()
+//				.map(obs -> predictorsToNode(obs.features))
+//				.toArray(svm_node[][]::new);
+//	}
 
 	private svm_node[] predictorsToNode(Features feats) {
 		final ArrayList<Double> vector = doubleVector(feats);

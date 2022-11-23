@@ -100,12 +100,14 @@ public class SimpleExtractor {
 	public void extract(final SimpleConfig config, final String[] action) {
 		final Features actionFeats = extract(config);
 		final String ac = action[0];
-		actionClassifier.addObservation(actionFeats, ac);
+		System.out.println("fix this");
+		System.exit(1);
+//		actionClassifier.addObservation(actionFeats, ac);
 		if (action.length > 1) {
 			final Features deprelFeats = extract(config);
 			if (!useTwoDeprelClassifiers)
 				deprelFeats.putString("action", ac);
-			getDeprelClassifier(ac).addObservation(deprelFeats, action[1]);
+//			getDeprelClassifier(ac).addObservation(deprelFeats, action[1]);
 		}
 	}
 

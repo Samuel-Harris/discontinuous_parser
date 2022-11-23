@@ -52,7 +52,7 @@ public class WholeHatParser extends HatParser {
 
 
 	public WholeHatParser(final ConstTree tree) {
-		super(tree, 0, 0);
+		super(tree);
 	}
 
 	protected String[] getAction(final SimpleConfig simpleConfig) {

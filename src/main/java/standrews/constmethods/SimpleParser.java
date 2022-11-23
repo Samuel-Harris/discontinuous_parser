@@ -4,11 +4,14 @@
 
 package standrews.constmethods;
 
+import javafx.util.Pair;
 import standrews.constautomata.SimpleConfig;
 import standrews.constbase.ConstInternal;
 import standrews.constbase.ConstLeaf;
 import standrews.constbase.ConstNode;
 import standrews.constbase.ConstTree;
+
+import java.util.Optional;
 
 public class SimpleParser extends DeterministicParser {
 	/**
@@ -24,7 +27,7 @@ public class SimpleParser extends DeterministicParser {
 		return actionNames;
 	}
 	public String[] none() {
-		return new String[]{};
+		return new String[] {};
 	}
 	public String[] shift() {
 		return new String[]{shift};

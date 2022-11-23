@@ -108,16 +108,17 @@ public class LibLinearClassifier extends Classifier {
 		final Problem problem = new Problem();
 		problem.l = observations.size();
 		problem.n = nAtomicPredictors();
-		problem.x = predictorsList();
+//		problem.x = predictorsList();
 		problem.y = responsesList();
+		System.exit(1);
 		return problem;
 	}
 
-	private Feature[][] predictorsList() {
-		return observations.stream()
-				.map(obs -> predictorsToNode(obs.features))
-				.toArray(Feature[][]::new);
-	}
+//	private Feature[][] predictorsList() {
+//		return observations.stream()
+//				.map(obs -> predictorsToNode(obs.features))
+//				.toArray(Feature[][]::new);
+//	}
 
 	private Feature[] predictorsToNode(Features feats) {
 		final ArrayList<Double> vector = doubleVector(feats);

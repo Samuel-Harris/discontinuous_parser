@@ -78,33 +78,33 @@ public class DeeplearningClassifier extends Classifier {
     }
 
     public void train() {
-        if (!trainingStarted) {
-            nPredictors = nAtomicPredictors();
-            nResponses = seenResponses.size();
-            responseLabels = seenResponses.toArray(new String[nResponses]);
-            network = makeNetwork(nPredictors, nResponses);
-            trainingStarted = true;
-        }
-        if (observations.isEmpty())
-            return;
-
-        Iterable<Pair<double[], double[]>> dataPairs = observations.stream()
-                .map(obs -> new Pair<>(predictorsDoubleArray(obs.features), responseDoubleArray(obs.response)))
-                .collect(Collectors.toList());
-        DataSetIterator iter = new DoublesDataSetIterator(dataPairs, batchSize);
-
-        if (continuousTraining) {
-            network.fit(iter);
-        } else {
-            final TimerMilli timer = new TimerMilli();
-            timer.start();
-            for (int n = 0; n < nEpochs; n++) {
-                network.fit(iter);
-            }
-            timer.stop();
-            reportFine("Deeplearning training took " + timer.seconds() + " s");
-        }
-        observations.clear();
+//        if (!trainingStarted) {
+//            nPredictors = nAtomicPredictors();
+//            nResponses = seenResponses.size();
+//            responseLabels = seenResponses.toArray(new String[nResponses]);
+//            network = makeNetwork(nPredictors, nResponses);
+//            trainingStarted = true;
+//        }
+//        if (observations.isEmpty())
+//            return;
+//
+//        Iterable<Pair<double[], double[]>> dataPairs = observations.stream()
+//                .map(obs -> new Pair<>(predictorsDoubleArray(obs.features), responseDoubleArray(obs.response)))
+//                .collect(Collectors.toList());
+//        DataSetIterator iter = new DoublesDataSetIterator(dataPairs, batchSize);
+//
+//        if (continuousTraining) {
+//            network.fit(iter);
+//        } else {
+//            final TimerMilli timer = new TimerMilli();
+//            timer.start();
+//            for (int n = 0; n < nEpochs; n++) {
+//                network.fit(iter);
+//            }
+//            timer.stop();
+//            reportFine("Deeplearning training took " + timer.seconds() + " s");
+//        }
+//        observations.clear();
     }
 
     private MultiLayerNetwork makeNetwork(final int nPredictors, final int nResponses) {

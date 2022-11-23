@@ -64,7 +64,9 @@ public class HatExtractor extends SimpleExtractor {
 	public void extract(final SimpleConfig simpleConfig, final String[] action) {
 		final HatConfig config = (HatConfig) simpleConfig;
 		final Features actionFeats = extract(config);
-		actionClassifier.addObservation(actionFeats, action[0]);
+		System.out.println("fix this");
+		System.exit(1);
+//		actionClassifier.addObservation(actionFeats, action[0]);
 		if (action.length > 1) {
 			final int viewMin = featSpec.getIntFeature("viewMin", 0);
 			final int viewMax = featSpec.getIntFeature("viewMax", 0);
@@ -72,11 +74,11 @@ public class HatExtractor extends SimpleExtractor {
 					HatParser.actionToCompression(config, action, viewMin, viewMax);
 			final Features fellowFeats = extract(config);
 			fellowFeats.putString("action", action[0]);
-			fellowClassifier.addObservation(fellowFeats, actionCompressed[1]);
+//			fellowClassifier.addObservation(fellowFeats, actionCompressed[1]);
 			final Features deprelFeats = extract(config);
 			deprelFeats.putString("action", action[0]);
 			deprelFeats.putString("fellow", actionCompressed[1]);
-			deprelLeftClassifier.addObservation(deprelFeats, action[2]); // TODO
+//			deprelLeftClassifier.addObservation(deprelFeats, action[2]); // TODO
 		}
 	}
 

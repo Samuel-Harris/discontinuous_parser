@@ -5,6 +5,7 @@
 package standrews.constmain;
 
 import standrews.classification.FeatureSpecification;
+import standrews.classification.FeatureVectorGenerator;
 import standrews.constautomata.HatConfig;
 import standrews.constautomata.SimpleConfig;
 import standrews.constbase.ConstTree;
@@ -13,15 +14,13 @@ import standrews.constmethods.HatParser;
 
 public class HatTester extends SimpleTester {
 
-	public HatTester(final FeatureSpecification featSpec) {
-		super(featSpec);
+	public HatTester(final FeatureVectorGenerator featureVectorGenerator) {
+		super(featureVectorGenerator);
 	}
 
 	private class ParserWithCompression extends HatParser {
-		public ParserWithCompression(final ConstTree tree,
-									 final int viewMin,
-									 final int viewMax) {
-			super(tree, viewMin, viewMax);
+		public ParserWithCompression(final ConstTree tree) {
+			super(tree);
 		}
 
 		protected void apply(final SimpleConfig simpleConfig, final String[] action) {
@@ -39,8 +38,8 @@ public class HatTester extends SimpleTester {
 	}
 
 	protected DeterministicParser makeParser(final ConstTree tree) {
-		final int viewMin = featSpec.getIntFeature("viewMin", 0);
-		final int viewMax = featSpec.getIntFeature("viewMax", 0);
-		return new ParserWithCompression(tree, viewMin, viewMax);
+//		final int viewMin = featSpec.getIntFeature("viewMin", 0);
+//		final int viewMax = featSpec.getIntFeature("viewMax", 0);
+		return new ParserWithCompression(tree);
 	}
 }

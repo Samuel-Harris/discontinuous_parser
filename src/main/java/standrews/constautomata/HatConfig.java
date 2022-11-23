@@ -12,6 +12,7 @@ public class HatConfig extends SimpleConfig {
 	 * Index of hat in prefix.
 	 */
 	protected int hatIndex;
+	private String hatSymbol;
 
 	/**
 	 * Construct initial configuration for given sentence.

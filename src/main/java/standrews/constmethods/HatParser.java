@@ -4,12 +4,16 @@
 
 package standrews.constmethods;
 
+import javafx.util.Pair;
+import standrews.classification.FellowResponseVectorGenerator;
 import standrews.constautomata.HatConfig;
 import standrews.constautomata.SimpleConfig;
 import standrews.constbase.ConstInternal;
 import standrews.constbase.ConstLeaf;
 import standrews.constbase.ConstNode;
 import standrews.constbase.ConstTree;
+
+import java.util.Optional;
 
 public class HatParser extends SimpleParser {
 	/**
@@ -23,9 +27,6 @@ public class HatParser extends SimpleParser {
 			{shift, reduceUpHat, reduceToHat, reduceFromHat};
 	public String[] actionNames() {
 		return actionNames;
-	}
-	public String[] none() {
-		return new String[]{};
 	}
 	public String[] shift() {
 		return new String[]{shift};
@@ -43,21 +44,17 @@ public class HatParser extends SimpleParser {
 	/**
 	 * How far back can features look (negative or zero).
 	 */
-	public final int viewMin;
+	public static final int viewMin = -FellowResponseVectorGenerator.absMaxFellowIndex;
 	/**
 	 * How far forward can features look (positive or zero).
 	 */
-	public final int viewMax;
+	public static final int viewMax = FellowResponseVectorGenerator.absMaxFellowIndex;
 
 	/**
 	 * @param tree Input tree.
-	 * @param viewMin How far back features can look.
-	 * @param viewMax How far forward features can look.
 	 */
-	public HatParser(final ConstTree tree, final int viewMin, final int viewMax) {
+	public HatParser(final ConstTree tree) {
 		super(tree);
-		this.viewMin = viewMin;
-		this.viewMax = viewMax;
 	}
 
 	protected HatConfig makeInitialConfig(final ConstTree goldTree) {
@@ -193,15 +190,14 @@ public class HatParser extends SimpleParser {
 	/**
 	 * Convert action with numbered fellow to one with direction+CAT.
 	 */
-	protected String[] actionToCompression(final HatConfig config,
-										   final String[] actionNumeric) {
-		return actionToCompression(config, actionNumeric, viewMin, viewMax);
-	}
+//	protected String[] actionToCompression(final HatConfig config,
+//										   final String[] actionNumeric) {
+//		return actionToCompression(config, actionNumeric, viewMin, viewMax);
+//	}
 
 	public static String[] actionToCompression(final HatConfig config,
-												  final String[] actionNumeric,
-												  final int viewMin,
-												  final int viewMax) {
+												  final String[] actionNumeric) {
+
 		String actionName = actionNumeric[0];
 		if (actionName.equals(reduceToHat) || actionName.equals(reduceFromHat)) {
 			String fellow = actionNumeric[1];

@@ -220,24 +220,24 @@ public abstract class Classifier {
 	 * @param feats Predictors.
 	 * @param response Response value.
 	 */
-	public void addObservation(final Features feats, final String response) {
-		if (!trainingStarted) {
-			for (String feat : feats.stringKeys()) {
-				addStringValue(feat, feats.stringVal(feat));
-			}
-			for (String feat : feats.setKeys()) {
-				addSetValues(feat, feats.setVal(feat));
-			}
-			for (String feat : feats.vectorKeys()) {
-				setVectorLength(feat, feats.vectorVal(feat).length);
-			}
-			seenResponses.add(response);
-			freqResponses.add(response);
-		}
-		observations.add(new Observation(feats, response));
-		if (continuousTraining && observations.size() >= batchSize)
-			train();
-	}
+//	public void addObservation(final Features feats, final String response) {
+//		if (!trainingStarted) {
+//			for (String feat : feats.stringKeys()) {
+//				addStringValue(feat, feats.stringVal(feat));
+//			}
+//			for (String feat : feats.setKeys()) {
+//				addSetValues(feat, feats.setVal(feat));
+//			}
+//			for (String feat : feats.vectorKeys()) {
+//				setVectorLength(feat, feats.vectorVal(feat).length);
+//			}
+//			seenResponses.add(response);
+//			freqResponses.add(response);
+//		}
+//		observations.add(new Observation(feats, response));
+//		if (continuousTraining && observations.size() >= batchSize)
+//			train();
+//	}
 
 	/**
 	 * Add possible value of string predictor, without observation.
