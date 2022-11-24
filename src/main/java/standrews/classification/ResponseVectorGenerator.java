@@ -5,5 +5,5 @@ public interface ResponseVectorGenerator {
 
     int getVectorSize();
 
-    Object getResponseValue(int index);
+    Object[] getLabelsFromScores(double[] scores);
 }

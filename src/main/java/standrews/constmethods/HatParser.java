@@ -199,22 +199,22 @@ public class HatParser extends SimpleParser {
 //										   final String[] actionNumeric) {
 //		return actionToCompression(config, actionNumeric, viewMin, viewMax);
 //	}
-    public static String[] actionToCompression(final HatConfig config,
-                                               final String[] actionNumeric) {
+    public static int actionToCompression(final HatConfig config, String actionName, int fellowIndex) {
 
-        String actionName = actionNumeric[0];
         if (actionName.equals(reduceToHat) || actionName.equals(reduceFromHat)) {
-            String fellow = actionNumeric[1];
-            final int rel = Integer.parseInt(fellow);
-            if (rel < viewMin || rel > viewMax) {
-                final int abs = config.getHatAbsoluteIndex(rel);
-                String cat = config.getStackLeft(abs).getCat();
-                fellow = rel < viewMin ?
-                        compressionLeft(cat) : compressionRight(cat);
+            if (fellowIndex < viewMin || fellowIndex > viewMax) {  // fellow outside of window
+//                final int abs = config.getHatAbsoluteIndex(fellowIndex);
+//                String cat = config.getStackLeft(abs).getCat();
+//                fellow = rel < viewMin ?
+//                        compressionLeft(cat) : compressionRight(cat);
+
+                fellowIndex = fellowIndex < viewMin
+                        ? -FellowResponseVectorGenerator.absMaxFellowIndex-1
+                        : FellowResponseVectorGenerator.absMaxFellowIndex+1;
             }
-            return new String[]{actionName, fellow};
+            return fellowIndex;
         }
-        return actionNumeric;
+        return fellowIndex;
     }
 
     public static String compressionLeft(final String cat) {

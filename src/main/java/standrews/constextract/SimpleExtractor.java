@@ -10,10 +10,6 @@ import standrews.classification.FeatureVectorGenerator;
 import standrews.classification.MLP;
 import standrews.classification.MLPFactory;
 import standrews.constautomata.SimpleConfig;
-import standrews.classification.Classifier;
-import standrews.classification.ClassifierFactory;
-import standrews.classification.FeatureSpecification;
-import standrews.classification.Features;
 import standrews.constbase.*;
 import standrews.constmethods.SimpleParser;
 

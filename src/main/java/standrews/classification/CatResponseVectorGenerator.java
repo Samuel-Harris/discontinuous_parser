@@ -2,6 +2,7 @@ package standrews.classification;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class CatResponseVectorGenerator implements ResponseVectorGenerator {
     private final Map<String, Integer> catIndexMap;
@@ -30,7 +31,11 @@ public class CatResponseVectorGenerator implements ResponseVectorGenerator {
     }
 
     @Override
-    public Object getResponseValue(int index) {
-        return indexCatMap.get(index);
+    public Object[] getLabelsFromScores(double[] scores) {
+        return IntStream.range(0, scores.length)
+                .boxed()
+                .sorted((x, y) -> Double.compare(scores[y], scores[x]))
+                .map(indexCatMap::get)
+                .toArray(String[]::new);
     }
 }

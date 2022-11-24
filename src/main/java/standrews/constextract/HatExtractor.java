@@ -4,6 +4,7 @@
 
 package standrews.constextract;
 
+import javafx.util.Pair;
 import standrews.classification.Classifier;
 import standrews.classification.ClassifierFactory;
 import standrews.classification.FeatureVectorGenerator;
@@ -65,15 +66,16 @@ public class HatExtractor extends SimpleExtractor {
 //			final Features catFeats = extract(config);
             catClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[1]);
         } else if (action[0].equals(reduceToHat) || action[0].equals(reduceFromHat)) {
-            final String[] actionCompressed =
-                    HatParser.actionToCompression(config, action);
+            int fellowIndex = Integer.parseInt(action[1]);
+            final int compressedFellowIndex = HatParser.actionToCompression(config, action[0], fellowIndex);
 //			final Features fellowFeats = extract(config);
 //			fellowFeats.putString("action", action[0]);
-            fellowClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), actionCompressed[1]);
+
+            fellowClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), compressedFellowIndex);
         }
     }
 
-//	protected Features extract(final SimpleConfig simpleConfig) {
+    protected double[] extract(final SimpleConfig simpleConfig) {
 //		final HatConfig config = (HatConfig) simpleConfig;
 //		final Features feats = super.extract(config);
 //		extractHatCats(feats, config);
@@ -88,7 +90,8 @@ public class HatExtractor extends SimpleExtractor {
 //			extractCompressionRight(feats, config);
 //		}
 //		return feats;
-//	}
+        return	featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
+    }
 
 //	protected void completeHatClassifiers(ConstTreebank treebank) {
 //		if (continuousTraining) {
@@ -115,64 +118,65 @@ public class HatExtractor extends SimpleExtractor {
 //		}
 //	}
 
-//	public Iterator<String[]> predict(final SimpleConfig config) {
+    @Override
+    public Iterator<String[]> predict(final SimpleConfig config) {
 //		final Features actionFeats = extract(config);
-//		final String[] acs = actionClassifier.predictAll(actionFeats);
-//		return new ActionIterator(config, acs);
-//	}
+        final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
+        final String[] acs = (String[]) actionClassifier.predictAll(featureVector);
+        return new ActionIterator(config, acs);
+    }
 
-//	private class ActionIterator implements Iterator<String[]> {
-//		private final SimpleConfig config;
-//		private final LinkedList<String> acs;
-//		private String ac = null;
-//		private LinkedList<String> fellows;
-//		private String[] action = null;
-//		public ActionIterator(final SimpleConfig config, String[] acs) {
-//			this.config = config;
-//			this.acs = new LinkedList(Arrays.asList(acs));
-//		}
-//
-//		@Override
-//		public boolean hasNext() {
-//			if (action != null)
-//				return true;
-//			if (ac == null) {
-//				if (acs.isEmpty())
-//					return false;
-//				ac = acs.removeFirst();
-//				if (ac.equals(shift)) {
-//					action = new String[]{ac};
-//					ac = null;
-//					return true;
-//				} else if (ac.equals(reduceUpHat)) {
-//					final Features catFeats = extract(config);
-//					final String cat = catClassifier.predict(catFeats);
-//					action = new String[]{ac, cat};
-//					ac = null;
-//					return true;
-//				} else {
-//					final Features fellowFeats = extract(config);
-//					fellowFeats.putString("action", ac);
-//					final String[] fs = fellowClassifier.predictAll(fellowFeats);
-//					fellows = new LinkedList(Arrays.asList(fs));
-//				}
-//			}
-//			if (fellows.isEmpty()) {
-//				ac = null;
-//				return hasNext();
-//			}
-//			final String fellow = fellows.removeFirst();
-//			action = new String[]{ac, fellow};
-//			return true;
-//		}
-//
-//		@Override
-//		public String[] next() {
-//			final String[] nextAc = action;
-//			action = null;
-//			return nextAc;
-//		}
-//	}
+    private class ActionIterator implements Iterator<String[]> {
+        private final SimpleConfig config;
+        private final LinkedList<String> acs;
+        private String ac = null;
+        private LinkedList<Integer> fellows;
+        private String[] action = null;
+        public ActionIterator(final SimpleConfig config, String[] acs) {
+            this.config = config;
+            this.acs = new LinkedList(Arrays.asList(acs));
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (action != null)
+                return true;
+            if (ac == null) {
+                if (acs.isEmpty())
+                    return false;
+                ac = acs.removeFirst();
+                if (ac.equals(shift)) {
+                    action = new String[]{ac};
+                    ac = null;
+                    return true;
+                } else if (ac.equals(reduceUpHat)) {
+                    final double[] catFeats = extract(config);
+                    final String cat = (String) catClassifier.predict(catFeats);
+                    action = new String[]{ac, cat};
+                    ac = null;
+                    return true;
+                } else {
+                    final double[] fellowFeats = extract(config);
+                    final Integer[] fs = (Integer[]) fellowClassifier.predictAll(fellowFeats);
+                    fellows = new LinkedList<>(Arrays.asList(fs));
+                }
+            }
+            if (fellows.isEmpty()) {
+                ac = null;
+                return hasNext();
+            }
+            final int fellow = fellows.removeFirst();
+            action = new String[]{ac, Integer.toString(fellow)};
+            return true;
+        }
+
+        @Override
+        public String[] next() {
+            final String[] nextAc = action;
+            action = null;
+            return nextAc;
+        }
+    }
 
     protected String hatCatFeature(int i) {
         return "hatCat_" + i;

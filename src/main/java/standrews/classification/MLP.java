@@ -9,7 +9,6 @@ import org.nd4j.linalg.factory.Nd4j;
 import standrews.aux.TimerMilli;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MLP {
@@ -30,7 +29,7 @@ public class MLP {
         observations = new ArrayList<>();
     }
 
-    public void addObservation(double[] featureVector, String response) {
+    public void addObservation(double[] featureVector, Object response) {
         observations.add(new Pair<>(featureVector, responseVectorGenerator.generateResponseVector(response)));
     }
 
@@ -54,14 +53,15 @@ public class MLP {
         return predictAll(featureVector)[0];
     }
 
-    public Object[] predictAll(double[] featureVector) {
-        INDArray features = Nd4j.create(featureVector);
+    public Object[] predictAll(double[] featureVector) {  // predicts action and orders them by most probable
+        INDArray features = Nd4j.create(new double[][] {featureVector});
         INDArray output = network.output(features, false);
         final double[] scores = output.toDoubleVector();
-        return IntStream.range(0, scores.length)
-                .boxed()
-                .sorted((x, y) -> Double.compare(scores[y], scores[x]))
-                .map(x -> responseVectorGenerator.getResponseValue(x))
-                .toArray(Object[]::new);
+        return responseVectorGenerator.getLabelsFromScores(scores);
+//        return IntStream.range(0, scores.length)
+//                .boxed()
+//                .sorted((x, y) -> Double.compare(scores[y], scores[x]))
+//                .map(x -> responseVectorGenerator.getResponseValue(x))
+//                .toArray(Object[]::new);
     }
 }

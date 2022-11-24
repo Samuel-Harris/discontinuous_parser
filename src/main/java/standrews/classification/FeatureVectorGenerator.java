@@ -50,6 +50,10 @@ public class FeatureVectorGenerator {
             featureVector[hatSymbolFeatureIndex + catAndPosIndexMap.size()] = 1;  // there is no hat
         }
 
+        // to get fellow index cat:
+//        final int abs = config.getHatAbsoluteIndex(fellowIndex);
+//        String cat = config.getStackLeft(abs).getCat();
+
         return featureVector;
     }
 

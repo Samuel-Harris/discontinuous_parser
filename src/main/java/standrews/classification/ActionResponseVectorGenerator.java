@@ -4,6 +4,7 @@ import standrews.constmethods.HatParser;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class ActionResponseVectorGenerator implements ResponseVectorGenerator {
     private final Map<String, Integer> actionIndexMap;
@@ -32,7 +33,11 @@ public class ActionResponseVectorGenerator implements ResponseVectorGenerator {
     }
 
     @Override
-    public Object getResponseValue(int index) {
-        return indexActionMap.get(index);
+    public Object[] getLabelsFromScores(double[] scores) {
+        return IntStream.range(0, scores.length)
+                .boxed()
+                .sorted((x, y) -> Double.compare(scores[y], scores[x]))
+                .map(indexActionMap::get)
+                .toArray(String[]::new);
     }
 }
