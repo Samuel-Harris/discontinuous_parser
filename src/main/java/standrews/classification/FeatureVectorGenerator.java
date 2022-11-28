@@ -1,5 +1,6 @@
 package standrews.classification;
 
+import standrews.constautomata.HatConfig;
 import standrews.constbase.ConstTreebank;
 
 import java.util.ArrayList;
@@ -40,12 +41,13 @@ public class FeatureVectorGenerator {
         vectorSize = catAndPosIndexMap.size() + 1;
     }
 
-    public double[] generateFeatureVector(Optional<String> hatSymbol) {
+    public double[] generateFeatureVector(HatConfig config) {
         double[] featureVector = new double[vectorSize];
 
-        ;
-        if (hatSymbol.isPresent()) {
-            featureVector[hatSymbolFeatureIndex + catAndPosIndexMap.get(hatSymbol.get())] = 1;  // add hat symbol to feature vector
+        Optional<String> hatCat = config.getHatSymbol();
+
+        if (hatCat.isPresent()) {
+            featureVector[hatSymbolFeatureIndex + catAndPosIndexMap.get(hatCat.get())] = 1;  // add hat symbol to feature vector
         } else {
             featureVector[hatSymbolFeatureIndex + catAndPosIndexMap.size()] = 1;  // there is no hat
         }

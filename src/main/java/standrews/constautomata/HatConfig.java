@@ -7,12 +7,13 @@ package standrews.constautomata;
 import standrews.constbase.ConstLeaf;
 import standrews.constbase.ConstNode;
 
+import java.util.Optional;
+
 public class HatConfig extends SimpleConfig {
     /**
      * Index of hat in prefix.
      */
     protected int hatIndex;
-    private String hatSymbol;
 
     /**
      * Construct initial configuration for given sentence.
@@ -90,6 +91,10 @@ public class HatConfig extends SimpleConfig {
      */
     public ConstNode getStackHat(final int i) {
         return getStackLeft(getHatAbsoluteIndex(i));
+    }
+
+    public Optional<String> getHatSymbol() {
+        return Optional.ofNullable(getStackHat(0).getCat());
     }
 
     /**

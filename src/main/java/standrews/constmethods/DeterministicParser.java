@@ -4,6 +4,7 @@
 
 package standrews.constmethods;
 
+import standrews.constautomata.HatConfig;
 import standrews.constautomata.SimpleConfig;
 import standrews.constbase.*;
 import standrews.constextract.SimpleExtractor;
@@ -58,7 +59,7 @@ public abstract class DeterministicParser {
      */
     public void observe(final SimpleExtractor extractor) {
         prepareTraining();
-        final SimpleConfig config = makeInitialConfig(goldTree);
+        final HatConfig config = makeInitialConfig(goldTree);
         while (!config.isFinal()) {
             final String[] action = getAction(config);
             if (action.length == 0) {
@@ -185,7 +186,7 @@ public abstract class DeterministicParser {
      * @return Parse.
      */
     public ConstTree parse(final SimpleExtractor extractor) {
-        final SimpleConfig config = makeInitialConfig(goldTree);
+        final HatConfig config = makeInitialConfig(goldTree);
         while (!config.isFinal()) {
             final Iterator<String[]> actions = extractor.predict(config);
             if (!bestActionCompleted(config, actions)) {
@@ -254,7 +255,7 @@ public abstract class DeterministicParser {
         return getAction(config);
     }
 
-    protected abstract SimpleConfig makeInitialConfig(final ConstTree tree);
+    protected abstract HatConfig makeInitialConfig(final ConstTree tree);
 
     protected abstract String[] getAction(final SimpleConfig config);
 

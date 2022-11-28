@@ -9,6 +9,7 @@ import standrews.classification.CatResponseVectorGenerator;
 import standrews.classification.FeatureVectorGenerator;
 import standrews.classification.MLP;
 import standrews.classification.MLPFactory;
+import standrews.constautomata.HatConfig;
 import standrews.constautomata.SimpleConfig;
 import standrews.constbase.*;
 import standrews.constmethods.SimpleParser;
@@ -95,9 +96,9 @@ public class SimpleExtractor {
         catClassifier.train();
     }
 
-    public void extract(final SimpleConfig config, final String[] action) {
+    public void extract(final HatConfig config, final String[] action) {
 //		final Features actionFeats = extract(config);
-        final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
+        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);  // ***********fix this with hat symbol
         actionClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[0]);
         if (action.length > 1) {
 //			final Features catFeats = extract(config);
@@ -135,18 +136,18 @@ public class SimpleExtractor {
 //		makeAllRightCats(classifier, treebank);
 //	}
 
-    public Iterator<String[]> predict(final SimpleConfig config) {
+    public Iterator<String[]> predict(final HatConfig config) {
 //		final Features actionFeats = extract(config);
-        final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
+        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);  // ***********fix this with hat symbol
         final String[] acs = (String[]) actionClassifier.predictAll(featureVector);
         return new ActionIterator(config, acs);
     }
 
     private class ActionIterator implements Iterator<String[]> {
-        private final SimpleConfig config;
+        private final HatConfig config;
         private final LinkedList<String> acs;
 
-        public ActionIterator(final SimpleConfig config, String[] acs) {
+        public ActionIterator(final HatConfig config, String[] acs) {
             this.config = config;
             this.acs = new LinkedList(Arrays.asList(acs));
         }
@@ -165,7 +166,7 @@ public class SimpleExtractor {
                 return new String[]{ac};
             } else {
 //				final Features catFeats = extract(config);
-                final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
+                final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);  // ***********fix this with hat symbol
                 final String cat = (String) catClassifier.predict(featureVector);
                 return new String[]{ac, cat};
             }

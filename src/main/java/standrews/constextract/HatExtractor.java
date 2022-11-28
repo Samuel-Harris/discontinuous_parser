@@ -57,10 +57,9 @@ public class HatExtractor extends SimpleExtractor {
         fellowClassifier.train();
     }
 
-    public void extract(final SimpleConfig simpleConfig, final String[] action) {
-        final HatConfig config = (HatConfig) simpleConfig;
+    public void extract(final HatConfig config, final String[] action) {
 //		final Features actionFeats = extract(config);
-        final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
+        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);
         actionClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[0]);
         if (action[0].equals(reduceUpHat)) {
 //			final Features catFeats = extract(config);
@@ -75,8 +74,7 @@ public class HatExtractor extends SimpleExtractor {
         }
     }
 
-    protected double[] extract(final SimpleConfig simpleConfig) {
-//		final HatConfig config = (HatConfig) simpleConfig;
+    protected double[] extract(final HatConfig config) {
 //		final Features feats = super.extract(config);
 //		extractHatCats(feats, config);
 //		extractHatPoss(feats, config);
@@ -90,7 +88,7 @@ public class HatExtractor extends SimpleExtractor {
 //			extractCompressionRight(feats, config);
 //		}
 //		return feats;
-        return	featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
+        return	featureVectorGenerator.generateFeatureVector(config);
     }
 
 //	protected void completeHatClassifiers(ConstTreebank treebank) {
@@ -119,20 +117,20 @@ public class HatExtractor extends SimpleExtractor {
 //	}
 
     @Override
-    public Iterator<String[]> predict(final SimpleConfig config) {
+    public Iterator<String[]> predict(final HatConfig config) {
 //		final Features actionFeats = extract(config);
-        final double[] featureVector = featureVectorGenerator.generateFeatureVector(Optional.empty());  // ***********fix this with hat symbol
+        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);  // ***********fix this with hat symbol
         final String[] acs = (String[]) actionClassifier.predictAll(featureVector);
         return new ActionIterator(config, acs);
     }
 
     private class ActionIterator implements Iterator<String[]> {
-        private final SimpleConfig config;
+        private final HatConfig config;
         private final LinkedList<String> acs;
         private String ac = null;
         private LinkedList<Integer> fellows;
         private String[] action = null;
-        public ActionIterator(final SimpleConfig config, String[] acs) {
+        public ActionIterator(final HatConfig config, String[] acs) {
             this.config = config;
             this.acs = new LinkedList(Arrays.asList(acs));
         }

@@ -5,6 +5,7 @@
 package standrews.constmethods;
 
 import javafx.util.Pair;
+import standrews.constautomata.HatConfig;
 import standrews.constautomata.SimpleConfig;
 import standrews.constbase.ConstInternal;
 import standrews.constbase.ConstLeaf;
@@ -62,8 +63,8 @@ public class SimpleParser extends DeterministicParser {
     }
 
     @Override
-    protected SimpleConfig makeInitialConfig(final ConstTree goldTree) {
-        SimpleConfig config = new SimpleConfig(goldTree.getId(), goldTree.getLeaves());
+    protected HatConfig makeInitialConfig(final ConstTree goldTree) {
+        HatConfig config = new HatConfig(goldTree.getId(), goldTree.getLeaves());
         config.goldTree = goldTree;
         return config;
     }
