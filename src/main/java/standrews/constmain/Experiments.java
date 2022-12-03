@@ -303,7 +303,7 @@ public class Experiments {
         final TimerMilli timer = new TimerMilli();
         timer.start();
         trainTestHat(lang, treebank,
-                tmp + "goldfile", tmp + "parsedfile",
+                tmp + "goldfile.export", tmp + "parsedfile.export",
                 nTrain, nTest,
                 leftFirst,
                 suppressCompression,
