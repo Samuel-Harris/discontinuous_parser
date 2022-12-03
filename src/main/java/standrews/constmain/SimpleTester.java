@@ -12,7 +12,10 @@ import standrews.constbase.ConstTreebank;
 import standrews.constmethods.DeterministicParser;
 import standrews.constmethods.SimpleParser;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
@@ -48,21 +51,33 @@ public class SimpleTester {
             fail("Unsupported encoding: " + e);
         }
         int i = 0;
-        int nDiscoGold = 0;
-        int nDiscoSystem = 0;
         for (ConstTree gold : subbank.getTrees()) {
-            if (!gold.isProjective())
-                nDiscoGold++;
             DeterministicParser parser = makeParser(gold);
             ConstTree parsed = parser.parse(extractor);
-            if (!parsed.isProjective())
-                nDiscoSystem++;
+            assert parsedWriter != null;
             parsedWriter.println(parsed);
             i++;
         }
+        assert parsedWriter != null;
         parsedWriter.close();
-        reportFine("portion of discontinuous gold trees " + (100.0 * nDiscoGold / i));
-        reportFine("portion of discontinuous system trees " + (100.0 * nDiscoSystem / i));
+
+        String command = "discodop eval " + corpusCopy + " " + corpusParsed;
+
+        try {
+            Process process = Runtime.getRuntime().exec(command);
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            reader.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return i;
     }
 
