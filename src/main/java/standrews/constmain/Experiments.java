@@ -75,61 +75,61 @@ public class Experiments {
 //		// return new LibLinearClassifierFactory();
 //	}
 
-    private static void includeVecMappings(
-            final FeatureSpecification spec,
-            final String lang, final ConstTreebank treebank) {
-        final int len = 100;
-        if (spec.hasIntsFeature("inputForms") ||
-                spec.hasIntsFeature("stackForms") ||
-                spec.hasIntsFeature("hatForms")) {
-            Word2VecMapping em = new Word2VecMapping();
-            em.train(new SentenceWordIterator(treebank), len);
-            em.setWindowSize(2);
-            spec.setFormVec(em);
-            // spec.setFormVec(new GloveMapping("/home/mjn/Data/GloVe/glove.6B.50d.txt", 50));
-            // new GloveMapping("/home/mjn/Data/GloVe/" + lang + ".100.txt", 100))
-            em.setNormalize(true);
-            spec.setFormVec(em);
-        }
-    }
+//    private static void includeVecMappings(
+//            final FeatureSpecification spec,
+//            final String lang, final ConstTreebank treebank) {
+//        final int len = 100;
+//        if (spec.hasIntsFeature("inputForms") ||
+//                spec.hasIntsFeature("stackForms") ||
+//                spec.hasIntsFeature("hatForms")) {
+//            Word2VecMapping em = new Word2VecMapping();
+//            em.train(new SentenceWordIterator(treebank), len);
+//            em.setWindowSize(2);
+//            spec.setFormVec(em);
+//            // spec.setFormVec(new GloveMapping("/home/mjn/Data/GloVe/glove.6B.50d.txt", 50));
+//            // new GloveMapping("/home/mjn/Data/GloVe/" + lang + ".100.txt", 100))
+//            em.setNormalize(true);
+//            spec.setFormVec(em);
+//        }
+//    }
 
-    private static FeatureSpecification simpleSpec(
-            final String lang, final ConstTreebank treebank,
-            final boolean goldPos) {
-        final FeatureSpecification spec = new FeatureSpecification();
-        spec.setIntsFeature("inputPoss", 0, 2);
-        spec.setIntsFeature("inputForms", 0, 2);
-        spec.setIntsFeature("stackCats", 0, 3);
-        spec.setIntsFeature("stackPoss", 0, 3);
-        spec.setIntsFeature("stackForms", 0, 3);
-        spec.setIntsFeature("leftCats", 0, 3);
-        spec.setIntsFeature("rightCats", 0, 3);
-        spec.setGoldPos(goldPos);
-        includeVecMappings(spec, lang, treebank);
-        // includePosTagger(spec, lang, corpus);
-        return spec;
-    }
+//    private static FeatureSpecification simpleSpec(
+//            final String lang, final ConstTreebank treebank,
+//            final boolean goldPos) {
+//        final FeatureSpecification spec = new FeatureSpecification();
+//        spec.setIntsFeature("inputPoss", 0, 2);
+//        spec.setIntsFeature("inputForms", 0, 2);
+//        spec.setIntsFeature("stackCats", 0, 3);
+//        spec.setIntsFeature("stackPoss", 0, 3);
+//        spec.setIntsFeature("stackForms", 0, 3);
+//        spec.setIntsFeature("leftCats", 0, 3);
+//        spec.setIntsFeature("rightCats", 0, 3);
+//        spec.setGoldPos(goldPos);
+//        includeVecMappings(spec, lang, treebank);
+//        // includePosTagger(spec, lang, corpus);
+//        return spec;
+//    }
 
-    private static FeatureSpecification hatSpec(
-            final String lang, final ConstTreebank treebank,
-            final boolean goldPos) {
-        final FeatureSpecification spec = new FeatureSpecification();
-//		spec.setIntsFeature("inputPoss", 0, 2);  // Parts of Speech of buffer elements
-//		spec.setIntsFeature("inputForms", 0, 2);  // vectors of buffer elements
-//		spec.setIntsFeature("hatCats", -3, 3);  // categories of stack elements
-//		spec.setIntsFeature("hatPoss", -3, 3);  // Parts of Speech of stack elements
-//		spec.setIntsFeature("hatForms", -3, 3);  // vectors of stack elements
-//		spec.setIntsFeature("hatLeftCats", -3, 3);
-//		spec.setIntsFeature("hatRightCats", -3, 3);
-//		spec.setIntFeature("hatLeftCap", 2);
-//		spec.setIntFeature("hatRightCap", 5);
-//		spec.setIntFeature("viewMin", -3);
-//		spec.setIntFeature("viewMax", 3);
-        spec.setGoldPos(goldPos);
-        includeVecMappings(spec, lang, treebank);
-        // includePosTagger(spec, lang, corpus);
-        return spec;
-    }
+//    private static FeatureSpecification hatSpec(
+//            final String lang, final ConstTreebank treebank,
+//            final boolean goldPos) {
+//        final FeatureSpecification spec = new FeatureSpecification();
+////		spec.setIntsFeature("inputPoss", 0, 2);  // Parts of Speech of buffer elements
+////		spec.setIntsFeature("inputForms", 0, 2);  // vectors of buffer elements
+////		spec.setIntsFeature("hatCats", -3, 3);  // categories of stack elements
+////		spec.setIntsFeature("hatPoss", -3, 3);  // Parts of Speech of stack elements
+////		spec.setIntsFeature("hatForms", -3, 3);  // vectors of stack elements
+////		spec.setIntsFeature("hatLeftCats", -3, 3);
+////		spec.setIntsFeature("hatRightCats", -3, 3);
+////		spec.setIntFeature("hatLeftCap", 2);
+////		spec.setIntFeature("hatRightCap", 5);
+////		spec.setIntFeature("viewMin", -3);
+////		spec.setIntFeature("viewMax", 3);
+//        spec.setGoldPos(goldPos);
+//        includeVecMappings(spec, lang, treebank);
+//        // includePosTagger(spec, lang, corpus);
+//        return spec;
+//    }
 
     private static FeatureSpecification hatSpecCheap(
             final String lang, final ConstTreebank treebank,
@@ -247,7 +247,6 @@ public class Experiments {
             final boolean suppressCompression,
             final boolean goldPos,
             final EmbeddingsBank embeddingsBank) {
-        ;
         FeatureVectorGenerator featureVectorGenerator = new FeatureVectorGenerator(treebank, embeddingsBank);
         final HatExtractor extractor = trainHat(lang, treebank, nTrain, featureVectorGenerator, leftFirst, suppressCompression);
         final HatTester tester = new HatTester(featureVectorGenerator);
@@ -401,14 +400,15 @@ public class Experiments {
         // final boolean leftFirst = false;
         final boolean projectivize = false;
         final boolean goldPos = true;
-        if (method.equals("simple")) {
+        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos, embeddingsBank);
+//        if (method.equals("simple")) {
 //			doTrainingAndTestingSimple(lang, treebank, nTrain, nTest,
 //					leftFirst, projectivize, goldPos);
-        } else if (method.equals("hat")) {
-            doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos, embeddingsBank);
-        } else if (method.equals("hatminus")) {
-            doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, true, goldPos, embeddingsBank);
-        }
+//        } else if (method.equals("hat")) {
+//            doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos, embeddingsBank);
+//        } else if (method.equals("hatminus")) {
+//            doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, true, goldPos, embeddingsBank);
+//        }
     }
 
     private static void doWholeHat() {
