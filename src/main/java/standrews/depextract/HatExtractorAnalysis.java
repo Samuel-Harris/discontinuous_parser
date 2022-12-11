@@ -4,7 +4,7 @@
 
 package standrews.depextract;
 
-import standrews.aux.Counter;
+import standrews.aux_.Counter;
 import standrews.depautomata.HatConfig;
 import standrews.depautomata.SimpleConfig;
 import standrews.classification.ClassifierFactory;

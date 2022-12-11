@@ -4,7 +4,7 @@
 
 package standrews.depmain;
 
-import standrews.aux.DataCollection;
+import standrews.aux_.DataCollection;
 import standrews.depbase.DependencyStructure;
 import standrews.depbase.Token;
 import standrews.depbase.Treebank;

@@ -4,8 +4,8 @@
 
 package standrews.constmain;
 
-import standrews.aux.LogHandler;
-import standrews.aux.TimerMilli;
+import standrews.aux_.LogHandler;
+import standrews.aux_.TimerMilli;
 import standrews.classification.FeatureSpecification;
 import standrews.classification.FeatureVectorGenerator;
 import standrews.classification.MLPFactory;

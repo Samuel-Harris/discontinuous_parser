@@ -4,7 +4,7 @@
 
 package standrews.depmain;
 
-import standrews.aux.PropertyWeights;
+import standrews.aux_.PropertyWeights;
 import standrews.depbase.DependencyStructure;
 import standrews.depbase.Token;
 import standrews.depbase.Treebank;

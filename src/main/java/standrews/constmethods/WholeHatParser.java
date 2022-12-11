@@ -4,7 +4,7 @@
 
 package standrews.constmethods;
 
-import standrews.aux.PropertyWeights;
+import standrews.aux_.PropertyWeights;
 import standrews.constautomata.HatConfig;
 import standrews.constautomata.SimpleConfig;
 import standrews.constbase.*;

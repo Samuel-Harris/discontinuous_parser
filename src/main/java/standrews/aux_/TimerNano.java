@@ -2,9 +2,7 @@
  * Copyright (c) 2018. University of St Andrews
  */
 
-package standrews.aux;
-
-import java.sql.Time;
+package standrews.aux_;
 
 public class TimerNano {
     /**

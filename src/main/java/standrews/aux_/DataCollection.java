@@ -2,7 +2,7 @@
  * Copyright (c) 2018. University of St Andrews
  */
 
-package standrews.aux;
+package standrews.aux_;
 
 import java.util.ArrayList;
 import java.util.Map;

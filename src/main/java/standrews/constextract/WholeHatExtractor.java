@@ -4,10 +4,10 @@
 
 package standrews.constextract;
 
-import standrews.aux.Counter;
-import standrews.aux.PropertyWeights;
-import standrews.aux.StringPair;
-import standrews.aux.StringTriple;
+import standrews.aux_.Counter;
+import standrews.aux_.PropertyWeights;
+import standrews.aux_.StringPair;
+import standrews.aux_.StringTriple;
 import standrews.constautomata.HatConfig;
 import standrews.constmethods.WholeHatParser;
 

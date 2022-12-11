@@ -10,17 +10,15 @@ package standrews.depmain;
 
 import standrews.depbase.*;
 import standrews.depautomata.DependencyGraph;
-import standrews.aux.DataCollectionSum;
-import standrews.aux.LogHandler;
-import standrews.aux.TimerMilli;
+import standrews.aux_.DataCollectionSum;
+import standrews.aux_.LogHandler;
+import standrews.aux_.TimerMilli;
 import standrews.classification.*;
 import standrews.depextract.*;
 import standrews.lexical.*;
 
 import java.io.*;
 import java.lang.invoke.MethodHandles;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.LogManager;

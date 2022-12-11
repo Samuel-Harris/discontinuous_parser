@@ -5,7 +5,7 @@
 package standrews.depmain;
 
 import standrews.depautomata.DependencyGraph;
-import standrews.aux.DataCollectionSum;
+import standrews.aux_.DataCollectionSum;
 import standrews.classification.FeatureSpecification;
 import standrews.depextract.SimpleExtractor;
 import standrews.depbase.Token;

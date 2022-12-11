@@ -4,7 +4,7 @@
 
 package standrews.depmethods;
 
-import standrews.aux.PropertyWeights;
+import standrews.aux_.PropertyWeights;
 import standrews.depautomata.DependencyVertex;
 import standrews.depautomata.SimpleConfig;
 import standrews.depautomata.HatConfig;

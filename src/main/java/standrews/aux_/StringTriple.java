@@ -2,7 +2,7 @@
  * Copyright (c) 2019. University of St Andrews
  */
 
-package standrews.aux;
+package standrews.aux_;
 
 public class StringTriple implements Comparable<StringTriple> {
     public String s1;

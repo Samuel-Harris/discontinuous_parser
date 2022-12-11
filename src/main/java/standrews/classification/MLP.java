@@ -6,10 +6,9 @@ import org.nd4j.common.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import standrews.aux.TimerMilli;
+import standrews.aux_.TimerMilli;
 
 import java.util.ArrayList;
-import java.util.stream.IntStream;
 
 public class MLP {
     private MultiLayerNetwork network;

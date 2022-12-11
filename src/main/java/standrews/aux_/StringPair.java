@@ -2,7 +2,7 @@
  * Copyright (c) 2019. University of St Andrews
  */
 
-package standrews.aux;
+package standrews.aux_;
 
 public class StringPair implements Comparable<StringPair> {
     public String s1;

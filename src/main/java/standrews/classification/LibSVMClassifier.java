@@ -13,7 +13,7 @@ import libsvm.svm_model;
 import libsvm.svm_node;
 import libsvm.svm_parameter;
 import libsvm.svm_problem;
-import standrews.aux.TimerMilli;
+import standrews.aux_.TimerMilli;
 
 import java.io.IOException;
 import java.nio.file.Files;

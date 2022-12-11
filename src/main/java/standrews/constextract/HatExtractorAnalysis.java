@@ -4,15 +4,10 @@
 
 package standrews.constextract;
 
-import standrews.aux.Counter;
-import standrews.classification.ClassifierFactory;
-import standrews.classification.FeatureSpecification;
+import standrews.aux_.Counter;
 import standrews.classification.FeatureVectorGenerator;
 import standrews.classification.MLPFactory;
-import standrews.constautomata.HatConfig;
-import standrews.constautomata.SimpleConfig;
 import standrews.constbase.ConstTreebank;
-import standrews.constmethods.HatParser;
 
 public class HatExtractorAnalysis extends HatExtractor {
     private Counter<Integer> fellowCountTo = new Counter<>();

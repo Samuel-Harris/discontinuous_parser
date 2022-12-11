@@ -2,7 +2,7 @@
  * Copyright (c) 2019. University of St Andrews
  */
 
-package standrews.aux;
+package standrews.aux_;
 
 import java.util.Map;
 import java.util.TreeMap;

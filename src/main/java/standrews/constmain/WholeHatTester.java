@@ -4,7 +4,7 @@
 
 package standrews.constmain;
 
-import standrews.aux.PropertyWeights;
+import standrews.aux_.PropertyWeights;
 import standrews.constbase.ConstTree;
 import standrews.constbase.ConstTreebank;
 import standrews.constextract.WholeHatExtractor;

@@ -19,7 +19,7 @@ import org.encog.neural.networks.layers.BasicLayer;
 import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation;
 import org.encog.persist.EncogDirectoryPersistence;
 import org.encog.persist.PersistError;
-import standrews.aux.TimerMilli;
+import standrews.aux_.TimerMilli;
 
 import java.io.File;
 import java.io.IOException;

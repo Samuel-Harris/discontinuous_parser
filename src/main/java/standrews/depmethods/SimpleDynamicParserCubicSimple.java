@@ -6,7 +6,7 @@ package standrews.depmethods;
 
 import standrews.depautomata.DependencyVertex;
 import standrews.depautomata.SimpleConfig;
-import standrews.aux.DataCollectionSum;
+import standrews.aux_.DataCollectionSum;
 import standrews.depextract.SimpleExtractor;
 import standrews.depbase.Token;
 import standrews.tabular.CubicSplitBilexReuse;

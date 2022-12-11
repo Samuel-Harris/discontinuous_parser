@@ -9,15 +9,13 @@
 package standrews.classification;
 
 import org.neuroph.core.data.DataSet;
-import org.neuroph.core.data.DataSetRow;
 import org.neuroph.core.events.LearningEvent;
 import org.neuroph.core.events.LearningEventListener;
 import org.neuroph.nnet.MultiLayerPerceptron;
 import org.neuroph.nnet.learning.BackPropagation;
 import org.neuroph.nnet.learning.MomentumBackpropagation;
 import org.neuroph.util.TransferFunctionType;
-import org.tensorflow.op.math.Mul;
-import standrews.aux.TimerMilli;
+import standrews.aux_.TimerMilli;
 
 import java.io.File;
 import java.io.IOException;

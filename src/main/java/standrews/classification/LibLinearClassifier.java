@@ -9,7 +9,7 @@
 package standrews.classification;
 
 import de.bwaldvogel.liblinear.*;
-import standrews.aux.TimerMilli;
+import standrews.aux_.TimerMilli;
 
 import java.io.File;
 import java.io.IOException;

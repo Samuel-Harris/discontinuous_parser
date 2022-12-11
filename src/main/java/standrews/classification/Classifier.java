@@ -10,7 +10,7 @@ package standrews.classification;
 
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
-import standrews.aux.StringFrequencies;
+import standrews.aux_.StringFrequencies;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

@@ -6,7 +6,7 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-package standrews.aux;
+package standrews.aux_;
 
 public class TimerMilli {
     /**
