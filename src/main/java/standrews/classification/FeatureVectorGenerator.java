@@ -21,7 +21,7 @@ public class FeatureVectorGenerator {
     private final int hatSymbolFeatureIndex;  // index in feature vector that hat symbols start at
 //    private int fellowSymbolFeatureIndex;  // index in feature vector that fellow symbols start at
 //    private int fellowIndexFeatureIndex;  // index in feature vector that fellow indices start at
-    private final int topStackElementsIndex;  // index of top stack element embeddings
+//    private final int topStackElementsIndex;  // index of top stack element embeddings
 
     private final int vectorSize;
 
@@ -48,10 +48,10 @@ public class FeatureVectorGenerator {
         }
 
         hatSymbolFeatureIndex = 0;
-        topStackElementsIndex = catIndexMap.size() + 1;
+//        topStackElementsIndex = catIndexMap.size() + 1;
 //        fellowSymbolFeatureIndex = catAndPosIndexMap.size();
 //        fellowIndexFeatureIndex = fellowSymbolFeatureIndex + catAndPosIndexMap.size();
-        vectorSize = catIndexMap.size() + 1 + 2*embeddingSize;
+        vectorSize = catAndPosIndexMap.size() + 1;
     }
 
     public double[] generateFeatureVector(HatConfig config) {
@@ -60,12 +60,12 @@ public class FeatureVectorGenerator {
         Optional<String> hatCat = config.getHatSymbol();
 
         if (hatCat.isPresent()) {
-            featureVector[hatSymbolFeatureIndex + catIndexMap.get(hatCat.get())] = 1;  // add hat symbol to feature vector
+            featureVector[hatSymbolFeatureIndex + catAndPosIndexMap.get(hatCat.get())] = 1;  // add hat symbol to feature vector
         } else {
-            featureVector[hatSymbolFeatureIndex + catIndexMap.size()] = 1;  // there is no hat
+            featureVector[hatSymbolFeatureIndex + catAndPosIndexMap.size()] = 1;  // there is no hat
         }
 
-        double[][] sentenceEmbeddings = embeddingsBank.getEmbeddings("s" + config.getId());
+//        double[][] sentenceEmbeddings = embeddingsBank.getEmbeddings("s" + config.getId());
 
         // to get fellow index cat:
 //        final int abs = config.getHatAbsoluteIndex(fellowIndex);

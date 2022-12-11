@@ -26,16 +26,16 @@
             <artifactId>deeplearning4j-nlp</artifactId>
             <version>${dl4jVersion}</version>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.nd4j</groupId>-->
-        <!--            <artifactId>nd4j-cuda-11.2</artifactId>-->
-        <!--            <version>${dl4jVersion}</version>-->
-        <!--        </dependency>-->
         <dependency>
             <groupId>org.nd4j</groupId>
-            <artifactId>nd4j-native-platform</artifactId>
-            <version>${dl4jVersion}</version>
+            <artifactId>nd4j-cuda-11.2</artifactId>
+            <version>1.0.0-M1</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.nd4j</groupId>-->
+<!--            <artifactId>nd4j-native-platform</artifactId>-->
+<!--            <version>${dl4jVersion}</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>de.bwaldvogel</groupId>
@@ -70,7 +70,7 @@
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacpp</artifactId>
-            <version>1.5.7</version>
+            <version>1.5.5</version>
         </dependency>
 
         <dependency>

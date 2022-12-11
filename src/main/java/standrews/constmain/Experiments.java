@@ -386,7 +386,7 @@ public class Experiments {
         }
         final EmbeddingsBank embeddingsBank = new EmbeddingsBank("tiger", "../datasets/tiger2.1_bert_embeddings/");
 
-        System.out.println("testing whether each word in each sentence has exactly one embedding vector...");
+        reportFine("testing whether each word in each sentence has exactly one embedding vector...");
         for (ConstTree tree : treebank.getTrees()) {
             int numEmbeddings = embeddingsBank.getEmbeddings("s" + tree.getId()).length;
             if (tree.length() != numEmbeddings) {
