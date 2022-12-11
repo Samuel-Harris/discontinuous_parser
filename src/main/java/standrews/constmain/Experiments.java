@@ -13,7 +13,6 @@ import standrews.constbase.*;
 import standrews.constbase.heads.*;
 import standrews.constextract.HatExtractor;
 import standrews.constextract.WholeHatExtractor;
-import standrews.constmethods.HatParser;
 import standrews.lexical.Word2VecMapping;
 
 import java.io.FileNotFoundException;
@@ -246,9 +245,10 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean suppressCompression,
-            final boolean goldPos) {
+            final boolean goldPos,
+            final EmbeddingsBank embeddingsBank) {
         ;
-        FeatureVectorGenerator featureVectorGenerator = new FeatureVectorGenerator(treebank);
+        FeatureVectorGenerator featureVectorGenerator = new FeatureVectorGenerator(treebank, embeddingsBank);
         final HatExtractor extractor = trainHat(lang, treebank, nTrain, featureVectorGenerator, leftFirst, suppressCompression);
         final HatTester tester = new HatTester(featureVectorGenerator);
         tester.test(treebank, goldFile, parsedFile, nTrain, nTest, extractor);
@@ -299,7 +299,8 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean suppressCompression,
-            final boolean goldPos) {
+            final boolean goldPos,
+            final EmbeddingsBank embeddingsBank) {
         final TimerMilli timer = new TimerMilli();
         timer.start();
         trainTestHat(lang, treebank,
@@ -307,7 +308,8 @@ public class Experiments {
                 nTrain, nTest,
                 leftFirst,
                 suppressCompression,
-                goldPos);
+                goldPos,
+                embeddingsBank);
         timer.stop();
         final String report = "Hat took " + timer.seconds() + " s";
         reportFine(report);
@@ -383,6 +385,18 @@ public class Experiments {
             default:
                 fail("Unknown bankname " + bankname);
         }
+        final EmbeddingsBank embeddingsBank = new EmbeddingsBank("tiger", "../datasets/tiger2.1_bert_embeddings/");
+
+        System.out.println("testing whether each word in each sentence has exactly one embedding vector...");
+        for (ConstTree tree : treebank.getTrees()) {
+            int numEmbeddings = embeddingsBank.getEmbeddings("s" + tree.getId()).length;
+            if (tree.length() != numEmbeddings) {
+                System.err.println("Error: sentence " + tree.getId() + " has an incorrect number of word embeddings");
+                System.err.println("Expected: " + tree.length() + ". Found: " + numEmbeddings);
+                System.exit(1);
+            }
+        }
+
         final boolean leftFirst = true;
         // final boolean leftFirst = false;
         final boolean projectivize = false;
@@ -391,11 +405,9 @@ public class Experiments {
 //			doTrainingAndTestingSimple(lang, treebank, nTrain, nTest,
 //					leftFirst, projectivize, goldPos);
         } else if (method.equals("hat")) {
-            doTrainingAndTestingHat(lang, treebank, nTrain, nTest,
-                    leftFirst, false, goldPos);
+            doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos, embeddingsBank);
         } else if (method.equals("hatminus")) {
-            doTrainingAndTestingHat(lang, treebank, nTrain, nTest,
-                    leftFirst, true, goldPos);
+            doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, true, goldPos, embeddingsBank);
         }
     }
 

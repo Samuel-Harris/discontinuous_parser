@@ -6,6 +6,7 @@ package standrews.constmain;
 
 import standrews.classification.FeatureSpecification;
 import standrews.classification.FeatureVectorGenerator;
+import standrews.constbase.EmbeddingsBank;
 import standrews.constextract.SimpleExtractor;
 import standrews.constbase.ConstTree;
 import standrews.constbase.ConstTreebank;
@@ -39,7 +40,9 @@ public class SimpleTester {
     public int test(final ConstTreebank treebank,
                     final String corpusCopy,
                     final String corpusParsed,
-                    final int m, final int n, final SimpleExtractor extractor) {
+                    final int m,
+                    final int n,
+                    final SimpleExtractor extractor) {
         final ConstTreebank subbank = treebank.part(m, m + n);
         copyTraining(subbank, corpusCopy);
         PrintWriter parsedWriter = null;

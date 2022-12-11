@@ -109,6 +109,10 @@ public class SimpleConfig {
         return states.get(stack.size() - 1 - i);
     }
 
+    public String getId() {
+        return id;
+    }
+
     public void setStateRight(final int i, final String state) {
         states.set(stack.size() - 1 - i, state);
     }

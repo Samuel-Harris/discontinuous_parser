@@ -4,7 +4,6 @@
 
 package standrews.constextract;
 
-import javafx.util.Pair;
 import standrews.classification.Classifier;
 import standrews.classification.ClassifierFactory;
 import standrews.classification.FeatureVectorGenerator;
