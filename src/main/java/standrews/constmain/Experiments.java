@@ -13,7 +13,6 @@ import standrews.constbase.*;
 import standrews.constbase.heads.*;
 import standrews.constextract.HatExtractor;
 import standrews.constextract.WholeHatExtractor;
-import standrews.lexical.Word2VecMapping;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -384,17 +383,18 @@ public class Experiments {
             default:
                 fail("Unknown bankname " + bankname);
         }
-        final EmbeddingsBank embeddingsBank = new EmbeddingsBank("tiger", "../datasets/tiger2.1_bert_embeddings/");
+        final EmbeddingsBank embeddingsBank = new EmbeddingsBank("tiger", "../datasets/tiger2.1_bert_corrected_embeddings/");
 
         reportFine("testing whether each word in each sentence has exactly one embedding vector...");
         for (ConstTree tree : treebank.getTrees()) {
-            int numEmbeddings = embeddingsBank.getEmbeddings("s" + tree.getId()).length;
+            int numEmbeddings = embeddingsBank.getSentenceEmbeddingsMetadata("s" + tree.getId()).getSentenceLength();
             if (tree.length() != numEmbeddings) {
                 System.err.println("Error: sentence " + tree.getId() + " has an incorrect number of word embeddings");
                 System.err.println("Expected: " + tree.length() + ". Found: " + numEmbeddings);
                 System.exit(1);
             }
         }
+        reportFine("Embeddings for every word in every sentence have been found");
 
         final boolean leftFirst = true;
         // final boolean leftFirst = false;
