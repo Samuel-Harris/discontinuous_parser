@@ -4,22 +4,26 @@
 
 package standrews.constbase;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.TreeSet;
+import javafx.util.Pair;
+
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class ConstTreebank {
 
     protected String id;
-
     protected Set<String> poss;
-
     protected Set<String> cats;
-
     protected Set<String> labels;
-
     protected ConstTree[] trees;
+    protected List<String> sentenceIds;
+    protected List<String> trainSetIds;
+    protected List<String> testSetIds;
+    protected HashMap<String, SentenceEmbeddingsMetadata> sentenceIdEmbeddingMap;
+    protected HashMap<String, ConstTree> sentenceIdTreeMap;
+    protected TreebankIterator trainTreebankIterator;
+    protected TreebankIterator testTreebankIterator;
 
     public ConstTreebank(String id,
                          Set<String> poss, Set<String> cats, Set<String> labels,
@@ -29,11 +33,15 @@ public class ConstTreebank {
         this.cats = cats;
         this.labels = labels;
         this.trees = trees;
+
+        sentenceIds = new ArrayList<>(trees.length);
+        for (ConstTree tree : trees) {
+            sentenceIds.add(tree.id);
+        }
     }
 
     public ConstTreebank() {
-        this("", new TreeSet<>(), new TreeSet<>(), new TreeSet<>(),
-                new ConstTree[0]);
+        this("", new TreeSet<>(), new TreeSet<>(), new TreeSet<>(), new ConstTree[0]);
     }
 
     public String getId() {
@@ -52,6 +60,27 @@ public class ConstTreebank {
         Set<String> all = new TreeSet<String>(poss);
         poss.addAll(cats);
         return all;
+    }
+
+    public void setupTreebankIterator(Random rng, int batchSize, double trainTestRatio) {
+        // shuffle and split data into train and test data
+        sentenceIds = new ArrayList<>(sentenceIdTreeMap.keySet());
+        Collections.shuffle(sentenceIds, rng);
+        int trainSize = (int) (trainTestRatio * sentenceIds.size());
+        trainSetIds = sentenceIds.subList(0, trainSize);
+        testSetIds = sentenceIds.subList(trainSize, sentenceIds.size());
+
+        // set up train and test treebank iterators
+        trainTreebankIterator = new TreebankIterator(trainSetIds, sentenceIdEmbeddingMap, batchSize);
+        testTreebankIterator = new TreebankIterator(testSetIds, sentenceIdEmbeddingMap, batchSize);
+    }
+
+    public Pair<List<ConstTree>, List<double[][]>> getNextTrainBatch() {
+        return null;
+    }
+
+    public SentenceEmbeddingsMetadata getSentenceEmbeddingsMetadata(String sentenceId) {
+        return sentenceIdEmbeddingMap.get(sentenceId);
     }
 
     public Set<String> getLabels() {

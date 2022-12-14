@@ -4,6 +4,9 @@
 
 package standrews.constbase;
 
+import com.codepoetics.protonpack.StreamUtils;
+import javafx.util.Pair;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -12,22 +15,27 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public class NegraTreebank extends ConstTreebank {
+//    public NegraTreebank(String id,
+//                         Set<String> poss,
+//                         Set<String> cats,
+//                         Set<String> labels,
+//                         ConstTree[] trees) {
+//        super(id, poss, cats, labels, trees);
+//    }
 
-    public NegraTreebank(String id,
-                         Set<String> poss, Set<String> cats, Set<String> labels,
-                         ConstTree[] trees) {
-        super(id, poss, cats, labels, trees);
-    }
-
-    public NegraTreebank(final String filename) {
-        final List<ConstTree> sentences = new ArrayList<>();
+    public NegraTreebank(final String filename,
+                         String embeddingsDirectory,
+                         int numEmbeddingsFiles) {
+        // parse trees in treebank
+        sentenceIdTreeMap = new HashMap<>();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(
                 // new FileInputStream(filename), "iso-8859-1"))) {
                 new FileInputStream(filename), "utf-8"))) {
             String line;
             while ((line = br.readLine()) != null) {
                 if (isMarker(line, "BOS")) {
-                    sentences.add(readSentence(line, br));
+                    ConstTree tree = readSentence(line, br);
+                    sentenceIdTreeMap.put("s" + tree.id, tree);
                 } else if (isMarker(line, "FORMAT")) {
                     readFormat(line, br);
                 } else if (isMarker(line, "BOT ORIGIN")) {
@@ -51,16 +59,43 @@ public class NegraTreebank extends ConstTreebank {
                     log.warning("Strange line: " + line);
                 }
             }
-        } catch (IOException e) {
-            final Logger log = logger();
-            log.severe("Could not read treebank, error reading file: " + filename + "\n" + e);
-            System.exit(1);
-        } catch (IllegalArgumentException e) {
+        } catch (IOException | IllegalArgumentException e) {
             final Logger log = logger();
             log.severe("Could not read treebank, error reading file: " + filename + "\n" + e);
             System.exit(1);
         }
-        this.trees = sentences.toArray(new ConstTree[0]);
+        this.trees = sentenceIdTreeMap.values().toArray(new ConstTree[0]);
+
+        // make map of sentence IDs to their respective embeddings
+        sentenceIdEmbeddingMap = new HashMap<>();
+        for (int i = 0; i < numEmbeddingsFiles; i++) {
+            final int fileNumber = i;
+            try {
+                StreamUtils.zipWithIndex(Files.lines(Paths.get(embeddingsDirectory + "metadata_" + i + ".txt")))
+                        .forEach(zip -> {
+                            String[] sentenceIndexAndLength = zip.getValue().split(":", 2);
+                            sentenceIdEmbeddingMap.put(sentenceIndexAndLength[0],
+                                    new SentenceEmbeddingsMetadata(embeddingsDirectory,
+                                            fileNumber,
+                                            (int) zip.getIndex(),
+                                            Integer.parseInt(sentenceIndexAndLength[1])));
+                        });
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Override
+    public Pair<List<ConstTree>, List<double[][]>> getNextTrainBatch() {
+        Pair<List<String>, List<double[][]>> idsAndEmbeddings = trainTreebankIterator.next();
+
+        List<ConstTree> treeList = new ArrayList<>(idsAndEmbeddings.getKey().size());
+        for (String sentenceId: idsAndEmbeddings.getKey()) {
+            treeList.add(sentenceIdTreeMap.get(sentenceId));
+        }
+
+        return new Pair<>(treeList, idsAndEmbeddings.getValue());
     }
 
     private void readFormat(String line, BufferedReader br) throws IOException {
@@ -255,11 +290,11 @@ public class NegraTreebank extends ConstTreebank {
         }
     }
 
-    public ConstTreebank part(int from, int to) {
-        ConstTree[] partTrees = Arrays.asList(trees).subList(from, to)
-                .toArray(new ConstTree[0]);
-        return new NegraTreebank(id, poss, cats, labels, partTrees);
-    }
+//    public ConstTreebank part(int from, int to) {
+//        ConstTree[] partTrees = Arrays.asList(trees).subList(from, to)
+//                .toArray(new ConstTree[0]);
+//        return new NegraTreebank(id, poss, cats, labels, partTrees);
+//    }
 
     private Logger logger() {
         final Logger log = Logger.getLogger(getClass().getName());
@@ -267,8 +302,8 @@ public class NegraTreebank extends ConstTreebank {
         return log;
     }
 
-    public static void main(String[] args) {
-        NegraTreebank bank = new NegraTreebank("/home/mjn/Data/Negra/negra-attach.export");
-        bank.write("/home/mjn/work/billy/test.trash");
-    }
+//    public static void main(String[] args) {
+//        NegraTreebank bank = new NegraTreebank("/home/mjn/Data/Negra/negra-attach.export");
+//        bank.write("/home/mjn/work/billy/test.trash");
+//    }
 }

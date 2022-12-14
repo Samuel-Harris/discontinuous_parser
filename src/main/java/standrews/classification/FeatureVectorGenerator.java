@@ -3,7 +3,6 @@ package standrews.classification;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import standrews.constautomata.HatConfig;
 import standrews.constbase.ConstTreebank;
-import standrews.constbase.EmbeddingsBank;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,8 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 
 public class FeatureVectorGenerator {
-    private final EmbeddingsBank embeddingsBank;
-
     private final Map<String, Integer> catIndexMap;
     private final Map<String, Integer> posIndexMap;
     private final Map<String, Integer> catAndPosIndexMap;
@@ -27,9 +24,7 @@ public class FeatureVectorGenerator {
 
     private final static int embeddingSize = 768;
 
-    public FeatureVectorGenerator(final ConstTreebank treebank, final EmbeddingsBank embeddingsBank) {
-        this.embeddingsBank = embeddingsBank;
-
+    public FeatureVectorGenerator(final ConstTreebank treebank) {
         // making map to one-hot encode parts of speech
         List<String> poss = new ArrayList<>(treebank.getPoss());
         posIndexMap = new HashMap<>();

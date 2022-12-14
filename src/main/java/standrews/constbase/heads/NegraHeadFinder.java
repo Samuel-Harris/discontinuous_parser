@@ -125,9 +125,9 @@ public class NegraHeadFinder extends HeadFinder {
         return 0;
     }
 
-    public static void main(String[] args) {
-        ConstTreebank bank = new NegraTreebank("/home/mjn/Data/Negra/negra-attach.export");
-        NegraHeadFinder finder = new NegraHeadFinder();
-        finder.makeHeadedTreebank(bank);
-    }
+//    public static void main(String[] args) {
+//        ConstTreebank bank = new NegraTreebank("/home/mjn/Data/Negra/negra-attach.export");
+//        NegraHeadFinder finder = new NegraHeadFinder();
+//        finder.makeHeadedTreebank(bank);
+//    }
 }

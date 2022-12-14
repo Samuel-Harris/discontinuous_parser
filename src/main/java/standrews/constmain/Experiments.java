@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.invoke.MethodHandles;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -27,26 +28,27 @@ public class Experiments {
 
     private static String tmp = "tmp/";
 
-    public static ConstTreebank negraBank(String headSide) {
-        String path = "/home/mjn/Data/Negra/negra-attach.export";
-        ConstTreebank bank = new NegraTreebank(path);
-        HeadFinder finder = new NegraHeadFinder();
-        switch (headSide) {
-            case "left":
-                finder = new LeftHeadFinder();
-                break;
-            case "right":
-                finder = new RightHeadFinder();
-                break;
-        }
-        finder.makeHeadedTreebank(bank);
-        bank.gatherSymbols();
-        return bank;
-    }
+//    public static ConstTreebank negraBank(String headSide) {
+//        String path = "/home/mjn/Data/Negra/negra-attach.export";
+//        ConstTreebank bank = new NegraTreebank(path);
+//        HeadFinder finder = new NegraHeadFinder();
+//        switch (headSide) {
+//            case "left":
+//                finder = new LeftHeadFinder();
+//                break;
+//            case "right":
+//                finder = new RightHeadFinder();
+//                break;
+//        }
+//        finder.makeHeadedTreebank(bank);
+//        bank.gatherSymbols();
+//        return bank;
+//    }
 
-    public static ConstTreebank tigerBank(String headSide) {
+    public static ConstTreebank tigerBank(String headSide, Random rng, int batchSize, double trainTestRatio) {
         String path = "../datasets/tigercorpus2.1/corpus/tiger_negraformat.export";
-        ConstTreebank bank = new NegraTreebank(path);
+        String embeddingsDirectory = "../datasets/tiger2.1_bert_corrected_embeddings/";
+        ConstTreebank bank = new NegraTreebank(path, embeddingsDirectory, 505);
         bank.removeCycles();
         HeadFinder finder = new TigerHeadFinder();
         switch (headSide) {
@@ -59,6 +61,7 @@ public class Experiments {
         }
         finder.makeHeadedTreebank(bank);
         bank.gatherSymbols();
+        bank.setupTreebankIterator(rng, batchSize, trainTestRatio);
         return bank;
     }
 
@@ -162,7 +165,8 @@ public class Experiments {
 //	}
 
     public static HatExtractor trainHat(
-            final String lang, final ConstTreebank treebank,
+            final String lang,
+            final ConstTreebank treebank,
             final int n,
             final FeatureVectorGenerator featureVectorGenerator,
             final boolean leftFirst,
@@ -244,9 +248,8 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean suppressCompression,
-            final boolean goldPos,
-            final EmbeddingsBank embeddingsBank) {
-        FeatureVectorGenerator featureVectorGenerator = new FeatureVectorGenerator(treebank, embeddingsBank);
+            final boolean goldPos) {
+        FeatureVectorGenerator featureVectorGenerator = new FeatureVectorGenerator(treebank);
         final HatExtractor extractor = trainHat(lang, treebank, nTrain, featureVectorGenerator, leftFirst, suppressCompression);
         final HatTester tester = new HatTester(featureVectorGenerator);
         tester.test(treebank, goldFile, parsedFile, nTrain, nTest, extractor);
@@ -297,8 +300,7 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean suppressCompression,
-            final boolean goldPos,
-            final EmbeddingsBank embeddingsBank) {
+            final boolean goldPos) {
         final TimerMilli timer = new TimerMilli();
         timer.start();
         trainTestHat(lang, treebank,
@@ -306,8 +308,7 @@ public class Experiments {
                 nTrain, nTest,
                 leftFirst,
                 suppressCompression,
-                goldPos,
-                embeddingsBank);
+                goldPos);
         timer.stop();
         final String report = "Hat took " + timer.seconds() + " s";
         reportFine(report);
@@ -363,17 +364,21 @@ public class Experiments {
         String lang = "";
         int nTrain = 0;
         int nTest = 0;
+        double trainTestRatio = 0.8;
+        int seed = 123;
+        int batchSize = 100;
+        Random rng = new Random(seed);
         switch (bankname) {
-            case "negra":
-                // Negra has 20602 trees. 80% is 16482.
-                treebank = negraBank(headSide);
-                lang = "de";
-                nTrain = 16482;
-                nTest = 2060;
-                break;
+//            case "negra":
+//                // Negra has 20602 trees. 80% is 16482.
+//                treebank = negraBank(headSide);
+//                lang = "de";
+//                nTrain = 16482;
+//                nTest = 2060;
+//                break;
             case "tiger":
                 // Tiger has 50472 trees. 80% is 40377.
-                treebank = tigerBank(headSide);
+                treebank = tigerBank(headSide, rng, batchSize, trainTestRatio);
                 lang = "de";
                 nTrain = 800;
                 nTest = 200;
@@ -383,11 +388,10 @@ public class Experiments {
             default:
                 fail("Unknown bankname " + bankname);
         }
-        final EmbeddingsBank embeddingsBank = new EmbeddingsBank("tiger", "../datasets/tiger2.1_bert_corrected_embeddings/");
 
         reportFine("testing whether each word in each sentence has exactly one embedding vector...");
         for (ConstTree tree : treebank.getTrees()) {
-            int numEmbeddings = embeddingsBank.getSentenceEmbeddingsMetadata("s" + tree.getId()).getSentenceLength();
+            int numEmbeddings = treebank.getSentenceEmbeddingsMetadata("s" + tree.getId()).getSentenceLength();
             if (tree.length() != numEmbeddings) {
                 System.err.println("Error: sentence " + tree.getId() + " has an incorrect number of word embeddings");
                 System.err.println("Expected: " + tree.length() + ". Found: " + numEmbeddings);
@@ -400,7 +404,8 @@ public class Experiments {
         // final boolean leftFirst = false;
         final boolean projectivize = false;
         final boolean goldPos = true;
-        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos, embeddingsBank);
+        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos);
+
 //        if (method.equals("simple")) {
 //			doTrainingAndTestingSimple(lang, treebank, nTrain, nTest,
 //					leftFirst, projectivize, goldPos);
@@ -411,16 +416,16 @@ public class Experiments {
 //        }
     }
 
-    private static void doWholeHat() {
-        final String lang = "de";
-        final String headSide = "";
-        // final String headSide = "left";
-        // final String headSide = "right";
-        final int nTrain = 16482;
-        final int nTest = 2060;
-        final ConstTreebank treebank = negraBank(headSide);
-        doTrainingAndTestingWholeHat(lang, treebank, nTrain, nTest);
-    }
+//    private static void doWholeHat() {
+//        final String lang = "de";
+//        final String headSide = "";
+//        // final String headSide = "left";
+//        // final String headSide = "right";
+//        final int nTrain = 16482;
+//        final int nTest = 2060;
+//        final ConstTreebank treebank = negraBank(headSide);
+//        doTrainingAndTestingWholeHat(lang, treebank, nTrain, nTest);
+//    }
 
 //	private static void doHatAnalysis() {
 //		final String lang = "de";
