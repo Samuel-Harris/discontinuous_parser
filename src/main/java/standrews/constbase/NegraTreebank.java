@@ -86,17 +86,17 @@ public class NegraTreebank extends ConstTreebank {
         }
     }
 
-    @Override
-    public Pair<List<ConstTree>, List<double[][]>> getNextTrainBatch() {
-        Pair<List<String>, List<double[][]>> idsAndEmbeddings = trainTreebankIterator.next();
-
-        List<ConstTree> treeList = new ArrayList<>(idsAndEmbeddings.getKey().size());
-        for (String sentenceId: idsAndEmbeddings.getKey()) {
-            treeList.add(sentenceIdTreeMap.get(sentenceId));
-        }
-
-        return new Pair<>(treeList, idsAndEmbeddings.getValue());
-    }
+//    @Override
+//    public Pair<List<ConstTree>, List<double[][]>> getNextTrainMiniBatch() {
+//        Pair<List<String>, List<double[][]>> idsAndEmbeddings = trainTreebankIterator.next();
+//
+//        List<ConstTree> treeList = new ArrayList<>(idsAndEmbeddings.getKey().size());
+//        for (String sentenceId: idsAndEmbeddings.getKey()) {
+//            treeList.add(sentenceIdTreeMap.get(sentenceId));
+//        }
+//
+//        return new Pair<>(treeList, idsAndEmbeddings.getValue());
+//    }
 
     private void readFormat(String line, BufferedReader br) throws IOException {
         // do nothing

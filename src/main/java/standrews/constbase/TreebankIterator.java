@@ -1,56 +1,76 @@
 package standrews.constbase;
 
 import javafx.util.Pair;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.NDArrayIndex;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TreebankIterator {
-    private final List<String> allSentenceIds;
-    private final HashMap<String, SentenceEmbeddingsMetadata> sentenceIdEmbeddingMap;
-    private int batchNumber = 0;
-    private final int batchSize;
+    private final List<String> sentenceIds;
+    private final ConcurrentHashMap<String, SentenceEmbeddingsMetadata> sentenceIdEmbeddingMap;
+    private int miniBatchesFetched;
+    private int miniBatchesReturned;
+    private final int miniBatchSize;
+    private final BlockingQueue<Pair<List<String>, List<double[][]>>> miniBatchQueue;
+    private final Random rng;
 
-    public TreebankIterator(List<String> allSentenceIds, HashMap<String, SentenceEmbeddingsMetadata> sentenceIdEmbeddingMap, int batchSize) {
-        this.allSentenceIds = allSentenceIds;
-        this.sentenceIdEmbeddingMap = sentenceIdEmbeddingMap;
-        this.batchSize = batchSize;
+    public TreebankIterator(List<String> sentenceIds, HashMap<String, SentenceEmbeddingsMetadata> sentenceIdEmbeddingMap, int miniBatchSize, int queueSize, Random rng) {
+        this.sentenceIds = sentenceIds;
+        this.sentenceIdEmbeddingMap = new ConcurrentHashMap<>(sentenceIdEmbeddingMap);
+        this.miniBatchSize = miniBatchSize;
+        this.rng = rng;
+
+        miniBatchesFetched = 0;
+        miniBatchesReturned = 0;
+
+        miniBatchQueue = new ArrayBlockingQueue<>(queueSize);
+        for (int i = 0; i < queueSize; i++) {
+            if (canFetchNextBatch()) {
+                fetchNextBatch();
+            }
+        }
     }
 
     public void reset() {
-        batchNumber = 0;
-        Collections.shuffle(allSentenceIds);
+        miniBatchesFetched = 0;
+        miniBatchesReturned = 0;
+        Collections.shuffle(sentenceIds, rng);
     }
 
-    public boolean hasNext() {
-        return batchNumber*batchSize < allSentenceIds.size();
+    private boolean hasNext() {
+        return miniBatchesReturned * miniBatchSize < sentenceIds.size();
     }
 
-    public Pair<List<String>, List<double[][]>> next() {
-        List<String> batchSentenceIds = allSentenceIds.subList(batchNumber * batchSize, Math.min((batchNumber + 1) * batchSize, allSentenceIds.size()));
+    private boolean canFetchNextBatch() {
+        return miniBatchesFetched * miniBatchSize < sentenceIds.size();
+    }
 
+    public Optional<Pair<List<String>, List<double[][]>>> next() {
+        if (hasNext()) {
+            if (canFetchNextBatch()) {
+                fetchNextBatch();
+            }
 
-        List<double[][]> batchSentenceEmbeddings = new ArrayList<>();
-        for (String sentenceId: batchSentenceIds) {
-            batchSentenceEmbeddings.add(getSentenceEmbeddings(sentenceId));
+            try {
+                Pair<List<String>, List<double[][]>> miniBatch = miniBatchQueue.take();
+                miniBatchesReturned++;
+                return Optional.of(miniBatch);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return Optional.empty();
+            }
         }
-
-        batchNumber++;
-        return new Pair<>(batchSentenceIds, batchSentenceEmbeddings);
+        return Optional.empty();
     }
 
-    public double[][] getSentenceEmbeddings(String sentenceId) {
-        SentenceEmbeddingsMetadata sentenceEmbeddingsMetaData = sentenceIdEmbeddingMap.get(sentenceId);
-        INDArray matrix = Nd4j.readNpy(sentenceEmbeddingsMetaData.getFilePath())
-                .get(NDArrayIndex.point(sentenceEmbeddingsMetaData.getlineNumber()),
-                        NDArrayIndex.interval(0, sentenceEmbeddingsMetaData.getSentenceLength()),
-                        NDArrayIndex.all());
+    private void fetchNextBatch() {
+        List<String> sentenceIdsMiniBatch = new ArrayList<>(sentenceIds.subList(miniBatchesFetched * miniBatchSize, Math.min((miniBatchesFetched + 1) * miniBatchSize, sentenceIds.size())));
 
-        return matrix.toDoubleMatrix();
+        DataLoaderThread dataLoaderThread = new DataLoaderThread(miniBatchQueue, sentenceIdsMiniBatch, sentenceIdEmbeddingMap);
+        dataLoaderThread.run();
+
+        miniBatchesFetched++;
     }
 }

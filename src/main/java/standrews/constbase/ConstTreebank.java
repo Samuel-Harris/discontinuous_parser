@@ -5,6 +5,7 @@
 package standrews.constbase;
 
 import javafx.util.Pair;
+import org.deeplearning4j.nn.layers.feedforward.autoencoder.recursive.Tree;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -62,7 +63,7 @@ public class ConstTreebank {
         return all;
     }
 
-    public void setupTreebankIterator(Random rng, int batchSize, double trainTestRatio) {
+    public void setupTreebankIterator(Random rng, int batchSize, double trainTestRatio, int queueSize) {
         // shuffle and split data into train and test data
         sentenceIds = new ArrayList<>(sentenceIdTreeMap.keySet());
         Collections.shuffle(sentenceIds, rng);
@@ -71,12 +72,26 @@ public class ConstTreebank {
         testSetIds = sentenceIds.subList(trainSize, sentenceIds.size());
 
         // set up train and test treebank iterators
-        trainTreebankIterator = new TreebankIterator(trainSetIds, sentenceIdEmbeddingMap, batchSize);
-        testTreebankIterator = new TreebankIterator(testSetIds, sentenceIdEmbeddingMap, batchSize);
+        trainTreebankIterator = new TreebankIterator(trainSetIds, sentenceIdEmbeddingMap, batchSize, queueSize, rng);
+        testTreebankIterator = new TreebankIterator(testSetIds, sentenceIdEmbeddingMap, batchSize, queueSize, rng);
     }
 
-    public Pair<List<ConstTree>, List<double[][]>> getNextTrainBatch() {
-        return null;
+    public Optional<Pair<List<ConstTree>, List<double[][]>>> getNextTrainMiniBatch() {
+        return getNextMiniBatch(trainTreebankIterator);
+    }
+
+    private Optional<Pair<List<ConstTree>, List<double[][]>>> getNextMiniBatch(TreebankIterator treebankIterator) {
+        Optional<Pair<List<String>, List<double[][]>>> idsAndEmbeddingsOptional = treebankIterator.next();
+        if (idsAndEmbeddingsOptional.isEmpty()) {
+            return Optional.empty();
+        } else {
+            Pair<List<String>, List<double[][]>> idsAndEmbeddings = idsAndEmbeddingsOptional.get();
+            List<ConstTree> miniBatchTrees = new ArrayList<>(idsAndEmbeddings.getKey().size());
+            for (String sentenceId: idsAndEmbeddings.getKey()){
+                miniBatchTrees.add(sentenceIdTreeMap.get(sentenceId));
+            }
+            return Optional.of(new Pair<>(miniBatchTrees, idsAndEmbeddings.getValue()));
+        }
     }
 
     public SentenceEmbeddingsMetadata getSentenceEmbeddingsMetadata(String sentenceId) {

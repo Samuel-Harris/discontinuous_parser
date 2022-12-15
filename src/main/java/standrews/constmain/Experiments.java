@@ -4,6 +4,7 @@
 
 package standrews.constmain;
 
+import javafx.util.Pair;
 import standrews.aux_.LogHandler;
 import standrews.aux_.TimerMilli;
 import standrews.classification.FeatureSpecification;
@@ -19,6 +20,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -45,7 +48,7 @@ public class Experiments {
 //        return bank;
 //    }
 
-    public static ConstTreebank tigerBank(String headSide, Random rng, int batchSize, double trainTestRatio) {
+    public static ConstTreebank tigerBank(String headSide, Random rng, int batchSize, double trainTestRatio, int treebankIteratorQueueSize) {
         String path = "../datasets/tigercorpus2.1/corpus/tiger_negraformat.export";
         String embeddingsDirectory = "../datasets/tiger2.1_bert_corrected_embeddings/";
         ConstTreebank bank = new NegraTreebank(path, embeddingsDirectory, 505);
@@ -61,7 +64,7 @@ public class Experiments {
         }
         finder.makeHeadedTreebank(bank);
         bank.gatherSymbols();
-        bank.setupTreebankIterator(rng, batchSize, trainTestRatio);
+        bank.setupTreebankIterator(rng, batchSize, trainTestRatio, treebankIteratorQueueSize);
         return bank;
     }
 
@@ -367,6 +370,7 @@ public class Experiments {
         double trainTestRatio = 0.8;
         int seed = 123;
         int batchSize = 100;
+        int treebankIteratorQueueSize = 8;
         Random rng = new Random(seed);
         switch (bankname) {
 //            case "negra":
@@ -378,7 +382,7 @@ public class Experiments {
 //                break;
             case "tiger":
                 // Tiger has 50472 trees. 80% is 40377.
-                treebank = tigerBank(headSide, rng, batchSize, trainTestRatio);
+                treebank = tigerBank(headSide, rng, batchSize, trainTestRatio, treebankIteratorQueueSize);
                 lang = "de";
                 nTrain = 800;
                 nTest = 200;
