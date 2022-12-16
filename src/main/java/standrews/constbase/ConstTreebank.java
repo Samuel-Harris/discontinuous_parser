@@ -84,6 +84,10 @@ public class ConstTreebank {
         return getNextMiniBatch(trainTreebankIterator);
     }
 
+    public Optional<Pair<List<ConstTree>, List<double[][]>>> getNextTestMiniBatch() {
+        return getNextMiniBatch(testTreebankIterator);
+    }
+
     private Optional<Pair<List<ConstTree>, List<double[][]>>> getNextMiniBatch(TreebankIterator treebankIterator) {
         Optional<Pair<List<String>, List<double[][]>>> idsAndEmbeddingsOptional = treebankIterator.next();
         if (idsAndEmbeddingsOptional.isEmpty()) {

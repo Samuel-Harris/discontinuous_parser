@@ -171,7 +171,7 @@ public class WholeHatParser extends HatParser {
     }
 
     public void observe(final WholeHatExtractor extractor) {
-        final HatConfig config = makeInitialConfig(goldTree);
+        final HatConfig config = makeInitialConfig(goldTree, null);
         while (!config.isFinal()) {
             final String[] action = getAction(config);
             if (action.length == 0) {
@@ -195,7 +195,7 @@ public class WholeHatParser extends HatParser {
             {rootWeight, rootCatWeight, catWeight, branchWeight};
 
     public PropertyWeights prob(final WholeHatExtractor extractor) {
-        final HatConfig config = makeInitialConfig(goldTree);
+        final HatConfig config = makeInitialConfig(goldTree, null);
         PropertyWeights weights = new PropertyWeights(weightedProperties);
         while (!config.isFinal()) {
             final String[] action = getAction(config);

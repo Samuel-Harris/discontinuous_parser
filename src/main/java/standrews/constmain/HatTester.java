@@ -37,7 +37,7 @@ public class HatTester extends SimpleTester {
         }
     }
 
-    protected DeterministicParser makeParser(final ConstTree tree) {
+    protected HatParser makeParser(final ConstTree tree) {
 //		final int viewMin = featSpec.getIntFeature("viewMin", 0);
 //		final int viewMax = featSpec.getIntFeature("viewMax", 0);
         return new ParserWithCompression(tree);

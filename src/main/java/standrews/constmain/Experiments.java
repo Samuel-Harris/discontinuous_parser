@@ -192,7 +192,7 @@ public class Experiments {
                 fellowFile,
                 catFile,
                 suppressCompression);
-        final SimpleTrainer trainer = new HatTrainer(featureVectorGenerator, maxEpochs, tol);
+        final SimpleTrainer trainer = new SimpleTrainer(featureVectorGenerator, maxEpochs, tol);
         trainer.setLeftDependentsFirst(leftFirst);
         trainer.train(treebank, n, extractor);
 //        if (nDone != n)

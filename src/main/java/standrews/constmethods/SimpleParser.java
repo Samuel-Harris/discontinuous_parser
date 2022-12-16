@@ -63,7 +63,9 @@ public class SimpleParser extends DeterministicParser {
     }
 
     @Override
-    protected HatConfig makeInitialConfig(final ConstTree goldTree) {
+    protected HatConfig makeInitialConfig(final ConstTree goldTree, double[][] embeddings) {
+
+        // **********************************add embeddings****************
         HatConfig config = new HatConfig(goldTree.getId(), goldTree.getLeaves());
         config.goldTree = goldTree;
         return config;

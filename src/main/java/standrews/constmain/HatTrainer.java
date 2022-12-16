@@ -19,10 +19,4 @@ public class HatTrainer extends SimpleTrainer {
         return true;
     }
 
-    protected DeterministicParser makeParser(final ConstTree tree) {
-        final HatParser parser = new HatParser(tree);
-        parser.setLeftDependentsFirst(leftDependentsFirst);
-        return parser;
-    }
-
 }

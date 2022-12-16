@@ -4,17 +4,21 @@
 
 package standrews.constmain;
 
+import javafx.util.Pair;
 import standrews.classification.FeatureVectorGenerator;
 import standrews.constextract.SimpleExtractor;
 import standrews.constbase.ConstTree;
 import standrews.constbase.ConstTreebank;
 import standrews.constmethods.DeterministicParser;
+import standrews.constmethods.HatParser;
 import standrews.constmethods.SimpleParser;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class SimpleTester {
@@ -38,8 +42,8 @@ public class SimpleTester {
                     final int m,
                     final int n,
                     final SimpleExtractor extractor) {
-        final ConstTreebank subbank = treebank.part(m, m + n);
-        copyTraining(subbank, corpusCopy);
+//        final ConstTreebank subbank = treebank.part(m, m + n);
+//        copyTraining(subbank, corpusCopy);
         PrintWriter parsedWriter = null;
         try {
             parsedWriter = new PrintWriter(corpusParsed, "UTF-8");
@@ -48,15 +52,28 @@ public class SimpleTester {
         } catch (UnsupportedEncodingException e) {
             fail("Unsupported encoding: " + e);
         }
-        int i = 0;
-        for (ConstTree gold : subbank.getTrees()) {
-            DeterministicParser parser = makeParser(gold);
-            ConstTree parsed = parser.parse(extractor);
-            assert parsedWriter != null;
-            parsedWriter.println(parsed);
-            i++;
-        }
         assert parsedWriter != null;
+
+        System.out.println("testing");
+
+        Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextTestMiniBatch();
+        while (miniBatchOptional.isPresent()) {
+            Pair<List<ConstTree>, List<double[][]>> miniBatch = miniBatchOptional.get();
+            List<ConstTree> trees = miniBatch.getKey();
+            List<double[][]> embeddingsList = miniBatch.getValue();
+
+            for (int i = 0; i < trees.size(); i++) {
+                ConstTree tree = trees.get(i);
+                double[][] embeddings = embeddingsList.get(i);
+
+                HatParser parser = makeParser(tree);
+                ConstTree parsed = parser.parse(extractor, embeddings);
+
+                parsedWriter.println(parsed);
+            }
+
+            miniBatchOptional = treebank.getNextTestMiniBatch();
+        }
         parsedWriter.close();
 
 //        String command = "discodop eval " + corpusCopy + " " + corpusParsed;
@@ -76,7 +93,7 @@ public class SimpleTester {
 //            e.printStackTrace();
 //        }
 
-        return i;
+        return 0;
     }
 
     private void copyTraining(ConstTreebank treebank,
@@ -94,8 +111,8 @@ public class SimpleTester {
         trainWriter.close();
     }
 
-    protected DeterministicParser makeParser(final ConstTree tree) {
-        return new SimpleParser(tree);
+    protected HatParser makeParser(final ConstTree tree) {
+        return new HatParser(tree);
     }
 
     private static Logger logger() {

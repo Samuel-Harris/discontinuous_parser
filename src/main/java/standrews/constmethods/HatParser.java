@@ -62,12 +62,6 @@ public class HatParser extends SimpleParser {
         super(tree);
     }
 
-    protected HatConfig makeInitialConfig(final ConstTree goldTree) {
-        HatConfig config = new HatConfig(goldTree.getId(), goldTree.getLeaves());
-        config.goldTree = goldTree;
-        return config;
-    }
-
     /**
      * Determine which action is needed in current configuration.
      *

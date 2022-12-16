@@ -8,10 +8,12 @@ import javafx.util.Pair;
 import standrews.aux_.TimerMilli;
 import standrews.classification.FeatureSpecification;
 import standrews.classification.FeatureVectorGenerator;
+import standrews.constextract.HatExtractor;
 import standrews.constextract.SimpleExtractor;
 import standrews.constbase.ConstTree;
 import standrews.constbase.ConstTreebank;
 import standrews.constmethods.DeterministicParser;
+import standrews.constmethods.HatParser;
 import standrews.constmethods.SimpleParser;
 
 import java.io.FileNotFoundException;
@@ -53,13 +55,13 @@ public class SimpleTrainer {
     }
 
     public void train(final ConstTreebank treebank,
-                     final int n, final SimpleExtractor extractor) {
+                     final int n, final HatExtractor extractor) {
         train(treebank, null, n, extractor);
     }
 
     public void train(final ConstTreebank treebank,
                      final String corpusCopy,
-                     final int n, final SimpleExtractor extractor) {
+                     final int n, final HatExtractor extractor) {
 //        final ConstTreebank subbank = treebank.part(0, n);
 //        copyTraining(subbank, corpusCopy);
         for (int epoch = 0; epoch < maxEpochs; epoch++) {
@@ -75,8 +77,8 @@ public class SimpleTrainer {
                     ConstTree tree = trees.get(i);
                     double[][] embeddings = embeddingsList.get(i);
 
-                    DeterministicParser parser = makeParser(tree);
-                    parser.observe(extractor);
+                    HatParser parser = makeParser(tree);
+                    parser.observe(extractor, embeddings);
                 }
 
                 extractor.train();
@@ -108,15 +110,21 @@ public class SimpleTrainer {
         return projectivize || tree.isProjective();
     }
 
-    protected DeterministicParser makeParser(final ConstTree tree) {
-		/*
-		if (nonprojectiveAllowed)
-			tokens = OptimalProjectivizer.nonprojectiveAllowed(tokens);
-			*/
-        final SimpleParser parser = new SimpleParser(tree);
+    protected HatParser makeParser(final ConstTree tree) {
+        final HatParser parser = new HatParser(tree);
         parser.setLeftDependentsFirst(leftDependentsFirst);
         return parser;
     }
+
+//    protected DeterministicParser makeParser(final ConstTree tree) {
+//		/*
+//		if (nonprojectiveAllowed)
+//			tokens = OptimalProjectivizer.nonprojectiveAllowed(tokens);
+//			*/
+//        final SimpleParser parser = new SimpleParser(tree);
+//        parser.setLeftDependentsFirst(leftDependentsFirst);
+//        return parser;
+//    }
 
     private static Logger logger() {
         final Logger log = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
