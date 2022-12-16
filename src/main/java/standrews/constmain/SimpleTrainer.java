@@ -4,6 +4,8 @@
 
 package standrews.constmain;
 
+import javafx.util.Pair;
+import standrews.aux_.TimerMilli;
 import standrews.classification.FeatureSpecification;
 import standrews.classification.FeatureVectorGenerator;
 import standrews.constextract.SimpleExtractor;
@@ -16,14 +18,20 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class SimpleTrainer {
 
     protected FeatureVectorGenerator featureVectorGenerator;
+    protected final int maxEpochs;
+    protected final double tol;
 
-    public SimpleTrainer(final FeatureVectorGenerator featureVectorGenerator) {
+    public SimpleTrainer(final FeatureVectorGenerator featureVectorGenerator, int maxEpochs, double tol) {
         this.featureVectorGenerator = featureVectorGenerator;
+        this.maxEpochs = maxEpochs;
+        this.tol = tol;
     }
 
     protected boolean leftDependentsFirst = false;
@@ -44,31 +52,39 @@ public class SimpleTrainer {
         projectivize = p;
     }
 
-    public int train(final ConstTreebank treebank,
+    public void train(final ConstTreebank treebank,
                      final int n, final SimpleExtractor extractor) {
-        return train(treebank, null, n, extractor);
+        train(treebank, null, n, extractor);
     }
 
-    public int train(final ConstTreebank treebank,
+    public void train(final ConstTreebank treebank,
                      final String corpusCopy,
                      final int n, final SimpleExtractor extractor) {
-        final ConstTreebank subbank = treebank.part(0, n);
-        copyTraining(subbank, corpusCopy);
-        int i = 0;
-        for (int epo = 0; epo == 0 || extractor.getContinuousTraining() && epo < extractor.getNEpochs(); epo++) {
-            if (extractor.getContinuousTraining())
-                reportFine("Epoch " + epo);
-            i = 0;
-            for (ConstTree tree : subbank.getTrees()) {
-                if (allowableTree(tree)) {
+//        final ConstTreebank subbank = treebank.part(0, n);
+//        copyTraining(subbank, corpusCopy);
+        for (int epoch = 0; epoch < maxEpochs; epoch++) {
+            reportFine("Epoch " + epoch);
+
+            Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextTrainMiniBatch();
+            while (miniBatchOptional.isPresent()) {
+                Pair<List<ConstTree>, List<double[][]>> miniBatch = miniBatchOptional.get();
+                List<ConstTree> trees = miniBatch.getKey();
+                List<double[][]> embeddingsList = miniBatch.getValue();
+
+                for (int i = 0; i < trees.size(); i++) {
+                    ConstTree tree = trees.get(i);
+                    double[][] embeddings = embeddingsList.get(i);
+
                     DeterministicParser parser = makeParser(tree);
                     parser.observe(extractor);
-                    i++;
                 }
+
+                extractor.train();
+                miniBatchOptional = treebank.getNextTrainMiniBatch();
             }
-            extractor.train();
+
+            treebank.resetTrainTreebankIterator();
         }
-        return i;
     }
 
     private void copyTraining(ConstTreebank treebank,

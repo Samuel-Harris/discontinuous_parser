@@ -22,8 +22,7 @@ public class TreebankIterator {
         this.miniBatchSize = miniBatchSize;
         this.rng = rng;
 
-        miniBatchesFetched = 0;
-        miniBatchesReturned = 0;
+        reset();
 
         miniBatchQueue = new ArrayBlockingQueue<>(queueSize);
         for (int i = 0; i < queueSize; i++) {

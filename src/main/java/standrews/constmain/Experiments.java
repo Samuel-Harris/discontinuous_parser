@@ -173,7 +173,7 @@ public class Experiments {
             final int n,
             final FeatureVectorGenerator featureVectorGenerator,
             final boolean leftFirst,
-            final boolean suppressCompression) {
+            final boolean suppressCompression, int maxEpochs, double tol) {
         final String actionFile = tmp + "actionfile";
         final String fellowFile = tmp + "fellowfile";
         final String catFile = tmp + "catfile";
@@ -192,11 +192,11 @@ public class Experiments {
                 fellowFile,
                 catFile,
                 suppressCompression);
-        final SimpleTrainer trainer = new HatTrainer(featureVectorGenerator);
+        final SimpleTrainer trainer = new HatTrainer(featureVectorGenerator, maxEpochs, tol);
         trainer.setLeftDependentsFirst(leftFirst);
-        final int nDone = trainer.train(treebank, n, extractor);
-        if (nDone != n)
-            fail("" + lang + ": processed " + nDone + " of " + n);
+        trainer.train(treebank, n, extractor);
+//        if (nDone != n)
+//            fail("" + lang + ": processed " + nDone + " of " + n);
         return extractor;
     }
 
@@ -251,9 +251,9 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean suppressCompression,
-            final boolean goldPos) {
+            final boolean goldPos, int maxEpochs, double tol) {
         FeatureVectorGenerator featureVectorGenerator = new FeatureVectorGenerator(treebank);
-        final HatExtractor extractor = trainHat(lang, treebank, nTrain, featureVectorGenerator, leftFirst, suppressCompression);
+        final HatExtractor extractor = trainHat(lang, treebank, nTrain, featureVectorGenerator, leftFirst, suppressCompression, maxEpochs, tol);
         final HatTester tester = new HatTester(featureVectorGenerator);
         tester.test(treebank, goldFile, parsedFile, nTrain, nTest, extractor);
     }
@@ -303,7 +303,7 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean suppressCompression,
-            final boolean goldPos) {
+            final boolean goldPos, int maxEpochs, double tol) {
         final TimerMilli timer = new TimerMilli();
         timer.start();
         trainTestHat(lang, treebank,
@@ -311,7 +311,9 @@ public class Experiments {
                 nTrain, nTest,
                 leftFirst,
                 suppressCompression,
-                goldPos);
+                goldPos,
+                maxEpochs,
+                tol);
         timer.stop();
         final String report = "Hat took " + timer.seconds() + " s";
         reportFine(report);
@@ -368,10 +370,13 @@ public class Experiments {
         int nTrain = 0;
         int nTest = 0;
         double trainTestRatio = 0.8;
+        int maxEpochs = 3;
+        double tol = 0.0001;
         int seed = 123;
         int batchSize = 100;
         int treebankIteratorQueueSize = 8;
         Random rng = new Random(seed);
+
         switch (bankname) {
 //            case "negra":
 //                // Negra has 20602 trees. 80% is 16482.
@@ -408,7 +413,7 @@ public class Experiments {
         // final boolean leftFirst = false;
         final boolean projectivize = false;
         final boolean goldPos = true;
-        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos);
+        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos, maxEpochs, tol);
 
 //        if (method.equals("simple")) {
 //			doTrainingAndTestingSimple(lang, treebank, nTrain, nTest,

@@ -76,6 +76,10 @@ public class ConstTreebank {
         testTreebankIterator = new TreebankIterator(testSetIds, sentenceIdEmbeddingMap, batchSize, queueSize, rng);
     }
 
+    public void resetTrainTreebankIterator() {
+        trainTreebankIterator.reset();
+    }
+
     public Optional<Pair<List<ConstTree>, List<double[][]>>> getNextTrainMiniBatch() {
         return getNextMiniBatch(trainTreebankIterator);
     }

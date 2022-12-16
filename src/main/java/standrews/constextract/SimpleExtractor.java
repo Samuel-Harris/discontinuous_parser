@@ -79,9 +79,9 @@ public class SimpleExtractor {
 //		completeClassifiers(treebank);
     }
 
-    public boolean getContinuousTraining() {
-        return continuousTraining;
-    }
+//    public boolean getContinuousTraining() {
+//        return continuousTraining;
+//    }
 
     public int getBatchSize() {
         return batchSize;

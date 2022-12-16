@@ -36,15 +36,17 @@ public class MLP {
         if (observations.isEmpty())
             return;
 
-        DataSetIterator iter = new DoublesDataSetIterator(observations, batchSize);
+        DataSetIterator iter = new DoublesDataSetIterator(observations, observations.size());
 
-        final TimerMilli timer = new TimerMilli();
-        timer.start();
-        for (int n = 0; n < nEpochs; n++) {
-            network.fit(iter);
-        }
-        timer.stop();
-        System.out.println("Deeplearning training took " + timer.seconds() + " s");
+        network.fit(iter);
+
+//        final TimerMilli timer = new TimerMilli();
+//        timer.start();
+//        for (int n = 0; n < nEpochs; n++) {
+//            network.fit(iter);
+//        }
+//        timer.stop();
+//        System.out.println("Deeplearning training took " + timer.seconds() + " s");
         observations.clear();
     }
 
