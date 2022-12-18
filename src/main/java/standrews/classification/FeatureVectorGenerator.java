@@ -51,7 +51,7 @@ public class FeatureVectorGenerator {
     public double[] generateFeatureVector(HatConfig config) {
         List<Double> features = new ArrayList<>();
 
-        features.addAll(Arrays.asList(oneHotEncodeHatSymbol(config)));
+        features.addAll(getHatFeatures(config));
 
         features.addAll(getStackFeatures(config));
 
@@ -64,32 +64,29 @@ public class FeatureVectorGenerator {
         return features.stream().mapToDouble(x -> x).toArray();
     }
 
-    private Double[] oneHotEncodeHatSymbol(HatConfig config) {
-        int hatSymbolVectorLength = catAndPosIndexMap.size() + 1;
+    private List<Double> getHatFeatures(HatConfig config) {
+        List<Double> hatFeatures = new ArrayList<>();
 
-        // initialise hatSymbolVector
-        Double[] hatSymbolVector = new Double[hatSymbolVectorLength];
-        Arrays.fill(hatSymbolVector, 0.0);
-
-
-        Optional<String> hatSymbol = config.getHatSymbol();
-
-        if (hatSymbol.isPresent()) {
-            hatSymbolVector[catAndPosIndexMap.get(hatSymbol.get())] = 1.0;  // add hat symbol to feature vector
-        } else {
-            hatSymbolVector[hatSymbolVectorLength-1] = 1.0;  // there is no hat
+        if (config.hatExists()) {
+            hatFeatures.addAll(oneHotEncodeCategory(config.getStackHat(0)));
+            hatFeatures.add(0.0);
+        } else {  // there is no hat
+            for (int i = 0; i < catAndPosIndexMap.size(); i++) {
+                hatFeatures.add(0.0);
+            }
+            hatFeatures.add(1.0);
         }
 
-        return hatSymbolVector;
+        return hatFeatures;
     }
 
-    private Double[] oneHotEncodeCategory(ConstNode node) {
+    private List<Double> oneHotEncodeCategory(ConstNode node) {
         Double[] categoryVector = new Double[catAndPosIndexMap.size()];
         Arrays.fill(categoryVector, 0.0);
 
         categoryVector[catAndPosIndexMap.get(node.getCat())] = 1.0;
 
-        return categoryVector;
+        return Arrays.asList(categoryVector);
     }
 
     private List<Double> getStackFeatures(HatConfig config) {
@@ -99,12 +96,12 @@ public class FeatureVectorGenerator {
         if (config.stackLength() > 1) {
             ConstNode topOfStack = config.getStackRight(0);
             stackFeatures.addAll(getLeftmostAndRightmostDependentEmbeddingsAndPos(topOfStack));
-            stackFeatures.addAll(Arrays.asList(oneHotEncodeCategory(topOfStack)));
+            stackFeatures.addAll(oneHotEncodeCategory(topOfStack));
 
             if (config.stackLength() > 2) {
                 ConstNode secondTopOfStack = config.getStackRight(1);
                 stackFeatures.addAll(getLeftmostAndRightmostDependentEmbeddingsAndPos(secondTopOfStack));
-                stackFeatures.addAll(Arrays.asList(oneHotEncodeCategory(secondTopOfStack)));
+                stackFeatures.addAll(oneHotEncodeCategory(secondTopOfStack));
             } else {
                 // blank leftmost and rightmost vectors
                 stackFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));

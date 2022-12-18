@@ -93,8 +93,8 @@ public class HatConfig extends SimpleConfig {
         return getStackLeft(getHatAbsoluteIndex(i));
     }
 
-    public Optional<String> getHatSymbol() {
-        return Optional.ofNullable(getStackHat(0).getCat());
+    public boolean hatExists() {
+        return hatIndex != 0;
     }
 
     /**
