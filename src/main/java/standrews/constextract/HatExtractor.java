@@ -118,7 +118,7 @@ public class HatExtractor extends SimpleExtractor {
     @Override
     public Iterator<String[]> predict(final HatConfig config) {
 //		final Features actionFeats = extract(config);
-        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);  // ***********fix this with hat symbol
+        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);
         final String[] acs = (String[]) actionClassifier.predictAll(featureVector);
         return new ActionIterator(config, acs);
     }

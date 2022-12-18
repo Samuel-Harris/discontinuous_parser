@@ -48,6 +48,8 @@ public class MLP {
 //        timer.stop();
 //        System.out.println("Deeplearning training took " + timer.seconds() + " s");
         observations.clear();
+
+        System.gc();
     }
 
     public Object predict(double[] featureVector) {

@@ -4,7 +4,6 @@
 
 package standrews.constmain;
 
-import javafx.util.Pair;
 import standrews.aux_.LogHandler;
 import standrews.aux_.TimerMilli;
 import standrews.classification.FeatureSpecification;
@@ -20,8 +19,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.invoke.MethodHandles;
-import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -178,7 +175,7 @@ public class Experiments {
         final String fellowFile = tmp + "fellowfile";
         final String catFile = tmp + "catfile";
         final MLPFactory mlpFactory = new MLPFactory(
-                featureVectorGenerator.getVectorSize(),
+                featureVectorGenerator.getVectorLength(),
                 100,
                 3,
                 new int[]{256, 256, 256},
@@ -373,7 +370,7 @@ public class Experiments {
         int maxEpochs = 3;
         double tol = 0.0001;
         int seed = 123;
-        int batchSize = 100;
+        int batchSize = 50;
         int treebankIteratorQueueSize = 8;
         Random rng = new Random(seed);
 

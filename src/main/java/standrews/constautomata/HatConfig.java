@@ -18,8 +18,8 @@ public class HatConfig extends SimpleConfig {
     /**
      * Construct initial configuration for given sentence.
      */
-    public HatConfig(final String id, final ConstLeaf[] input) {
-        super(id, input);
+    public HatConfig(final String id, final ConstLeaf[] input, double[][] embeddings) {
+        super(id, input, embeddings);
         hatIndex = 0;
     }
 

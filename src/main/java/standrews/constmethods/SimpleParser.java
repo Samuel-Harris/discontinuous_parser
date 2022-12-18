@@ -66,7 +66,7 @@ public class SimpleParser extends DeterministicParser {
     protected HatConfig makeInitialConfig(final ConstTree goldTree, double[][] embeddings) {
 
         // **********************************add embeddings****************
-        HatConfig config = new HatConfig(goldTree.getId(), goldTree.getLeaves());
+        HatConfig config = new HatConfig(goldTree.getId(), goldTree.getLeaves(), embeddings);
         config.goldTree = goldTree;
         return config;
     }

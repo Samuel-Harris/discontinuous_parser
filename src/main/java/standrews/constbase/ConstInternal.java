@@ -101,9 +101,17 @@ public class ConstInternal extends ConstNode {
         return children.stream().toArray(ConstNode[]::new);
     }
 
+    public ConstNode getLeftMostChild() {
+        return children.get(0);
+    }
+
     public ConstNode[] getLeftChildren() {
         return Arrays.asList(getChildren()).subList(0, getHeadIndex())
                 .toArray(new ConstNode[0]);
+    }
+
+    public ConstNode getRightMostChild() {
+        return children.get(children.size()-1);
     }
 
     public ConstNode[] getRightChildren() {

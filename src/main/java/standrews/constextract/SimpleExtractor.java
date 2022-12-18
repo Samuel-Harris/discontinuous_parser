@@ -98,7 +98,7 @@ public class SimpleExtractor {
 
     public void extract(final HatConfig config, final String[] action) {
 //		final Features actionFeats = extract(config);
-        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);  // ***********fix this with hat symbol
+        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);
         actionClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[0]);
         if (action.length > 1) {
 //			final Features catFeats = extract(config);
@@ -138,7 +138,7 @@ public class SimpleExtractor {
 
     public Iterator<String[]> predict(final HatConfig config) {
 //		final Features actionFeats = extract(config);
-        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);  // ***********fix this with hat symbol
+        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);
         final String[] acs = (String[]) actionClassifier.predictAll(featureVector);
         return new ActionIterator(config, acs);
     }
@@ -166,7 +166,7 @@ public class SimpleExtractor {
                 return new String[]{ac};
             } else {
 //				final Features catFeats = extract(config);
-                final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);  // ***********fix this with hat symbol
+                final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);
                 final String cat = (String) catClassifier.predict(featureVector);
                 return new String[]{ac, cat};
             }

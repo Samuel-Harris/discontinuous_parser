@@ -4,10 +4,7 @@
 
 package standrews.constautomata;
 
-import standrews.constbase.ConstInternal;
-import standrews.constbase.ConstLeaf;
-import standrews.constbase.ConstNode;
-import standrews.constbase.ConstTree;
+import standrews.constbase.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,14 +14,14 @@ public class SimpleConfig {
     protected final String id;
     protected final List<ConstNode> stack;
     protected final List<String> states;
-    protected final List<ConstLeaf> input;
+    protected final List<EnhancedConstLeaf> input;
 
     /**
      * Gold tree, for debugging.
      */
     public ConstTree goldTree = null;
 
-    public SimpleConfig(final String id, final ConstLeaf[] input, final String topState) {
+    public SimpleConfig(final String id, final EnhancedConstLeaf[] input, final String topState) {
         this.id = id;
         this.stack = Stream.of(new ConstInternal())
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -32,12 +29,22 @@ public class SimpleConfig {
                 .map(String::new)
                 .collect(Collectors.toCollection(ArrayList::new));
         this.input = Arrays.stream(input)
-                .map(ConstLeaf::new)
+                .map(EnhancedConstLeaf::new)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public SimpleConfig(final String id, final ConstLeaf[] input) {
-        this(id, input, "");
+    public SimpleConfig(final String id, final ConstLeaf[] input, double[][] embeddings) {
+        this.id = id;
+        this.stack = Stream.of(new ConstInternal())
+                .collect(Collectors.toCollection(ArrayList::new));
+        this.states = Stream.of("")
+                .map(String::new)
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        this.input = new ArrayList<>();
+        for (int i = 0; i < input.length; i++) {
+            this.input.add(new EnhancedConstLeaf(input[i], embeddings[i]));
+        }
     }
 
     /**
@@ -52,7 +59,7 @@ public class SimpleConfig {
                 .map(String::new)
                 .collect(Collectors.toCollection(ArrayList::new));
         this.input = config.input.stream()
-                .map(ConstLeaf::new)
+                .map(EnhancedConstLeaf::new)
                 .collect(Collectors.toCollection(ArrayList::new));
         this.goldTree = config.goldTree;
     }
@@ -202,7 +209,7 @@ public class SimpleConfig {
         return input.remove(0);
     }
 
-    public void addInputLeft(ConstLeaf vertex) {
+    public void addInputLeft(EnhancedConstLeaf vertex) {
         input.add(0, vertex);
     }
 
