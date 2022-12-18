@@ -16,6 +16,7 @@ public class FeatureVectorGenerator {
     private final int embeddingAndPosVectorLength;
     private final int posVectorLength;
     private final Double[] blankEmbeddingsAndPosVector;
+    private final Double[] blankCategoryVector;
 
     public FeatureVectorGenerator(final ConstTreebank treebank) {
         // making map to one-hot encode parts of speech
@@ -38,9 +39,10 @@ public class FeatureVectorGenerator {
         embeddingAndPosVectorLength = embeddingVectorLength + posVectorLength;
 
         blankEmbeddingsAndPosVector = new Double[embeddingAndPosVectorLength];
-        for (int i = 0; i < embeddingAndPosVectorLength; i++) {
-            blankEmbeddingsAndPosVector[i] = 0.0;
-        }
+        Arrays.fill(blankEmbeddingsAndPosVector, 0.0);
+
+        blankCategoryVector = new Double[catAndPosIndexMap.size()];
+        Arrays.fill(blankCategoryVector, 0.0);
 
         HatConfig testConfig = new HatConfig("", new ConstLeaf[0], new double[0][0]);
         vectorLength = generateFeatureVector(testConfig).length;
@@ -56,16 +58,44 @@ public class FeatureVectorGenerator {
         if (config.stackLength() > 1) {
             ConstNode topOfStack = config.getStackRight(0);
             features.addAll(getLeftmostAndRightmostDependentEmbeddingsAndPos(topOfStack));
+            features.addAll(Arrays.asList(oneHotEncodeCategory(topOfStack)));
+
             if (config.stackLength() > 2) {
                 ConstNode secondTopOfStack = config.getStackRight(1);
                 features.addAll(getLeftmostAndRightmostDependentEmbeddingsAndPos(secondTopOfStack));
+                features.addAll(Arrays.asList(oneHotEncodeCategory(secondTopOfStack)));
             } else {
+                // blank leftmost and rightmost vectors
                 features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+                features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+
+                // blank stack element vector
+                features.addAll(Arrays.asList(blankCategoryVector.clone()));
+            }
+        } else {
+            // blank leftmost and rightmost vectors
+            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+
+            // blank stack element vectors
+            features.addAll(Arrays.asList(blankCategoryVector.clone()));
+            features.addAll(Arrays.asList(blankCategoryVector.clone()));
+        }
+
+        // add embeddings and parts of speech of next 2 elements of the input buffer
+        if (config.inputLength() > 1) {
+            EnhancedConstLeaf firstInput = config.getInputLeft(0);
+            features.addAll(Arrays.asList(getEmbeddingsAndPos(firstInput)));
+
+            if (config.inputLength() > 2) {
+                EnhancedConstLeaf secondInput = config.getInputLeft(1);
+                features.addAll(Arrays.asList(getEmbeddingsAndPos(secondInput)));
+            } else {
                 features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
             }
         } else {
-            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
-            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
             features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
             features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
         }
@@ -82,9 +112,7 @@ public class FeatureVectorGenerator {
 
         // initialise hatSymbolVector
         Double[] hatSymbolVector = new Double[hatSymbolVectorLength];
-        for (int i = 0; i < hatSymbolVectorLength; i++) {
-            hatSymbolVector[i] = 0.0;
-        }
+        Arrays.fill(hatSymbolVector, 0.0);
 
 
         Optional<String> hatSymbol = config.getHatSymbol();
@@ -96,6 +124,15 @@ public class FeatureVectorGenerator {
         }
 
         return hatSymbolVector;
+    }
+
+    private Double[] oneHotEncodeCategory(ConstNode node) {
+        Double[] categoryVector = new Double[catAndPosIndexMap.size()];
+        Arrays.fill(categoryVector, 0.0);
+
+        categoryVector[catAndPosIndexMap.get(node.getCat())] = 1.0;
+
+        return categoryVector;
     }
 
     private List<Double> getLeftmostAndRightmostDependentEmbeddingsAndPos(ConstNode node) {
@@ -114,9 +151,6 @@ public class FeatureVectorGenerator {
     private Double[] getEmbeddingsAndPos(EnhancedConstLeaf node) {
         // initialising one-hot encoded parts of speech vectors
         double[] posVector = new double[posVectorLength];
-        for (int i = 0; i < posVectorLength; i++) {
-            posVector[i] = 0.0;
-        }
 
         // getting parts of speech of leftmost and rightmost dependents
         posVector[posIndexMap.get(node.getCat())] = 1.0;

@@ -196,7 +196,7 @@ public class SimpleConfig {
      * @param i Index.
      * @return The element.
      */
-    public ConstLeaf getInputLeft(final int i) {
+    public EnhancedConstLeaf getInputLeft(final int i) {
         return input.get(i);
     }
 
