@@ -9,9 +9,7 @@ import standrews.classification.FeatureVectorGenerator;
 import standrews.constextract.SimpleExtractor;
 import standrews.constbase.ConstTree;
 import standrews.constbase.ConstTreebank;
-import standrews.constmethods.DeterministicParser;
 import standrews.constmethods.HatParser;
-import standrews.constmethods.SimpleParser;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -37,16 +35,18 @@ public class SimpleTester {
 	*/
 
     public int test(final ConstTreebank treebank,
-                    final String corpusCopy,
-                    final String corpusParsed,
+                    final String goldFile,
+                    final String parseFile,
                     final int m,
                     final int n,
                     final SimpleExtractor extractor) {
 //        final ConstTreebank subbank = treebank.part(m, m + n);
-//        copyTraining(subbank, corpusCopy);
+
+        writeTreebankToFile(treebank.getTestNegraTreebank(), goldFile);
+
         PrintWriter parsedWriter = null;
         try {
-            parsedWriter = new PrintWriter(corpusParsed, "UTF-8");
+            parsedWriter = new PrintWriter(parseFile, "UTF-8");
         } catch (FileNotFoundException e) {
             fail("Cannot create file: " + e);
         } catch (UnsupportedEncodingException e) {
@@ -54,7 +54,7 @@ public class SimpleTester {
         }
         assert parsedWriter != null;
 
-        System.out.println("testing");
+        reportFine("Testing model");
 
         Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextTestMiniBatch();
         while (miniBatchOptional.isPresent()) {
@@ -76,7 +76,7 @@ public class SimpleTester {
         }
         parsedWriter.close();
 
-//        String command = "discodop eval " + corpusCopy + " " + corpusParsed;
+//        String command = "discodop eval " + goldFile + " " + parseFile;
 //
 //        try {
 //            Process process = Runtime.getRuntime().exec(command);
@@ -96,19 +96,18 @@ public class SimpleTester {
         return 0;
     }
 
-    private void copyTraining(ConstTreebank treebank,
-                              final String corpusCopy) {
-        PrintWriter trainWriter = null;
+    private void writeTreebankToFile(ConstTreebank treebank,
+                                     final String corpusCopy) {
+        PrintWriter writer;
         try {
-            if (corpusCopy != null)
-                trainWriter = new PrintWriter(corpusCopy, "UTF-8");
+            writer = new PrintWriter(corpusCopy, "UTF-8");
+            writer.print("" + treebank);
+            writer.close();
         } catch (FileNotFoundException e) {
             fail("Cannot create file: " + e);
         } catch (UnsupportedEncodingException e) {
             fail("Unsupported encoding: " + e);
         }
-        trainWriter.print("" + treebank);
-        trainWriter.close();
     }
 
     protected HatParser makeParser(final ConstTree tree) {

@@ -4,6 +4,8 @@ import standrews.constautomata.HatConfig;
 import standrews.constbase.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FeatureVectorGenerator {
     private final Map<String, Integer> catIndexMap;
@@ -11,7 +13,7 @@ public class FeatureVectorGenerator {
     private final Map<String, Integer> catAndPosIndexMap;
     private final static int embeddingVectorLength = 768;
     private final int vectorLength;
-    private final int embeddingsAndPosVectorLength;
+    private final int embeddingAndPosVectorLength;
     private final int posVectorLength;
     private final Double[] blankEmbeddingsAndPosVector;
 
@@ -33,10 +35,10 @@ public class FeatureVectorGenerator {
             catAndPosIndexMap.put(categories.get(i), poss.size() + i);
         }
         posVectorLength = posIndexMap.size();
-        embeddingsAndPosVectorLength = 2*(embeddingVectorLength + posVectorLength);
+        embeddingAndPosVectorLength = embeddingVectorLength + posVectorLength;
 
-        blankEmbeddingsAndPosVector = new Double[embeddingsAndPosVectorLength];
-        for (int i = 0; i < embeddingsAndPosVectorLength; i++) {
+        blankEmbeddingsAndPosVector = new Double[embeddingAndPosVectorLength];
+        for (int i = 0; i < embeddingAndPosVectorLength; i++) {
             blankEmbeddingsAndPosVector[i] = 0.0;
         }
 
@@ -52,15 +54,18 @@ public class FeatureVectorGenerator {
 
         // add embeddings and parts of speech of leftmost and rightmost dependencies of top 2 elements of the stack
         if (config.stackLength() > 1) {
-            ConstNode node1 = config.getStackRight(0);
-            features.addAll(Arrays.asList(getEmbeddingsAndPos(node1)));
+            ConstNode topOfStack = config.getStackRight(0);
+            features.addAll(getLeftmostAndRightmostDependentEmbeddingsAndPos(topOfStack));
             if (config.stackLength() > 2) {
-                ConstNode node2 = config.getStackRight(1);
-                features.addAll(Arrays.asList(getEmbeddingsAndPos(node2)));
+                ConstNode secondTopOfStack = config.getStackRight(1);
+                features.addAll(getLeftmostAndRightmostDependentEmbeddingsAndPos(secondTopOfStack));
             } else {
+                features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
                 features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
             }
         } else {
+            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
             features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
             features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
         }
@@ -93,35 +98,38 @@ public class FeatureVectorGenerator {
         return hatSymbolVector;
     }
 
-    private Double[] getEmbeddingsAndPos(ConstNode node) {
-        // initialising one-hot encoded parts of speech vectors
-        double[] leftmostDependentPosVector = new double[posVectorLength];
-        double[] rightmostDependentPosVector = new double[posVectorLength];
-        for (int i = 0; i < posVectorLength; i++) {
-            leftmostDependentPosVector[i] = 0.0;
-            rightmostDependentPosVector[i] = 0.0;
-        }
-
+    private List<Double> getLeftmostAndRightmostDependentEmbeddingsAndPos(ConstNode node) {
         // getting leftmost and rightmost dependents
         EnhancedConstLeaf leftmostDependent = getLeftmostDependent(node);
         EnhancedConstLeaf rightmostDependent = getRightmostDependent(node);
 
+        // getting leftmost and rightmost dependents' embeddings and one-hot encoded parts of speech
+        Double[] leftmostDependentEmbeddingAndPosVector = getEmbeddingsAndPos(leftmostDependent);
+        Double[] rightmostDependentEmbeddingAndPosVector = getEmbeddingsAndPos(rightmostDependent);
+
+        return Stream.concat(Arrays.stream(leftmostDependentEmbeddingAndPosVector), Arrays.stream(rightmostDependentEmbeddingAndPosVector))
+                .collect(Collectors.toList());
+    }
+
+    private Double[] getEmbeddingsAndPos(EnhancedConstLeaf node) {
+        // initialising one-hot encoded parts of speech vectors
+        double[] posVector = new double[posVectorLength];
+        for (int i = 0; i < posVectorLength; i++) {
+            posVector[i] = 0.0;
+        }
+
         // getting parts of speech of leftmost and rightmost dependents
-        leftmostDependentPosVector[posIndexMap.get(leftmostDependent.getCat())] = 1.0;
-        rightmostDependentPosVector[posIndexMap.get(rightmostDependent.getCat())] = 1.0;
+        posVector[posIndexMap.get(node.getCat())] = 1.0;
 
         // getting embeddings of leftmost and rightmost dependents
-        double[] leftmostDependentEmbeddingVector = leftmostDependent.getWordEmbedding();
-        double[] rightmostDependentEmbeddingVector = rightmostDependent.getWordEmbedding();
+        double[] wordEmbeddingVector = node.getWordEmbedding();
 
         // putting parts of speech and embeddings into a single vector
-        double[] embeddingsAndPosVector = new double[embeddingsAndPosVectorLength];
-        System.arraycopy(leftmostDependentPosVector, 0, embeddingsAndPosVector, 0, posVectorLength);
-        System.arraycopy(rightmostDependentPosVector, 0, embeddingsAndPosVector, posVectorLength, posVectorLength);
-        System.arraycopy(leftmostDependentEmbeddingVector, 0, embeddingsAndPosVector, 2* posVectorLength, embeddingVectorLength);
-        System.arraycopy(rightmostDependentEmbeddingVector, 0, embeddingsAndPosVector, 2* posVectorLength + embeddingVectorLength, embeddingVectorLength);
+        double[] embeddingAndPosVector = new double[embeddingAndPosVectorLength];
+        System.arraycopy(posVector, 0, embeddingAndPosVector, 0, posVectorLength);
+        System.arraycopy(wordEmbeddingVector, 0, embeddingAndPosVector, posVectorLength, embeddingVectorLength);
 
-        return Arrays.stream(embeddingsAndPosVector)
+        return Arrays.stream(embeddingAndPosVector)
                 .boxed()
                 .toArray(Double[]::new);
     }

@@ -15,13 +15,13 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public class NegraTreebank extends ConstTreebank {
-//    public NegraTreebank(String id,
-//                         Set<String> poss,
-//                         Set<String> cats,
-//                         Set<String> labels,
-//                         ConstTree[] trees) {
-//        super(id, poss, cats, labels, trees);
-//    }
+    public NegraTreebank(String id,
+                         Set<String> poss,
+                         Set<String> cats,
+                         Set<String> labels,
+                         ConstTree[] trees) {
+        super(id, poss, cats, labels, trees);
+    }
 
     public NegraTreebank(final String filename,
                          String embeddingsDirectory,

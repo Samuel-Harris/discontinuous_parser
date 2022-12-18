@@ -102,6 +102,14 @@ public class ConstTreebank {
         }
     }
 
+    public NegraTreebank getTestNegraTreebank() {
+        ConstTree[] testTrees = new ConstTree[testSetIds.size()];
+        for (int i = 0; i < testSetIds.size(); i++) {
+            testTrees[i] = sentenceIdTreeMap.get(testSetIds.get(i));
+        }
+        return new NegraTreebank("", poss, cats, labels, testTrees);
+    }
+
     public SentenceEmbeddingsMetadata getSentenceEmbeddingsMetadata(String sentenceId) {
         return sentenceIdEmbeddingMap.get(sentenceId);
     }
