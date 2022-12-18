@@ -51,54 +51,11 @@ public class FeatureVectorGenerator {
     public double[] generateFeatureVector(HatConfig config) {
         List<Double> features = new ArrayList<>();
 
-        // add one-hot encoded hat symbol to input features
         features.addAll(Arrays.asList(oneHotEncodeHatSymbol(config)));
 
-        // add embeddings and parts of speech of leftmost and rightmost dependencies of top 2 elements of the stack
-        if (config.stackLength() > 1) {
-            ConstNode topOfStack = config.getStackRight(0);
-            features.addAll(getLeftmostAndRightmostDependentEmbeddingsAndPos(topOfStack));
-            features.addAll(Arrays.asList(oneHotEncodeCategory(topOfStack)));
+        features.addAll(getStackFeatures(config));
 
-            if (config.stackLength() > 2) {
-                ConstNode secondTopOfStack = config.getStackRight(1);
-                features.addAll(getLeftmostAndRightmostDependentEmbeddingsAndPos(secondTopOfStack));
-                features.addAll(Arrays.asList(oneHotEncodeCategory(secondTopOfStack)));
-            } else {
-                // blank leftmost and rightmost vectors
-                features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
-                features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
-
-                // blank stack element vector
-                features.addAll(Arrays.asList(blankCategoryVector.clone()));
-            }
-        } else {
-            // blank leftmost and rightmost vectors
-            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
-            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
-            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
-            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
-
-            // blank stack element vectors
-            features.addAll(Arrays.asList(blankCategoryVector.clone()));
-            features.addAll(Arrays.asList(blankCategoryVector.clone()));
-        }
-
-        // add embeddings and parts of speech of next 2 elements of the input buffer
-        if (config.inputLength() > 1) {
-            EnhancedConstLeaf firstInput = config.getInputLeft(0);
-            features.addAll(Arrays.asList(getEmbeddingsAndPos(firstInput)));
-
-            if (config.inputLength() > 2) {
-                EnhancedConstLeaf secondInput = config.getInputLeft(1);
-                features.addAll(Arrays.asList(getEmbeddingsAndPos(secondInput)));
-            } else {
-                features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
-            }
-        } else {
-            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
-            features.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
-        }
+        features.addAll(getInputBufferFeatures(config));
 
         // to get fellow index cat:
 //        final int abs = config.getHatAbsoluteIndex(fellowIndex);
@@ -133,6 +90,64 @@ public class FeatureVectorGenerator {
         categoryVector[catAndPosIndexMap.get(node.getCat())] = 1.0;
 
         return categoryVector;
+    }
+
+    private List<Double> getStackFeatures(HatConfig config) {
+        List<Double> stackFeatures = new ArrayList<>();
+
+        // add embeddings and parts of speech of leftmost and rightmost dependencies of top 2 elements of the stack
+        if (config.stackLength() > 1) {
+            ConstNode topOfStack = config.getStackRight(0);
+            stackFeatures.addAll(getLeftmostAndRightmostDependentEmbeddingsAndPos(topOfStack));
+            stackFeatures.addAll(Arrays.asList(oneHotEncodeCategory(topOfStack)));
+
+            if (config.stackLength() > 2) {
+                ConstNode secondTopOfStack = config.getStackRight(1);
+                stackFeatures.addAll(getLeftmostAndRightmostDependentEmbeddingsAndPos(secondTopOfStack));
+                stackFeatures.addAll(Arrays.asList(oneHotEncodeCategory(secondTopOfStack)));
+            } else {
+                // blank leftmost and rightmost vectors
+                stackFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+                stackFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+
+                // blank stack element vector
+                stackFeatures.addAll(Arrays.asList(blankCategoryVector.clone()));
+            }
+        } else {
+            // blank leftmost and rightmost vectors
+            stackFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+            stackFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+            stackFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+            stackFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+
+            // blank stack element vectors
+            stackFeatures.addAll(Arrays.asList(blankCategoryVector.clone()));
+            stackFeatures.addAll(Arrays.asList(blankCategoryVector.clone()));
+        }
+
+        return stackFeatures;
+    }
+
+    private List<Double> getInputBufferFeatures(HatConfig config) {
+        List<Double> inputBufferFeatures = new ArrayList<>();
+
+        // add embeddings and parts of speech of next 2 elements of the input buffer
+        if (config.inputLength() > 1) {
+            EnhancedConstLeaf firstInput = config.getInputLeft(0);
+            inputBufferFeatures.addAll(Arrays.asList(getEmbeddingsAndPos(firstInput)));
+
+            if (config.inputLength() > 2) {
+                EnhancedConstLeaf secondInput = config.getInputLeft(1);
+                inputBufferFeatures.addAll(Arrays.asList(getEmbeddingsAndPos(secondInput)));
+            } else {
+                inputBufferFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+            }
+        } else {
+            inputBufferFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+            inputBufferFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+        }
+
+        return inputBufferFeatures;
     }
 
     private List<Double> getLeftmostAndRightmostDependentEmbeddingsAndPos(ConstNode node) {
