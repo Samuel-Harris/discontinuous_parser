@@ -59,7 +59,6 @@ public abstract class DeterministicParser {
      * @param extractor Extractor of features.
      */
     public void observe(final HatExtractor extractor, double[][] embeddings) {
-        prepareTraining();
         final HatConfig config = makeInitialConfig(goldTree, embeddings);
         while (!config.isFinal()) {
             final String[] action = getAction(config);
@@ -80,13 +79,6 @@ public abstract class DeterministicParser {
             }
             apply(config, stepAction);
         }
-    }
-
-    /**
-     * Build data structures needed for determining parser actions.
-     */
-    protected void prepareTraining() {
-        // not used now
     }
 
     protected ConstInternal goldParent(ConstNode n) {

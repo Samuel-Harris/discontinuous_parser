@@ -45,7 +45,7 @@ public class Experiments {
 //        return bank;
 //    }
 
-    public static ConstTreebank tigerBank(String headSide, Random rng, int batchSize, double trainTestRatio, int treebankIteratorQueueSize) {
+    public static ConstTreebank tigerBank(String headSide, Random rng, int batchSize, double trainRatio, double validationRatio, int treebankIteratorQueueSize) throws ArithmeticException {
         String path = "../datasets/tigercorpus2.1/corpus/tiger_negraformat.export";
         String embeddingsDirectory = "../datasets/tiger2.1_bert_corrected_embeddings/";
         ConstTreebank bank = new NegraTreebank(path, embeddingsDirectory, 505);
@@ -61,7 +61,7 @@ public class Experiments {
         }
         finder.makeHeadedTreebank(bank);
         bank.gatherSymbols();
-        bank.setupTreebankIterator(rng, batchSize, trainTestRatio, treebankIteratorQueueSize);
+        bank.setupTreebankIterator(rng, batchSize, trainRatio, validationRatio, treebankIteratorQueueSize);
         return bank;
     }
 
@@ -170,26 +170,19 @@ public class Experiments {
             final int n,
             final FeatureVectorGenerator featureVectorGenerator,
             final boolean leftFirst,
-            final boolean suppressCompression, int maxEpochs, double tol) {
-        final String actionFile = tmp + "actionfile";
-        final String fellowFile = tmp + "fellowfile";
-        final String catFile = tmp + "catfile";
+            final boolean suppressCompression, int maxEpochs, double learningRate, double tol, int patience, int seed) {
         final MLPFactory mlpFactory = new MLPFactory(
                 featureVectorGenerator.getVectorLength(),
-                100,
-                3,
                 new int[]{256, 256, 256},
-                0.005,
-                0.001);
+                learningRate,
+                seed);
         final HatExtractor extractor = new HatExtractor(
-                treebank,
                 featureVectorGenerator,
                 mlpFactory,
-                actionFile,
-                fellowFile,
-                catFile,
-                suppressCompression);
-        final SimpleTrainer trainer = new SimpleTrainer(featureVectorGenerator, maxEpochs, tol);
+                suppressCompression,
+                tol,
+                patience);
+        final SimpleTrainer trainer = new SimpleTrainer(featureVectorGenerator, maxEpochs);
         trainer.setLeftDependentsFirst(leftFirst);
         trainer.train(treebank, n, extractor);
 //        if (nDone != n)
@@ -248,9 +241,9 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean suppressCompression,
-            final boolean goldPos, int maxEpochs, double tol) {
+            final boolean goldPos, int maxEpochs, double learningRate, double tol, int patience, int seed) {
         FeatureVectorGenerator featureVectorGenerator = new FeatureVectorGenerator(treebank);
-        final HatExtractor extractor = trainHat(lang, treebank, nTrain, featureVectorGenerator, leftFirst, suppressCompression, maxEpochs, tol);
+        final HatExtractor extractor = trainHat(lang, treebank, nTrain, featureVectorGenerator, leftFirst, suppressCompression, maxEpochs, learningRate, tol, patience, seed);
         final HatTester tester = new HatTester(featureVectorGenerator);
         tester.test(treebank, goldFile, parsedFile, nTrain, nTest, extractor);
     }
@@ -300,7 +293,7 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean suppressCompression,
-            final boolean goldPos, int maxEpochs, double tol) {
+            final boolean goldPos, int maxEpochs, double learningRate, double tol, int patience, int seed) {
         final TimerMilli timer = new TimerMilli();
         timer.start();
         trainTestHat(lang, treebank,
@@ -310,7 +303,7 @@ public class Experiments {
                 suppressCompression,
                 goldPos,
                 maxEpochs,
-                tol);
+                learningRate, tol, patience, seed);
         timer.stop();
         final String report = "Hat took " + timer.seconds() + " s";
         reportFine(report);
@@ -349,7 +342,7 @@ public class Experiments {
 //		reportLogFile(report);
 //	}
 
-    private static void doMethod() {
+    private static void doMethod() throws ArithmeticException {
 
 //		final String method = "simple";
         final String method = "hat";
@@ -366,9 +359,12 @@ public class Experiments {
         String lang = "";
         int nTrain = 0;
         int nTest = 0;
-        double trainTestRatio = 0.8;
-        int maxEpochs = 3;
-        double tol = 0.0001;
+        double trainRatio = 0.7;
+        double validationRatio = 0.2;  // testRatio = 1 - trainRatio - validationRatio
+        int maxEpochs = 20;
+        double learningRate = 0.001;
+        double tol = 0.01;
+        int patience = 5;
         int seed = 123;
         int batchSize = 50;
         int treebankIteratorQueueSize = 8;
@@ -384,7 +380,7 @@ public class Experiments {
 //                break;
             case "tiger":
                 // Tiger has 50472 trees. 80% is 40377.
-                treebank = tigerBank(headSide, rng, batchSize, trainTestRatio, treebankIteratorQueueSize);
+                treebank = tigerBank(headSide, rng, batchSize, trainRatio, validationRatio, treebankIteratorQueueSize);
                 lang = "de";
                 nTrain = 800;
                 nTest = 200;
@@ -410,7 +406,7 @@ public class Experiments {
         // final boolean leftFirst = false;
         final boolean projectivize = false;
         final boolean goldPos = true;
-        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos, maxEpochs, tol);
+        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos, maxEpochs, learningRate, tol, patience, seed);
 
 //        if (method.equals("simple")) {
 //			doTrainingAndTestingSimple(lang, treebank, nTrain, nTest,
@@ -458,7 +454,7 @@ public class Experiments {
         TigerTreebank.convertNegra(source, target);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ArithmeticException {
         setLoggerHandler();
         clearLogFile();
         doMethod();

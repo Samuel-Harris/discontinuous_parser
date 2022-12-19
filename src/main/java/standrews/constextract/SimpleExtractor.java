@@ -57,25 +57,23 @@ public class SimpleExtractor {
     /**
      * Classifier for actions.
      */
-    public MLP actionClassifier;
+    protected MLP actionClassifier;
 
     /**
      * Classifier for categories.
      */
-    public MLP catClassifier;
+    protected MLP catClassifier;
 
     protected SimpleExtractor() {
         // only used by subclasses
     }
 
-    public SimpleExtractor(final ConstTreebank treebank,
-                           final FeatureVectorGenerator featureVectorGenerator,
-                           final MLPFactory mlpFactory,
-                           final String actionFile, final String catFile) {
+    public SimpleExtractor(final FeatureVectorGenerator featureVectorGenerator,
+                           final MLPFactory mlpFactory, double tol, int patience) {
         this.featureVectorGenerator = featureVectorGenerator;
         this.mlpFactory = mlpFactory;
-        this.actionClassifier = mlpFactory.makeMLP(new ActionResponseVectorGenerator());
-        this.catClassifier = mlpFactory.makeMLP(new CatResponseVectorGenerator(featureVectorGenerator.getCatIndexMap()));
+        this.actionClassifier = mlpFactory.makeMLP(new ActionResponseVectorGenerator(), tol, patience);
+        this.catClassifier = mlpFactory.makeMLP(new CatResponseVectorGenerator(featureVectorGenerator.getCatIndexMap()), tol, patience);
 //		completeClassifiers(treebank);
     }
 
@@ -94,6 +92,14 @@ public class SimpleExtractor {
     public void train() {
         actionClassifier.train();
         catClassifier.train();
+    }
+
+    public MLP getActionClassifier() {
+        return actionClassifier;
+    }
+
+    public MLP getCatClassifier() {
+        return catClassifier;
     }
 
     public void extract(final HatConfig config, final String[] action) {

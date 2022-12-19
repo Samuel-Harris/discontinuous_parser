@@ -4,24 +4,14 @@
 
 package standrews.constextract;
 
-import standrews.classification.Classifier;
-import standrews.classification.ClassifierFactory;
 import standrews.classification.FeatureVectorGenerator;
-import standrews.classification.Features;
 import standrews.classification.FellowResponseVectorGenerator;
 import standrews.classification.MLP;
 import standrews.classification.MLPFactory;
 import standrews.constautomata.HatConfig;
-import standrews.constautomata.SimpleConfig;
-import standrews.constbase.ConstLeaf;
-import standrews.constbase.ConstTreebank;
 import standrews.constmethods.HatParser;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Optional;
-import java.util.TreeSet;
+import java.util.*;
 
 public class HatExtractor extends SimpleExtractor {
     public static final String shift = HatParser.shift;
@@ -39,21 +29,31 @@ public class HatExtractor extends SimpleExtractor {
      */
     private final MLP fellowClassifier;
 
-    public HatExtractor(final ConstTreebank treebank,
-                        final FeatureVectorGenerator featureVectorGenerator,
+    public HatExtractor(final FeatureVectorGenerator featureVectorGenerator,
                         final MLPFactory mlpFactory,
-                        final String actionFile, final String fellowFile, final String catFile,
-                        final boolean suppressCompression) {
-        super(treebank, featureVectorGenerator, mlpFactory, actionFile, catFile);
+                        final boolean suppressCompression, double tol, int patience) {
+        super(featureVectorGenerator, mlpFactory, tol, patience);
 
         this.suppressCompression = suppressCompression;
-        this.fellowClassifier = mlpFactory.makeMLP(new FellowResponseVectorGenerator());
+        this.fellowClassifier = mlpFactory.makeMLP(new FellowResponseVectorGenerator(), tol, patience);
 //		completeHatClassifiers(treebank);
     }
 
     public void train() {
         super.train();
         fellowClassifier.train();
+    }
+
+    public List<Double> validateBatch() {
+        double actionLossScore = actionClassifier.validateBatch();
+        double catLossScore = catClassifier.validateBatch();
+        double fellowLossScore = fellowClassifier.validateBatch();
+
+        return List.of(actionLossScore, catLossScore, fellowLossScore);
+    }
+
+    public MLP getFellowClassifier() {
+        return fellowClassifier;
     }
 
     public void extract(final HatConfig config, final String[] action) {

@@ -11,8 +11,8 @@ import standrews.constmethods.HatParser;
 
 public class HatTrainer extends SimpleTrainer {
 
-    public HatTrainer(final FeatureVectorGenerator featureVectorGenerator, int maxEpochs, double tol) {
-        super(featureVectorGenerator, maxEpochs, tol);
+    public HatTrainer(final FeatureVectorGenerator featureVectorGenerator, int maxEpochs) {
+        super(featureVectorGenerator, maxEpochs);
     }
 
     protected boolean allowableTree(final ConstTree tree) {

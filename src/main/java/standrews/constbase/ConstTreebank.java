@@ -20,10 +20,12 @@ public class ConstTreebank {
     protected ConstTree[] trees;
     protected List<String> sentenceIds;
     protected List<String> trainSetIds;
+    protected List<String> validationSetIds;
     protected List<String> testSetIds;
     protected HashMap<String, SentenceEmbeddingsMetadata> sentenceIdEmbeddingMap;
     protected HashMap<String, ConstTree> sentenceIdTreeMap;
     protected TreebankIterator trainTreebankIterator;
+    protected TreebankIterator validationTreebankIterator;
     protected TreebankIterator testTreebankIterator;
 
     public ConstTreebank(String id,
@@ -63,16 +65,23 @@ public class ConstTreebank {
         return all;
     }
 
-    public void setupTreebankIterator(Random rng, int batchSize, double trainTestRatio, int queueSize) {
-        // shuffle and split data into train and test data
+    public void setupTreebankIterator(Random rng, int batchSize, double trainRatio, double validationRatio, int queueSize) throws ArithmeticException {
+        if (trainRatio + validationRatio >= 1.0) {
+            throw new ArithmeticException("Error: trainRatio and validationRatio add up to more than 1 or more");
+        }
+
+        // shuffle and split data into train, validation, and test data
         sentenceIds = new ArrayList<>(sentenceIdTreeMap.keySet());
         Collections.shuffle(sentenceIds, rng);
-        int trainSize = (int) (trainTestRatio * sentenceIds.size());
+        int trainSize = (int) (trainRatio * sentenceIds.size());
+        int validationSize = (int) (validationRatio * sentenceIds.size());
         trainSetIds = sentenceIds.subList(0, trainSize);
-        testSetIds = sentenceIds.subList(trainSize, sentenceIds.size());
+        validationSetIds = sentenceIds.subList(trainSize, trainSize + validationSize);
+        testSetIds = sentenceIds.subList(trainSize + validationSize, sentenceIds.size());
 
         // set up train and test treebank iterators
         trainTreebankIterator = new TreebankIterator(trainSetIds, sentenceIdEmbeddingMap, batchSize, queueSize, rng);
+        validationTreebankIterator = new TreebankIterator(validationSetIds, sentenceIdEmbeddingMap, batchSize, queueSize, rng);
         testTreebankIterator = new TreebankIterator(testSetIds, sentenceIdEmbeddingMap, batchSize, queueSize, rng);
     }
 
@@ -80,8 +89,16 @@ public class ConstTreebank {
         trainTreebankIterator.reset();
     }
 
+    public void resetValidateTreebankIterator() {
+        validationTreebankIterator.reset();
+    }
+
     public Optional<Pair<List<ConstTree>, List<double[][]>>> getNextTrainMiniBatch() {
         return getNextMiniBatch(trainTreebankIterator);
+    }
+
+    public Optional<Pair<List<ConstTree>, List<double[][]>>> getNextValidateMiniBatch() {
+        return getNextMiniBatch(validationTreebankIterator);
     }
 
     public Optional<Pair<List<ConstTree>, List<double[][]>>> getNextTestMiniBatch() {
@@ -124,6 +141,10 @@ public class ConstTreebank {
 
     public int nTrees() {
         return trees.length;
+    }
+
+    public int getValidateSetSize() {
+        return validationSetIds.size();
     }
 
     public int nWords() {

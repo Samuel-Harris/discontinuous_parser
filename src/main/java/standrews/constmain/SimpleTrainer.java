@@ -5,21 +5,18 @@
 package standrews.constmain;
 
 import javafx.util.Pair;
-import standrews.aux_.TimerMilli;
-import standrews.classification.FeatureSpecification;
 import standrews.classification.FeatureVectorGenerator;
+import standrews.classification.MLP;
 import standrews.constextract.HatExtractor;
-import standrews.constextract.SimpleExtractor;
 import standrews.constbase.ConstTree;
 import standrews.constbase.ConstTreebank;
-import standrews.constmethods.DeterministicParser;
 import standrews.constmethods.HatParser;
-import standrews.constmethods.SimpleParser;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -28,12 +25,10 @@ public class SimpleTrainer {
 
     protected FeatureVectorGenerator featureVectorGenerator;
     protected final int maxEpochs;
-    protected final double tol;
 
-    public SimpleTrainer(final FeatureVectorGenerator featureVectorGenerator, int maxEpochs, double tol) {
+    public SimpleTrainer(final FeatureVectorGenerator featureVectorGenerator, int maxEpochs) {
         this.featureVectorGenerator = featureVectorGenerator;
         this.maxEpochs = maxEpochs;
-        this.tol = tol;
     }
 
     protected boolean leftDependentsFirst = false;
@@ -86,7 +81,65 @@ public class SimpleTrainer {
             }
 
             treebank.resetTrainTreebankIterator();
+
+            validate(treebank, extractor);
         }
+    }
+
+    private void validate(final ConstTreebank treebank, final HatExtractor extractor) {
+        double actionClassifierLossScoreSum = 0;
+        double catClassifierLossScoreSum = 0;
+        double fellowClassifierLossScoreSum = 0;
+
+        Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextValidateMiniBatch();
+        while (miniBatchOptional.isPresent()) {
+            Pair<List<ConstTree>, List<double[][]>> miniBatch = miniBatchOptional.get();
+            List<ConstTree> trees = miniBatch.getKey();
+            List<double[][]> embeddingsList = miniBatch.getValue();
+
+            for (int i = 0; i < trees.size(); i++) {
+                ConstTree tree = trees.get(i);
+                double[][] embeddings = embeddingsList.get(i);
+
+                HatParser parser = makeParser(tree);
+                parser.observe(extractor, embeddings);
+            }
+
+            List<Double> lossScoreSum = extractor.validateBatch();
+            actionClassifierLossScoreSum += lossScoreSum.get(0);
+            catClassifierLossScoreSum += lossScoreSum.get(1);
+            fellowClassifierLossScoreSum += lossScoreSum.get(2);
+
+            miniBatchOptional = treebank.getNextValidateMiniBatch();
+        }
+
+        MLP actionClassifier = extractor.getActionClassifier();
+        MLP catClassifier = extractor.getCatClassifier();
+        MLP fellowClassifier = extractor.getFellowClassifier();
+
+        int n = treebank.getValidateSetSize();
+        double actionClassifierLossScoreAverage = actionClassifierLossScoreSum / n;
+        double catClassifierLossScoreAverage = catClassifierLossScoreSum / n;
+        double fellowClassifierLossScoreAverage = fellowClassifierLossScoreSum / n;
+
+        actionClassifier.applyEarlyStoppingIfApplicable(actionClassifierLossScoreAverage);
+        catClassifier.applyEarlyStoppingIfApplicable(catClassifierLossScoreAverage);
+        fellowClassifier.applyEarlyStoppingIfApplicable(fellowClassifierLossScoreAverage);
+
+        printLossResults(actionClassifier, actionClassifierLossScoreAverage, "Action");
+        printLossResults(catClassifier, catClassifierLossScoreAverage, "Category");
+        printLossResults(fellowClassifier, fellowClassifierLossScoreAverage, "Fellow");
+        System.out.println();
+        System.out.flush();
+
+        treebank.resetValidateTreebankIterator();
+    }
+
+    private void printLossResults(MLP classifier, double loss, String classifierName) {
+        System.out.println(classifierName + " classifier loss: " + loss + "; " +
+                (classifier.isTraining()
+                        ? classifier.getEpochsWithoutImprovement() + " epochs without improvement"
+                        : "training complete"));
     }
 
     private void copyTraining(ConstTreebank treebank,

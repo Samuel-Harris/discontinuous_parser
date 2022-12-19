@@ -10,37 +10,30 @@ import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.learning.config.Nesterovs;
+import org.nd4j.linalg.lossfunctions.ILossFunction;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MLPFactory {
-    private List<Observation> observations;
     private int seed;
     private final int[] layers;
-    private int batchSize;
-    private int nEpochs;
     private double learningRate;
-    private double tol;
 
 
-    public MLPFactory(int inputSize, int batchSize, int nEpochs, int[] hiddenLayerSizes, double learningRate, double tol) {
-        this.batchSize = batchSize;
-        this.nEpochs = nEpochs;
+    public MLPFactory(int inputSize, int[] hiddenLayerSizes, double learningRate, int seed) {
         this.learningRate = learningRate;
-        this.tol = tol;
 
         // setting network layer sizes
         layers = new int[hiddenLayerSizes.length + 2];
         layers[0] = inputSize;
         System.arraycopy(hiddenLayerSizes, 0, layers, 1, hiddenLayerSizes.length);
 
-        observations = new ArrayList<>();
-        seed = 123;
+        this.seed = seed;
     }
 
-    public MLP makeMLP(ResponseVectorGenerator responseVectorGenerator) {
+    public MLP makeMLP(ResponseVectorGenerator responseVectorGenerator, double tol, int patience) {
         layers[layers.length - 1] = responseVectorGenerator.getVectorSize();
 
         NeuralNetConfiguration.ListBuilder builder = new NeuralNetConfiguration.Builder()
@@ -62,6 +55,6 @@ public class MLPFactory {
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
         network.init();
 
-        return new MLP(network, responseVectorGenerator);
+        return new MLP(network, responseVectorGenerator, tol, patience);
     }
 }
