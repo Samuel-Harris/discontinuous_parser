@@ -142,6 +142,16 @@ public class SimpleExtractor {
 //		makeAllRightCats(classifier, treebank);
 //	}
 
+    public void startValidating() {
+        actionClassifier.startValidating();
+        catClassifier.startValidating();
+    }
+
+    public void stopValidating() {
+        actionClassifier.stopValidating();
+        catClassifier.stopValidating();
+    }
+
     public Iterator<String[]> predict(final HatConfig config) {
 //		final Features actionFeats = extract(config);
         final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);

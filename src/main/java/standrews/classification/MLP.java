@@ -16,6 +16,7 @@ public class MLP {
     private final ArrayList<Pair<double[], double[]>> observations;
     private final ResponseVectorGenerator responseVectorGenerator;
     private boolean isTraining;
+    private boolean isValidating;
     private int epochsWithoutImprovement;
     private double bestLossScore;
     private final double tol;
@@ -29,18 +30,27 @@ public class MLP {
 
         observations = new ArrayList<>();
         isTraining = true;
+        isValidating = false;
         epochsWithoutImprovement = 0;
         bestLossScore = Double.POSITIVE_INFINITY;
     }
 
     public void addObservation(double[] featureVector, Object response) {
-        if (isTraining) {
+        if (isTraining || isValidating) {
             observations.add(new Pair<>(featureVector, responseVectorGenerator.generateResponseVector(response)));
         }
     }
 
     public boolean isTraining() {
         return isTraining;
+    }
+
+    public void startValidating() {
+        isValidating = true;
+    }
+
+    public void stopValidating() {
+        isValidating = false;
     }
 
     public void applyEarlyStoppingIfApplicable(double lossScore) {

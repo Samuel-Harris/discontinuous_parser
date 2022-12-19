@@ -91,6 +91,8 @@ public class SimpleTrainer {
         double catClassifierLossScoreSum = 0;
         double fellowClassifierLossScoreSum = 0;
 
+        extractor.startValidating();
+
         Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextValidateMiniBatch();
         while (miniBatchOptional.isPresent()) {
             Pair<List<ConstTree>, List<double[][]>> miniBatch = miniBatchOptional.get();
@@ -133,6 +135,7 @@ public class SimpleTrainer {
         System.out.flush();
 
         treebank.resetValidateTreebankIterator();
+        extractor.stopValidating();
     }
 
     private void printLossResults(MLP classifier, double loss, String classifierName) {

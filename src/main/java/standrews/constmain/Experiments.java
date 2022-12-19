@@ -361,7 +361,7 @@ public class Experiments {
         int nTest = 0;
         double trainRatio = 0.7;
         double validationRatio = 0.2;  // testRatio = 1 - trainRatio - validationRatio
-        int maxEpochs = 20;
+        int maxEpochs = 100;
         double learningRate = 0.001;
         double tol = 0.01;
         int patience = 5;
