@@ -62,6 +62,6 @@ public class MLPFactory {
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
         network.init();
 
-        return new MLP(network, batchSize, nEpochs, responseVectorGenerator);
+        return new MLP(network, responseVectorGenerator);
     }
 }

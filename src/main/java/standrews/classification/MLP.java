@@ -6,25 +6,18 @@ import org.nd4j.common.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import standrews.aux_.TimerMilli;
 
 import java.util.ArrayList;
 
 public class MLP {
-    private MultiLayerNetwork network;
-    private boolean trainingStarted;
-    private ArrayList<Pair<double[], double[]>> observations;
-    private final int batchSize;
-    private final int nEpochs;
-    private ResponseVectorGenerator responseVectorGenerator;
+    private final MultiLayerNetwork network;
+    private final ArrayList<Pair<double[], double[]>> observations;
+    private final ResponseVectorGenerator responseVectorGenerator;
 
-    public MLP(MultiLayerNetwork network, int batchSize, int nEpochs, ResponseVectorGenerator responseVectorGenerator) {
+    public MLP(MultiLayerNetwork network, ResponseVectorGenerator responseVectorGenerator) {
         this.network = network;
-        this.batchSize = batchSize;
-        this.nEpochs = nEpochs;
         this.responseVectorGenerator = responseVectorGenerator;
 
-        trainingStarted = false;
         observations = new ArrayList<>();
     }
 

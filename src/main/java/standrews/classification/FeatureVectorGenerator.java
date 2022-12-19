@@ -68,14 +68,22 @@ public class FeatureVectorGenerator {
         List<Double> hatFeatures = new ArrayList<>();
 
         if (config.hatExists()) {
-            hatFeatures.addAll(oneHotEncodeCategory(config.getStackHat(0)));
+            ConstNode hatNode = config.getStackHat(0);
+            hatFeatures.addAll(oneHotEncodeCategory(hatNode));
             hatFeatures.add(0.0);
+
+            hatFeatures.addAll(getLeftmostAndRightmostDependentEmbeddingsAndPos(hatNode));
         } else {  // there is no hat
             for (int i = 0; i < catAndPosIndexMap.size(); i++) {
                 hatFeatures.add(0.0);
             }
             hatFeatures.add(1.0);
+
+            // add blank leftmost and rightmost vectors
+            hatFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
+            hatFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
         }
+
 
         return hatFeatures;
     }
@@ -103,15 +111,15 @@ public class FeatureVectorGenerator {
                 stackFeatures.addAll(getLeftmostAndRightmostDependentEmbeddingsAndPos(secondTopOfStack));
                 stackFeatures.addAll(oneHotEncodeCategory(secondTopOfStack));
             } else {
-                // blank leftmost and rightmost vectors
+                // add blank leftmost and rightmost vectors
                 stackFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
                 stackFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
 
-                // blank stack element vector
+                // add blank stack element vector
                 stackFeatures.addAll(Arrays.asList(blankCategoryVector.clone()));
             }
         } else {
-            // blank leftmost and rightmost vectors
+            // add blank leftmost and rightmost vectors
             stackFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
             stackFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
             stackFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
