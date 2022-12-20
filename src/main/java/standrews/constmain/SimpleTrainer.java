@@ -83,6 +83,10 @@ public class SimpleTrainer {
             treebank.resetTrainTreebankIterator();
 
             validate(treebank, extractor);
+
+            if (!extractor.isTraining()) {
+                return;
+            }
         }
     }
 

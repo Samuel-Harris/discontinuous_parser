@@ -152,6 +152,10 @@ public class SimpleExtractor {
         catClassifier.stopValidating();
     }
 
+    public boolean isTraining() {
+        return actionClassifier.isTraining() || catClassifier.isTraining();
+    }
+
     public Iterator<String[]> predict(final HatConfig config) {
 //		final Features actionFeats = extract(config);
         final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);

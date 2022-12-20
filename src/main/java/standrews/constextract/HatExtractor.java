@@ -125,6 +125,10 @@ public class HatExtractor extends SimpleExtractor {
         fellowClassifier.stopValidating();
     }
 
+    public boolean isTraining() {
+        return super.isTraining() || fellowClassifier.isTraining();
+    }
+
     @Override
     public Iterator<String[]> predict(final HatConfig config) {
 //		final Features actionFeats = extract(config);
