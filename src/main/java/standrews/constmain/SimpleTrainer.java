@@ -5,7 +5,6 @@
 package standrews.constmain;
 
 import javafx.util.Pair;
-import standrews.aux_.TimerMilli;
 import standrews.classification.FeatureVectorGenerator;
 import standrews.classification.MLP;
 import standrews.constextract.HatExtractor;
@@ -17,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -113,7 +111,7 @@ public class SimpleTrainer {
                 parser.observe(extractor, embeddings);
             }
 
-            List<Double> lossScoreSum = extractor.validateBatch();
+            List<Double> lossScoreSum = extractor.validateMiniBatch();
             actionClassifierLossScoreSum += lossScoreSum.get(0);
             catClassifierLossScoreSum += lossScoreSum.get(1);
             fellowClassifierLossScoreSum += lossScoreSum.get(2);
@@ -145,10 +143,10 @@ public class SimpleTrainer {
     }
 
     private void printLossResults(MLP classifier, double loss, String classifierName) {
-        System.out.println(classifierName + " classifier loss: " + loss + "; " +
+        System.out.println(classifierName +
                 (classifier.isTraining()
-                        ? classifier.getEpochsWithoutImprovement() + " epochs without improvement"
-                        : "training complete"));
+                        ? " classifier loss: " + loss + "; " + classifier.getEpochsWithoutImprovement() + " epochs without improvement"
+                        : " training complete"));
     }
 
     private void copyTraining(ConstTreebank treebank,

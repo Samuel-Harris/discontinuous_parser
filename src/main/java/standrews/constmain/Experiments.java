@@ -364,7 +364,7 @@ public class Experiments {
         int maxEpochs = 3;
         double learningRate = 0.0005;
         double tol = 0.01;
-        int patience = 3;
+        int patience = 5;
         int seed = 123;
         int batchSize = 50;
         int treebankIteratorQueueSize = 32;

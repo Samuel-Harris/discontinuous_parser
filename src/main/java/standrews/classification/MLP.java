@@ -93,16 +93,20 @@ public class MLP {
         observations.clear();
     }
 
-    public double validateBatch() {
-        DataSetIterator iter = new DoublesDataSetIterator(observations, observations.size());
+    public double validateMiniBatch() {
+        if (isTraining) {
+            DataSetIterator iter = new DoublesDataSetIterator(observations, observations.size());
 
-        INDArray lossScores = network.scoreExamples(iter, false);
+            INDArray lossScores = network.scoreExamples(iter, false);
 
-        double lossScoreSum = Arrays.stream(lossScores.toDoubleVector()).sum();
+            double lossScoreSum = Arrays.stream(lossScores.toDoubleVector()).sum();
 
-        observations.clear();
+            observations.clear();
 
-        return lossScoreSum;
+            return lossScoreSum;
+        } else {
+            return 0;
+        }
     }
 
     public Object predict(double[] featureVector) {

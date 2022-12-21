@@ -46,10 +46,10 @@ public class HatExtractor extends SimpleExtractor {
         System.gc();
     }
 
-    public List<Double> validateBatch() {
-        double actionLossScore = actionClassifier.validateBatch();
-        double catLossScore = catClassifier.validateBatch();
-        double fellowLossScore = fellowClassifier.validateBatch();
+    public List<Double> validateMiniBatch() {
+        double actionLossScore = actionClassifier.validateMiniBatch();
+        double catLossScore = catClassifier.validateMiniBatch();
+        double fellowLossScore = fellowClassifier.validateMiniBatch();
 
         System.gc();
 
