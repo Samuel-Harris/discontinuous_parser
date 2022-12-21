@@ -42,12 +42,16 @@ public class HatExtractor extends SimpleExtractor {
     public void train() {
         super.train();
         fellowClassifier.train();
+
+        System.gc();
     }
 
     public List<Double> validateBatch() {
         double actionLossScore = actionClassifier.validateBatch();
         double catLossScore = catClassifier.validateBatch();
         double fellowLossScore = fellowClassifier.validateBatch();
+
+        System.gc();
 
         return List.of(actionLossScore, catLossScore, fellowLossScore);
     }

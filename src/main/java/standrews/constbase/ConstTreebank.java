@@ -5,11 +5,9 @@
 package standrews.constbase;
 
 import javafx.util.Pair;
-import org.deeplearning4j.nn.layers.feedforward.autoencoder.recursive.Tree;
 
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class ConstTreebank {
 

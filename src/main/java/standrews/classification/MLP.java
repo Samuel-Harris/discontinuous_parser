@@ -91,8 +91,6 @@ public class MLP {
 //        timer.stop();
 //        System.out.println("Deeplearning training took " + timer.seconds() + " s");
         observations.clear();
-
-        System.gc();
     }
 
     public double validateBatch() {
@@ -103,8 +101,6 @@ public class MLP {
         double lossScoreSum = Arrays.stream(lossScores.toDoubleVector()).sum();
 
         observations.clear();
-
-        System.gc();
 
         return lossScoreSum;
     }

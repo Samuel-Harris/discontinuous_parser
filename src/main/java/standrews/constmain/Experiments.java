@@ -45,8 +45,7 @@ public class Experiments {
 //        return bank;
 //    }
 
-    public static ConstTreebank tigerBank(String headSide, Random rng, int batchSize, double trainRatio, double validationRatio, int treebankIteratorQueueSize) throws ArithmeticException {
-        String path = "../datasets/tigercorpus2.1/corpus/tiger_negraformat.export";
+    public static ConstTreebank tigerBank(String path, String headSide, Random rng, int batchSize, double trainRatio, double validationRatio, int treebankIteratorQueueSize) throws ArithmeticException {
         String embeddingsDirectory = "../datasets/tiger2.1_bert_corrected_embeddings/";
         ConstTreebank bank = new NegraTreebank(path, embeddingsDirectory, 505);
         bank.removeCycles();
@@ -350,6 +349,7 @@ public class Experiments {
 
         // final String bankname = "negra";
         final String bankname = "tiger";
+        final String bankPath = "../datasets/tigercorpus2.1_small/corpus/tiger_negraformat.export";
 
         // final String headSide = "";
         // final String headSide = "left";
@@ -361,13 +361,13 @@ public class Experiments {
         int nTest = 0;
         double trainRatio = 0.7;
         double validationRatio = 0.2;  // testRatio = 1 - trainRatio - validationRatio
-        int maxEpochs = 100;
-        double learningRate = 0.001;
+        int maxEpochs = 3;
+        double learningRate = 0.0005;
         double tol = 0.01;
-        int patience = 5;
+        int patience = 3;
         int seed = 123;
         int batchSize = 50;
-        int treebankIteratorQueueSize = 8;
+        int treebankIteratorQueueSize = 32;
         Random rng = new Random(seed);
 
         switch (bankname) {
@@ -380,7 +380,7 @@ public class Experiments {
 //                break;
             case "tiger":
                 // Tiger has 50472 trees. 80% is 40377.
-                treebank = tigerBank(headSide, rng, batchSize, trainRatio, validationRatio, treebankIteratorQueueSize);
+                treebank = tigerBank(bankPath, headSide, rng, batchSize, trainRatio, validationRatio, treebankIteratorQueueSize);
                 lang = "de";
                 nTrain = 800;
                 nTest = 200;

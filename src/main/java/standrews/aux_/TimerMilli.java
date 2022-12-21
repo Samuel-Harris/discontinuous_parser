@@ -27,8 +27,7 @@ public class TimerMilli {
      * Initialise and start the timer.
      */
     public TimerMilli() {
-        start = 0;
-        stop = 0;
+        reset();
     }
 
     /**
@@ -36,6 +35,11 @@ public class TimerMilli {
      */
     public void init() {
         start = System.currentTimeMillis();
+    }
+
+    public void reset() {
+        start = 0;
+        stop = 0;
     }
 
     /**

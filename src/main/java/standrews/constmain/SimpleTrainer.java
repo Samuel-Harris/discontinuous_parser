@@ -5,6 +5,7 @@
 package standrews.constmain;
 
 import javafx.util.Pair;
+import standrews.aux_.TimerMilli;
 import standrews.classification.FeatureVectorGenerator;
 import standrews.classification.MLP;
 import standrews.constextract.HatExtractor;
@@ -59,6 +60,7 @@ public class SimpleTrainer {
                      final int n, final HatExtractor extractor) {
 //        final ConstTreebank subbank = treebank.part(0, n);
 //        copyTraining(subbank, corpusCopy);
+
         for (int epoch = 0; epoch < maxEpochs; epoch++) {
             reportFine("Epoch " + epoch);
 
