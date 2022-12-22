@@ -13,21 +13,34 @@ import standrews.constbase.ConstTreebank;
 import standrews.constmethods.HatParser;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class SimpleTrainer {
 
     protected FeatureVectorGenerator featureVectorGenerator;
     protected final int maxEpochs;
+    private final List<Double> actionLossList;
+    private final List<Double> catLossList;
+    private final List<Double> fellowLossList;
+    private final String lossListOutDirectory;
 
-    public SimpleTrainer(final FeatureVectorGenerator featureVectorGenerator, int maxEpochs) {
+    public SimpleTrainer(final FeatureVectorGenerator featureVectorGenerator, int maxEpochs, String lossListOutDirectory) {
         this.featureVectorGenerator = featureVectorGenerator;
         this.maxEpochs = maxEpochs;
+        this.lossListOutDirectory = lossListOutDirectory;
+
+        actionLossList = new ArrayList<>();
+        catLossList = new ArrayList<>();
+        fellowLossList = new ArrayList<>();
     }
 
     protected boolean leftDependentsFirst = false;
@@ -88,6 +101,28 @@ public class SimpleTrainer {
                 return;
             }
         }
+
+        writeLossListToFile("actionLosses.csv", actionLossList);
+        writeLossListToFile("categoryLosses.csv", catLossList);
+        writeLossListToFile("fellowLosses.csv", fellowLossList);
+    }
+
+    public void writeLossListToFile(String fileName, List<Double> lossList) {
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(lossListOutDirectory + fileName, StandardCharsets.UTF_8);
+        } catch (FileNotFoundException e) {
+            fail("Cannot create file: " + e);
+        } catch (UnsupportedEncodingException e) {
+            fail("Unsupported encoding: " + e);
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail("IO exception: " + e);
+        }
+
+        String output = lossList.stream().map(String::valueOf).collect(Collectors.joining(","));
+        writer.write(output);
+        writer.close();
     }
 
     private void validate(final ConstTreebank treebank, final HatExtractor extractor) {
@@ -143,10 +178,32 @@ public class SimpleTrainer {
     }
 
     private void printLossResults(MLP classifier, double loss, String classifierName) {
-        System.out.println(classifierName +
-                (classifier.isTraining()
-                        ? " classifier loss: " + loss + "; " + classifier.getEpochsWithoutImprovement() + " epochs without improvement"
-                        : " training complete"));
+        List<Double> lossList = null;
+        switch (classifierName) {
+            case "Action":
+                lossList = actionLossList;
+                break;
+            case "Category":
+                lossList = catLossList;
+                break;
+            case "Fellow":
+                lossList = fellowLossList;
+                break;
+            default:
+                System.err.println("Error: unknown classifier " + classifierName);
+                System.exit(1);
+        }
+
+        if (classifier.isTraining()) {
+            System.out.println(classifierName + " classifier loss: " + loss + "; " + classifier.getEpochsWithoutImprovement() + " epochs without improvement");
+            lossList.add(loss);
+        } else {
+            System.out.println(classifierName + " classifier loss: " + classifier.getLastLossScore() + "; training complete");
+
+            if (lossList.get(lossList.size()-1) != classifier.getLastLossScore()) {
+                lossList.add(loss);
+            }
+        }
     }
 
     private void copyTraining(ConstTreebank treebank,

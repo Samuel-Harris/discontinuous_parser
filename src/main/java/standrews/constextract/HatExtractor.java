@@ -42,8 +42,6 @@ public class HatExtractor extends SimpleExtractor {
     public void train() {
         super.train();
         fellowClassifier.train();
-
-        System.gc();
     }
 
     public List<Double> validateMiniBatch() {

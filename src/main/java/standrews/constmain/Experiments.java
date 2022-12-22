@@ -169,10 +169,10 @@ public class Experiments {
             final int n,
             final FeatureVectorGenerator featureVectorGenerator,
             final boolean leftFirst,
-            final boolean suppressCompression, int maxEpochs, int networkMiniBatchSize, double learningRate, double tol, int patience, int seed) {
+            final boolean suppressCompression, int[] hiddenLayers, int maxEpochs, int networkMiniBatchSize, double learningRate, double tol, int patience, int seed) {
         final MLPFactory mlpFactory = new MLPFactory(
                 featureVectorGenerator.getVectorLength(),
-                new int[]{256, 256, 256},
+                hiddenLayers,
                 learningRate,
                 seed);
         final HatExtractor extractor = new HatExtractor(
@@ -182,7 +182,7 @@ public class Experiments {
                 networkMiniBatchSize,
                 tol,
                 patience);
-        final SimpleTrainer trainer = new SimpleTrainer(featureVectorGenerator, maxEpochs);
+        final SimpleTrainer trainer = new SimpleTrainer(featureVectorGenerator, maxEpochs, tmp);
         trainer.setLeftDependentsFirst(leftFirst);
         trainer.train(treebank, n, extractor);
 //        if (nDone != n)
@@ -241,9 +241,9 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean suppressCompression,
-            final boolean goldPos, int maxEpochs, int networkMiniBatchSize, double learningRate, double tol, int patience, int seed) {
+            final boolean goldPos, int[] hiddenLayers, int maxEpochs, int networkMiniBatchSize, double learningRate, double tol, int patience, int seed) {
         FeatureVectorGenerator featureVectorGenerator = new FeatureVectorGenerator(treebank);
-        final HatExtractor extractor = trainHat(lang, treebank, nTrain, featureVectorGenerator, leftFirst, suppressCompression, maxEpochs, networkMiniBatchSize, learningRate, tol, patience, seed);
+        final HatExtractor extractor = trainHat(lang, treebank, nTrain, featureVectorGenerator, leftFirst, suppressCompression, hiddenLayers, maxEpochs, networkMiniBatchSize, learningRate, tol, patience, seed);
         final HatTester tester = new HatTester(featureVectorGenerator);
         tester.test(treebank, goldFile, parsedFile, nTrain, nTest, extractor);
     }
@@ -293,7 +293,7 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean suppressCompression,
-            final boolean goldPos, int maxEpochs, int networkMiniBatchSize, double learningRate, double tol, int patience, int seed) {
+            final boolean goldPos, int[] hiddenLayers, int maxEpochs, int networkMiniBatchSize, double learningRate, double tol, int patience, int seed) {
         final TimerMilli timer = new TimerMilli();
         timer.start();
         trainTestHat(lang, treebank,
@@ -301,7 +301,7 @@ public class Experiments {
                 nTrain, nTest,
                 leftFirst,
                 suppressCompression,
-                goldPos,
+                goldPos, hiddenLayers,
                 maxEpochs, networkMiniBatchSize,
                 learningRate, tol, patience, seed);
         timer.stop();
@@ -362,6 +362,7 @@ public class Experiments {
         int nTest = 0;
         double trainRatio = 0.7;
         double validationRatio = 0.2;  // testRatio = 1 - trainRatio - validationRatio
+        int[] hiddenLayers = new int[]{256, 256};
         int maxEpochs = 3;
         double learningRate = 0.0005;
         double tol = 0.001;
@@ -408,7 +409,7 @@ public class Experiments {
         // final boolean leftFirst = false;
         final boolean projectivize = false;
         final boolean goldPos = true;
-        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos, maxEpochs, networkMiniBatchSize, learningRate, tol, patience, seed);
+        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos, hiddenLayers, maxEpochs, networkMiniBatchSize, learningRate, tol, patience, seed);
 
 //        if (method.equals("simple")) {
 //			doTrainingAndTestingSimple(lang, treebank, nTrain, nTest,

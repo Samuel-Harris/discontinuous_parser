@@ -19,6 +19,7 @@ public class MLP {
     private boolean isValidating;
     private int epochsWithoutImprovement;
     private double bestLossScore;
+    private double lastLossScore;
     private final int miniBatchSize;
     private final double tol;
     private final int patience;
@@ -35,6 +36,7 @@ public class MLP {
         isValidating = false;
         epochsWithoutImprovement = 0;
         bestLossScore = Double.POSITIVE_INFINITY;
+        lastLossScore = Double.POSITIVE_INFINITY;
     }
 
     public void addObservation(double[] featureVector, Object response) {
@@ -64,6 +66,8 @@ public class MLP {
             return;
         }
 
+        lastLossScore = lossScore;
+
         if (lossScore < bestLossScore-tol) {
             bestLossScore = lossScore;
             epochsWithoutImprovement = 0;
@@ -80,6 +84,10 @@ public class MLP {
         return epochsWithoutImprovement;
     }
 
+    public double getLastLossScore() {
+        return lastLossScore;
+    }
+
     public void train() {
         if (observations.isEmpty() || !isTraining) {
             return;
@@ -90,6 +98,8 @@ public class MLP {
         network.fit(iter);
 
         observations.clear();
+
+        System.gc();
     }
 
     public double validateMiniBatch() {

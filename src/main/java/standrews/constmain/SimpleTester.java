@@ -52,7 +52,6 @@ public class SimpleTester {
         } catch (UnsupportedEncodingException e) {
             fail("Unsupported encoding: " + e);
         }
-        assert parsedWriter != null;
 
         reportFine("Testing model");
 
