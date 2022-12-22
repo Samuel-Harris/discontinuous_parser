@@ -45,7 +45,7 @@ public class Experiments {
 //        return bank;
 //    }
 
-    public static ConstTreebank tigerBank(String path, String headSide, Random rng, int batchSize, double trainRatio, double validationRatio, int treebankIteratorQueueSize) throws ArithmeticException {
+    public static ConstTreebank tigerBank(String path, String headSide, Random rng, int miniBatchSize, double trainRatio, double validationRatio, int treebankIteratorQueueSize) throws ArithmeticException {
         String embeddingsDirectory = "../datasets/tiger2.1_bert_corrected_embeddings/";
         ConstTreebank bank = new NegraTreebank(path, embeddingsDirectory, 505);
         bank.removeCycles();
@@ -60,7 +60,7 @@ public class Experiments {
         }
         finder.makeHeadedTreebank(bank);
         bank.gatherSymbols();
-        bank.setupTreebankIterator(rng, batchSize, trainRatio, validationRatio, treebankIteratorQueueSize);
+        bank.setupTreebankIterator(rng, miniBatchSize, trainRatio, validationRatio, treebankIteratorQueueSize);
         return bank;
     }
 
@@ -169,7 +169,7 @@ public class Experiments {
             final int n,
             final FeatureVectorGenerator featureVectorGenerator,
             final boolean leftFirst,
-            final boolean suppressCompression, int maxEpochs, double learningRate, double tol, int patience, int seed) {
+            final boolean suppressCompression, int maxEpochs, int networkMiniBatchSize, double learningRate, double tol, int patience, int seed) {
         final MLPFactory mlpFactory = new MLPFactory(
                 featureVectorGenerator.getVectorLength(),
                 new int[]{256, 256, 256},
@@ -179,6 +179,7 @@ public class Experiments {
                 featureVectorGenerator,
                 mlpFactory,
                 suppressCompression,
+                networkMiniBatchSize,
                 tol,
                 patience);
         final SimpleTrainer trainer = new SimpleTrainer(featureVectorGenerator, maxEpochs);
@@ -240,9 +241,9 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean suppressCompression,
-            final boolean goldPos, int maxEpochs, double learningRate, double tol, int patience, int seed) {
+            final boolean goldPos, int maxEpochs, int networkMiniBatchSize, double learningRate, double tol, int patience, int seed) {
         FeatureVectorGenerator featureVectorGenerator = new FeatureVectorGenerator(treebank);
-        final HatExtractor extractor = trainHat(lang, treebank, nTrain, featureVectorGenerator, leftFirst, suppressCompression, maxEpochs, learningRate, tol, patience, seed);
+        final HatExtractor extractor = trainHat(lang, treebank, nTrain, featureVectorGenerator, leftFirst, suppressCompression, maxEpochs, networkMiniBatchSize, learningRate, tol, patience, seed);
         final HatTester tester = new HatTester(featureVectorGenerator);
         tester.test(treebank, goldFile, parsedFile, nTrain, nTest, extractor);
     }
@@ -292,7 +293,7 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean suppressCompression,
-            final boolean goldPos, int maxEpochs, double learningRate, double tol, int patience, int seed) {
+            final boolean goldPos, int maxEpochs, int networkMiniBatchSize, double learningRate, double tol, int patience, int seed) {
         final TimerMilli timer = new TimerMilli();
         timer.start();
         trainTestHat(lang, treebank,
@@ -301,7 +302,7 @@ public class Experiments {
                 leftFirst,
                 suppressCompression,
                 goldPos,
-                maxEpochs,
+                maxEpochs, networkMiniBatchSize,
                 learningRate, tol, patience, seed);
         timer.stop();
         final String report = "Hat took " + timer.seconds() + " s";
@@ -363,10 +364,11 @@ public class Experiments {
         double validationRatio = 0.2;  // testRatio = 1 - trainRatio - validationRatio
         int maxEpochs = 3;
         double learningRate = 0.0005;
-        double tol = 0.01;
+        double tol = 0.001;
         int patience = 5;
         int seed = 123;
-        int batchSize = 50;
+        int fetchMiniBatchSize = 50;
+        int networkMiniBatchSize = 128;
         int treebankIteratorQueueSize = 32;
         Random rng = new Random(seed);
 
@@ -380,7 +382,7 @@ public class Experiments {
 //                break;
             case "tiger":
                 // Tiger has 50472 trees. 80% is 40377.
-                treebank = tigerBank(bankPath, headSide, rng, batchSize, trainRatio, validationRatio, treebankIteratorQueueSize);
+                treebank = tigerBank(bankPath, headSide, rng, fetchMiniBatchSize, trainRatio, validationRatio, treebankIteratorQueueSize);
                 lang = "de";
                 nTrain = 800;
                 nTest = 200;
@@ -406,7 +408,7 @@ public class Experiments {
         // final boolean leftFirst = false;
         final boolean projectivize = false;
         final boolean goldPos = true;
-        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos, maxEpochs, learningRate, tol, patience, seed);
+        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, false, goldPos, maxEpochs, networkMiniBatchSize, learningRate, tol, patience, seed);
 
 //        if (method.equals("simple")) {
 //			doTrainingAndTestingSimple(lang, treebank, nTrain, nTest,

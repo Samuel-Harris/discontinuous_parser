@@ -76,12 +76,12 @@ public class SimpleTrainer {
                     parser.observe(extractor, embeddings);
                 }
 
-                extractor.train();
                 miniBatchOptional = treebank.getNextTrainMiniBatch();
             }
 
             treebank.resetTrainTreebankIterator();
 
+            extractor.train();
             validate(treebank, extractor);
 
             if (!extractor.isTraining()) {

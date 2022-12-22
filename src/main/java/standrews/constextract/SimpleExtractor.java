@@ -64,16 +64,12 @@ public class SimpleExtractor {
      */
     protected MLP catClassifier;
 
-    protected SimpleExtractor() {
-        // only used by subclasses
-    }
-
     public SimpleExtractor(final FeatureVectorGenerator featureVectorGenerator,
-                           final MLPFactory mlpFactory, double tol, int patience) {
+                           final MLPFactory mlpFactory, int networkMiniBatchSize, double tol, int patience) {
         this.featureVectorGenerator = featureVectorGenerator;
         this.mlpFactory = mlpFactory;
-        this.actionClassifier = mlpFactory.makeMLP(new ActionResponseVectorGenerator(), tol, patience);
-        this.catClassifier = mlpFactory.makeMLP(new CatResponseVectorGenerator(featureVectorGenerator.getCatIndexMap()), tol, patience);
+        this.actionClassifier = mlpFactory.makeMLP(new ActionResponseVectorGenerator(), networkMiniBatchSize, tol, patience);
+        this.catClassifier = mlpFactory.makeMLP(new CatResponseVectorGenerator(featureVectorGenerator.getCatIndexMap()), networkMiniBatchSize, tol, patience);
 //		completeClassifiers(treebank);
     }
 

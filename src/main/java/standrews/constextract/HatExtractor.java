@@ -31,11 +31,11 @@ public class HatExtractor extends SimpleExtractor {
 
     public HatExtractor(final FeatureVectorGenerator featureVectorGenerator,
                         final MLPFactory mlpFactory,
-                        final boolean suppressCompression, double tol, int patience) {
-        super(featureVectorGenerator, mlpFactory, tol, patience);
+                        final boolean suppressCompression, int networkMiniBatchSize, double tol, int patience) {
+        super(featureVectorGenerator, mlpFactory, networkMiniBatchSize, tol, patience);
 
         this.suppressCompression = suppressCompression;
-        this.fellowClassifier = mlpFactory.makeMLP(new FellowResponseVectorGenerator(), tol, patience);
+        this.fellowClassifier = mlpFactory.makeMLP(new FellowResponseVectorGenerator(), networkMiniBatchSize, tol, patience);
 //		completeHatClassifiers(treebank);
     }
 

@@ -19,12 +19,14 @@ public class MLP {
     private boolean isValidating;
     private int epochsWithoutImprovement;
     private double bestLossScore;
+    private final int miniBatchSize;
     private final double tol;
     private final int patience;
 
-    public MLP(MultiLayerNetwork network, ResponseVectorGenerator responseVectorGenerator, double tol, int patience) {
+    public MLP(MultiLayerNetwork network, ResponseVectorGenerator responseVectorGenerator, int miniBatchSize, double tol, int patience) {
         this.network = network;
         this.responseVectorGenerator = responseVectorGenerator;
+        this.miniBatchSize = miniBatchSize;
         this.tol = tol;
         this.patience = patience;
 
@@ -38,6 +40,10 @@ public class MLP {
     public void addObservation(double[] featureVector, Object response) {
         if (isTraining || isValidating) {
             observations.add(new Pair<>(featureVector, responseVectorGenerator.generateResponseVector(response)));
+
+            if (isTraining && observations.size() == miniBatchSize) {
+                train();
+            }
         }
     }
 
@@ -83,18 +89,11 @@ public class MLP {
 
         network.fit(iter);
 
-//        final TimerMilli timer = new TimerMilli();
-//        timer.start();
-//        for (int n = 0; n < nEpochs; n++) {
-//            network.fit(iter);
-//        }
-//        timer.stop();
-//        System.out.println("Deeplearning training took " + timer.seconds() + " s");
         observations.clear();
     }
 
     public double validateMiniBatch() {
-        if (isTraining) {
+        if (isTraining && !observations.isEmpty()) {
             DataSetIterator iter = new DoublesDataSetIterator(observations, observations.size());
 
             INDArray lossScores = network.scoreExamples(iter, false);

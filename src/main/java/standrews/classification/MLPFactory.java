@@ -6,34 +6,26 @@ import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.learning.config.Adam;
-import org.nd4j.linalg.learning.config.Nesterovs;
-import org.nd4j.linalg.lossfunctions.ILossFunction;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MLPFactory {
-    private int seed;
+    private final int seed;
     private final int[] layers;
-    private double learningRate;
-
+    private final double learningRate;
 
     public MLPFactory(int inputSize, int[] hiddenLayerSizes, double learningRate, int seed) {
         this.learningRate = learningRate;
+        this.seed = seed;
 
         // setting network layer sizes
         layers = new int[hiddenLayerSizes.length + 2];
         layers[0] = inputSize;
         System.arraycopy(hiddenLayerSizes, 0, layers, 1, hiddenLayerSizes.length);
-
-        this.seed = seed;
     }
 
-    public MLP makeMLP(ResponseVectorGenerator responseVectorGenerator, double tol, int patience) {
+    public MLP makeMLP(ResponseVectorGenerator responseVectorGenerator, int miniBatchSize, double tol, int patience) {
         layers[layers.length - 1] = responseVectorGenerator.getVectorSize();
 
         NeuralNetConfiguration.ListBuilder builder = new NeuralNetConfiguration.Builder()
@@ -55,6 +47,6 @@ public class MLPFactory {
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
         network.init();
 
-        return new MLP(network, responseVectorGenerator, tol, patience);
+        return new MLP(network, responseVectorGenerator, miniBatchSize, tol, patience);
     }
 }

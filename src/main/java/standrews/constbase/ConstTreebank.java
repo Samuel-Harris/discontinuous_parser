@@ -63,7 +63,7 @@ public class ConstTreebank {
         return all;
     }
 
-    public void setupTreebankIterator(Random rng, int batchSize, double trainRatio, double validationRatio, int queueSize) throws ArithmeticException {
+    public void setupTreebankIterator(Random rng, int miniBatchSize, double trainRatio, double validationRatio, int queueSize) throws ArithmeticException {
         if (trainRatio + validationRatio >= 1.0) {
             throw new ArithmeticException("Error: trainRatio and validationRatio add up to more than 1 or more");
         }
@@ -78,9 +78,9 @@ public class ConstTreebank {
         testSetIds = sentenceIds.subList(trainSize + validationSize, sentenceIds.size());
 
         // set up train and test treebank iterators
-        trainTreebankIterator = new TreebankIterator(trainSetIds, sentenceIdEmbeddingMap, batchSize, queueSize, rng);
-        validationTreebankIterator = new TreebankIterator(validationSetIds, sentenceIdEmbeddingMap, batchSize, queueSize, rng);
-        testTreebankIterator = new TreebankIterator(testSetIds, sentenceIdEmbeddingMap, batchSize, queueSize, rng);
+        trainTreebankIterator = new TreebankIterator(trainSetIds, sentenceIdEmbeddingMap, miniBatchSize, queueSize, rng);
+        validationTreebankIterator = new TreebankIterator(validationSetIds, sentenceIdEmbeddingMap, miniBatchSize, queueSize, rng);
+        testTreebankIterator = new TreebankIterator(testSetIds, sentenceIdEmbeddingMap, miniBatchSize, queueSize, rng);
     }
 
     public void resetTrainTreebankIterator() {
