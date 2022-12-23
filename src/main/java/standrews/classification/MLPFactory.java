@@ -14,10 +14,14 @@ public class MLPFactory {
     private final int seed;
     private final int[] layers;
     private final double learningRate;
+    private final double l2Lambda;
+    private final double dropoutRate;
 
-    public MLPFactory(int inputSize, int[] hiddenLayerSizes, double learningRate, int seed) {
+    public MLPFactory(int inputSize, int[] hiddenLayerSizes, double learningRate, double l2Lambda, double dropoutRate, int seed) {
         this.learningRate = learningRate;
         this.seed = seed;
+        this.l2Lambda = l2Lambda;
+        this.dropoutRate = dropoutRate;
 
         // setting network layer sizes
         layers = new int[hiddenLayerSizes.length + 2];
@@ -41,6 +45,8 @@ public class MLPFactory {
                             .nOut(layers[n])
                             .weightInit(WeightInit.XAVIER)
                             .activation(last ? Activation.SOFTMAX : Activation.RELU)
+                            .l2(l2Lambda)
+                            .dropOut(dropoutRate)
                             .build());
         }
         MultiLayerConfiguration conf = builder.build();
