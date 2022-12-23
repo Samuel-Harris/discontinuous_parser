@@ -4,14 +4,12 @@ import org.deeplearning4j.datasets.iterator.DoublesDataSetIterator;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.common.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class MLP {
     private final MultiLayerNetwork network;
@@ -42,6 +40,11 @@ public class MLP {
         lastLossScore = Double.POSITIVE_INFINITY;
     }
 
+    private void clearObservations() {
+        observations.clear();
+        System.gc();
+    }
+
     public void addObservation(double[] featureVector, Object response) {
         if (isTraining || isValidating) {
             observations.add(new Pair<>(featureVector, responseVectorGenerator.generateResponseVector(response)));
@@ -65,6 +68,10 @@ public class MLP {
     }
 
     public void applyEarlyStoppingIfApplicable(double trainLossScore, double validLossScore) {
+        if (!isTraining) {
+            return;
+        }
+
         applyEarlyStoppingIfApplicable(validLossScore);
         this.lastTrainLossScore = trainLossScore;
     }
@@ -109,9 +116,7 @@ public class MLP {
 
         network.fit(iter);
 
-        observations.clear();
-
-        System.gc();
+        clearObservations();
     }
 
     public void save(String filePath) throws IOException {
@@ -126,7 +131,7 @@ public class MLP {
 
             double lossScoreSum = Arrays.stream(lossScores.toDoubleVector()).sum();
 
-            observations.clear();
+            clearObservations();
 
             return lossScoreSum;
         } else {

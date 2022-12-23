@@ -372,16 +372,16 @@ public class Experiments {
         double trainRatio = 0.7;
         double validationRatio = 0.15;  // testRatio = 1 - trainRatio - validationRatio
         int[] hiddenLayers = new int[]{256, 256};
-        int maxEpochs = 3;
-        double learningRate = 0.0005;
-        double l2Lambda = 0.0001;
+        int maxEpochs = 15;
+        double learningRate = 0.001;
+        double l2Lambda = 0.00001;
         double dropoutRate = 0.1;
         double tol = 0.001;
         int patience = 5;
         int seed = 123;
         int fetchMiniBatchSize = 50;
         int networkMiniBatchSize = 128;
-        int treebankIteratorQueueSize = 32;
+        int treebankIteratorQueueSize = 16;
         Random rng = new Random(seed);
 
         switch (bankname) {

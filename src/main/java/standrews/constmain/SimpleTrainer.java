@@ -273,7 +273,7 @@ public class SimpleTrainer {
             trainLossList.add(trainLoss);
             validLossList.add(validationLoss);
         } else {
-            System.out.println(classifierName + " classifier train loss: " + classifier.getLastTrainLossScore() + "; validation loss: " + classifier.getLastLossScore() + "; " + classifier.getEpochsWithoutImprovement() + " epochs without improvement");
+            System.out.println(classifierName + " classifier train loss: " + classifier.getLastTrainLossScore() + "; validation loss: " + classifier.getLastLossScore() + "; training complete");
 
             if (validLossList.get(validLossList.size()-1) != classifier.getLastLossScore()) {
                 trainLossList.add(trainLoss);
