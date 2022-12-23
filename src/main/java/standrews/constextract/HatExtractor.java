@@ -11,6 +11,7 @@ import standrews.classification.MLPFactory;
 import standrews.constautomata.HatConfig;
 import standrews.constmethods.HatParser;
 
+import java.io.IOException;
 import java.util.*;
 
 public class HatExtractor extends SimpleExtractor {
@@ -83,6 +84,11 @@ public class HatExtractor extends SimpleExtractor {
 //		}
 //		return feats;
         return	featureVectorGenerator.generateFeatureVector(config);
+    }
+
+    public void saveClassifiers(String actionFilePath, String catFilePath, String fellowFilePath) throws IOException {
+        super.saveClassifiers(actionFilePath, catFilePath);
+        fellowClassifier.save(fellowFilePath);
     }
 
 //	protected void completeHatClassifiers(ConstTreebank treebank) {

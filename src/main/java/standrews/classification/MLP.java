@@ -8,6 +8,8 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -110,6 +112,10 @@ public class MLP {
         observations.clear();
 
         System.gc();
+    }
+
+    public void save(String filePath) throws IOException {
+        network.save(new File(filePath));
     }
 
     public double validateMiniBatch() {

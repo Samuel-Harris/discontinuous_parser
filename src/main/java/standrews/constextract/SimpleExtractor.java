@@ -10,14 +10,12 @@ import standrews.classification.FeatureVectorGenerator;
 import standrews.classification.MLP;
 import standrews.classification.MLPFactory;
 import standrews.constautomata.HatConfig;
-import standrews.constautomata.SimpleConfig;
-import standrews.constbase.*;
 import standrews.constmethods.SimpleParser;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Optional;
 
 public class SimpleExtractor {
     public static final String shift = SimpleParser.shift;
@@ -106,6 +104,11 @@ public class SimpleExtractor {
 //			final Features catFeats = extract(config);
             catClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[1]);
         }
+    }
+
+    public void saveClassifiers(String actionFilePath, String catFilePath) throws IOException {
+        actionClassifier.save(actionFilePath);
+        catClassifier.save(catFilePath);
     }
 
 //	protected Features extract(final SimpleConfig config) {

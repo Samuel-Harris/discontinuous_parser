@@ -4,12 +4,10 @@
 
 package standrews.constmain;
 
-import standrews.classification.FeatureSpecification;
 import standrews.classification.FeatureVectorGenerator;
 import standrews.constautomata.HatConfig;
 import standrews.constautomata.SimpleConfig;
 import standrews.constbase.ConstTree;
-import standrews.constmethods.DeterministicParser;
 import standrews.constmethods.HatParser;
 
 public class HatTester extends SimpleTester {

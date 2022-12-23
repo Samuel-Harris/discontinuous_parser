@@ -7,12 +7,14 @@ package standrews.constmain;
 import javafx.util.Pair;
 import standrews.classification.FeatureVectorGenerator;
 import standrews.constbase.DatasetSplit;
+import standrews.constextract.HatExtractor;
 import standrews.constextract.SimpleExtractor;
 import standrews.constbase.ConstTree;
 import standrews.constbase.ConstTreebank;
 import standrews.constmethods.HatParser;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
@@ -38,9 +40,12 @@ public class SimpleTester {
     public int test(final ConstTreebank treebank,
                     final String goldFile,
                     final String parseFile,
+                    String actionFilePath,
+                    String catFilePath,
+                    String fellowFilePath,
                     final int m,
                     final int n,
-                    final SimpleExtractor extractor) {
+                    final HatExtractor extractor) {
 //        final ConstTreebank subbank = treebank.part(m, m + n);
 
         writeTreebankToFile(treebank.getTestNegraTreebank(), goldFile);
@@ -48,10 +53,13 @@ public class SimpleTester {
         PrintWriter parsedWriter = null;
         try {
             parsedWriter = new PrintWriter(parseFile, "UTF-8");
+            extractor.saveClassifiers(actionFilePath, catFilePath, fellowFilePath);
         } catch (FileNotFoundException e) {
             fail("Cannot create file: " + e);
         } catch (UnsupportedEncodingException e) {
             fail("Unsupported encoding: " + e);
+        } catch (IOException e) {
+            fail("failed creating printWriter or saving model: " + e);
         }
 
         reportFine("Testing model");

@@ -240,6 +240,9 @@ public class Experiments {
             final String lang, final ConstTreebank treebank,
             final String goldFile,
             final String parsedFile,
+            String actionFilePath,
+            String catFilePath,
+            String fellowFilePath,
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean measureTrainLoss, int[] hiddenLayers, int maxEpochs, int networkMiniBatchSize,
@@ -248,7 +251,7 @@ public class Experiments {
         final HatExtractor extractor = trainHat(lang, treebank, nTrain, featureVectorGenerator, leftFirst,
                 measureTrainLoss, hiddenLayers, maxEpochs, networkMiniBatchSize, learningRate, l2Lambda, dropoutRate, tol, patience, seed);
         final HatTester tester = new HatTester(featureVectorGenerator);
-        tester.test(treebank, goldFile, parsedFile, nTrain, nTest, extractor);
+        tester.test(treebank, goldFile, parsedFile, actionFilePath, catFilePath, fellowFilePath, nTrain, nTest, extractor);
     }
 
     public static void trainTestWholeHat(
@@ -302,6 +305,7 @@ public class Experiments {
         timer.start();
         trainTestHat(lang, treebank,
                 tmp + "goldfile.export", tmp + "parsedfile.export",
+                tmp + "actionClassifier.model", tmp + "catClassifier.model", tmp + "fellowClassifier.model",
                 nTrain, nTest,
                 leftFirst,
                 measureTrainLoss,
@@ -366,11 +370,11 @@ public class Experiments {
         int nTrain = 0;
         int nTest = 0;
         double trainRatio = 0.7;
-        double validationRatio = 0.2;  // testRatio = 1 - trainRatio - validationRatio
+        double validationRatio = 0.15;  // testRatio = 1 - trainRatio - validationRatio
         int[] hiddenLayers = new int[]{256, 256};
         int maxEpochs = 3;
         double learningRate = 0.0005;
-        double l2Lambda = 0.001;
+        double l2Lambda = 0.0001;
         double dropoutRate = 0.1;
         double tol = 0.001;
         int patience = 5;
