@@ -20,21 +20,14 @@ public class HatExtractor extends SimpleExtractor {
     public static final String reduceFromHat = HatParser.reduceFromHat;
 
     /**
-     * Experimental option to suppress use of compression features.
-     */
-    private boolean suppressCompression = false;
-
-    /**
      * Classifier that determines fellow index.
      */
     private final MLP fellowClassifier;
 
     public HatExtractor(final FeatureVectorGenerator featureVectorGenerator,
-                        final MLPFactory mlpFactory,
-                        final boolean suppressCompression, int networkMiniBatchSize, double tol, int patience) {
+                        final MLPFactory mlpFactory, int networkMiniBatchSize, double tol, int patience) {
         super(featureVectorGenerator, mlpFactory, networkMiniBatchSize, tol, patience);
 
-        this.suppressCompression = suppressCompression;
         this.fellowClassifier = mlpFactory.makeMLP(new FellowResponseVectorGenerator(), networkMiniBatchSize, tol, patience);
 //		completeHatClassifiers(treebank);
     }

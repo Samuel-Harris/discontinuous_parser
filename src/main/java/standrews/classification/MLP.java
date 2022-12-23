@@ -20,6 +20,7 @@ public class MLP {
     private int epochsWithoutImprovement;
     private double bestLossScore;
     private double lastLossScore;
+    private double lastTrainLossScore;
     private final int miniBatchSize;
     private final double tol;
     private final int patience;
@@ -61,6 +62,11 @@ public class MLP {
         isValidating = false;
     }
 
+    public void applyEarlyStoppingIfApplicable(double trainLossScore, double validLossScore) {
+        applyEarlyStoppingIfApplicable(validLossScore);
+        this.lastTrainLossScore = trainLossScore;
+    }
+
     public void applyEarlyStoppingIfApplicable(double lossScore) {
         if (!isTraining) {
             return;
@@ -82,6 +88,10 @@ public class MLP {
 
     public int getEpochsWithoutImprovement() {
         return epochsWithoutImprovement;
+    }
+
+    public double getLastTrainLossScore() {
+        return lastTrainLossScore;
     }
 
     public double getLastLossScore() {

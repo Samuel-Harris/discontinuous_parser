@@ -6,6 +6,7 @@ package standrews.constmain;
 
 import javafx.util.Pair;
 import standrews.classification.FeatureVectorGenerator;
+import standrews.constbase.DatasetSplit;
 import standrews.constextract.SimpleExtractor;
 import standrews.constbase.ConstTree;
 import standrews.constbase.ConstTreebank;
@@ -55,7 +56,7 @@ public class SimpleTester {
 
         reportFine("Testing model");
 
-        Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextTestMiniBatch();
+        Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TEST);
         while (miniBatchOptional.isPresent()) {
             Pair<List<ConstTree>, List<double[][]>> miniBatch = miniBatchOptional.get();
             List<ConstTree> trees = miniBatch.getKey();
@@ -71,7 +72,7 @@ public class SimpleTester {
                 parsedWriter.println(parsed);
             }
 
-            miniBatchOptional = treebank.getNextTestMiniBatch();
+            miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TEST);
         }
         parsedWriter.close();
 

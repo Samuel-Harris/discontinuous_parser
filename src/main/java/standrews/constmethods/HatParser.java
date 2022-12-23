@@ -20,7 +20,8 @@ public class HatParser extends SimpleParser {
      * The first parts of actions.
      */
     public static final String shift = "shift";
-    public static final String reduceUpHat = "reduceUpHat";
+    public static final String reduceUpHat = "reduceUpHat";  // this is the completion rule.
+
     public static final String reduceToHat = "reduceToHat";
     public static final String reduceFromHat = "reduceFromHat";
     public static final String[] actionNames =
@@ -153,7 +154,7 @@ public class HatParser extends SimpleParser {
         config.setAbsoluteHatIndex(config.stackLength() - 1);
     }
 
-    protected void reduceUpHat(final HatConfig config, final String cat) {
+    protected void reduceUpHat(final HatConfig config, final String cat) {  // this is the completion rule
         final int i = config.getAbsoluteHatIndex();
         final ConstNode child = config.removeStackLeft(i);
         final ConstInternal goldParent = goldTree.getParent(child);

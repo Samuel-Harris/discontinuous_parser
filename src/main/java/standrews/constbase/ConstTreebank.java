@@ -83,20 +83,47 @@ public class ConstTreebank {
         testTreebankIterator = new TreebankIterator(testSetIds, sentenceIdEmbeddingMap, miniBatchSize, queueSize, rng);
     }
 
-    public void resetTrainTreebankIterator() {
-        trainTreebankIterator.reset();
+    public void resetTreebankIterator(DatasetSplit datasetSplit) {
+        switch (datasetSplit) {
+            case TRAIN:
+                trainTreebankIterator.reset();
+                break;
+            case VALIDATION:
+                validationTreebankIterator.reset();
+                break;
+            case TEST:
+                testTreebankIterator.reset();
+                break;
+        }
     }
 
-    public void resetValidateTreebankIterator() {
-        validationTreebankIterator.reset();
-    }
+    public Optional<Pair<List<ConstTree>, List<double[][]>>> getNextMiniBatch(DatasetSplit datasetSplit) {
+        TreebankIterator treebankIterator;
+        switch (datasetSplit) {
+            case TRAIN:
+                treebankIterator = trainTreebankIterator;
+                break;
+            case VALIDATION:
+                treebankIterator = validationTreebankIterator;
+                break;
+            case TEST:
+                treebankIterator = testTreebankIterator;
+                break;
+            default:
+                return Optional.empty();
+        }
 
-    public Optional<Pair<List<ConstTree>, List<double[][]>>> getNextTrainMiniBatch() {
-        return getNextMiniBatch(trainTreebankIterator);
-    }
-
-    public Optional<Pair<List<ConstTree>, List<double[][]>>> getNextValidateMiniBatch() {
-        return getNextMiniBatch(validationTreebankIterator);
+        Optional<Pair<List<String>, List<double[][]>>> idsAndEmbeddingsOptional = treebankIterator.next();
+        if (idsAndEmbeddingsOptional.isEmpty()) {
+            return Optional.empty();
+        } else {
+            Pair<List<String>, List<double[][]>> idsAndEmbeddings = idsAndEmbeddingsOptional.get();
+            List<ConstTree> miniBatchTrees = new ArrayList<>(idsAndEmbeddings.getKey().size());
+            for (String sentenceId: idsAndEmbeddings.getKey()){
+                miniBatchTrees.add(sentenceIdTreeMap.get(sentenceId));
+            }
+            return Optional.of(new Pair<>(miniBatchTrees, idsAndEmbeddings.getValue()));
+        }
     }
 
     public Optional<Pair<List<ConstTree>, List<double[][]>>> getNextTestMiniBatch() {
@@ -141,8 +168,18 @@ public class ConstTreebank {
         return trees.length;
     }
 
-    public int getValidateSetSize() {
-        return validationSetIds.size();
+    public int getSetSize(DatasetSplit datasetSplit) {
+        switch (datasetSplit) {
+            case TRAIN:
+                return trainSetIds.size();
+            case VALIDATION:
+                return validationSetIds.size();
+            case TEST:
+                return testSetIds.size();
+            default:
+                System.exit(1);
+                return 0;
+        }
     }
 
     public int nWords() {

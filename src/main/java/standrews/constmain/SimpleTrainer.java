@@ -7,6 +7,8 @@ package standrews.constmain;
 import javafx.util.Pair;
 import standrews.classification.FeatureVectorGenerator;
 import standrews.classification.MLP;
+import standrews.constbase.ClassifierName;
+import standrews.constbase.DatasetSplit;
 import standrews.constextract.HatExtractor;
 import standrews.constbase.ConstTree;
 import standrews.constbase.ConstTreebank;
@@ -28,19 +30,32 @@ public class SimpleTrainer {
 
     protected FeatureVectorGenerator featureVectorGenerator;
     protected final int maxEpochs;
-    private final List<Double> actionLossList;
-    private final List<Double> catLossList;
-    private final List<Double> fellowLossList;
     private final String lossListOutDirectory;
+    private final boolean measureTrainLoss;
 
-    public SimpleTrainer(final FeatureVectorGenerator featureVectorGenerator, int maxEpochs, String lossListOutDirectory) {
+    private final List<Double> actionValidLossList;
+    private final List<Double> catValidLossList;
+    private final List<Double> fellowValidLossList;
+
+    private final List<Double> actionTrainLossList;
+    private final List<Double> catTrainLossList;
+    private final List<Double> fellowTrainLossList;
+
+    public SimpleTrainer(final FeatureVectorGenerator featureVectorGenerator,
+                         int maxEpochs, String lossListOutDirectory,
+                         boolean measureTrainLoss) {
         this.featureVectorGenerator = featureVectorGenerator;
         this.maxEpochs = maxEpochs;
         this.lossListOutDirectory = lossListOutDirectory;
+        this.measureTrainLoss = measureTrainLoss;
 
-        actionLossList = new ArrayList<>();
-        catLossList = new ArrayList<>();
-        fellowLossList = new ArrayList<>();
+        actionValidLossList = new ArrayList<>();
+        catValidLossList = new ArrayList<>();
+        fellowValidLossList = new ArrayList<>();
+
+        actionTrainLossList = new ArrayList<>();
+        catTrainLossList = new ArrayList<>();
+        fellowTrainLossList = new ArrayList<>();
     }
 
     protected boolean leftDependentsFirst = false;
@@ -75,7 +90,7 @@ public class SimpleTrainer {
         for (int epoch = 0; epoch < maxEpochs; epoch++) {
             reportFine("Epoch " + epoch);
 
-            Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextTrainMiniBatch();
+            Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TRAIN);
             while (miniBatchOptional.isPresent()) {
                 Pair<List<ConstTree>, List<double[][]>> miniBatch = miniBatchOptional.get();
                 List<ConstTree> trees = miniBatch.getKey();
@@ -89,10 +104,10 @@ public class SimpleTrainer {
                     parser.observe(extractor, embeddings);
                 }
 
-                miniBatchOptional = treebank.getNextTrainMiniBatch();
+                miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TRAIN);
             }
 
-            treebank.resetTrainTreebankIterator();
+            treebank.resetTreebankIterator(DatasetSplit.TRAIN);
 
             extractor.train();
             validate(treebank, extractor);
@@ -102,9 +117,13 @@ public class SimpleTrainer {
             }
         }
 
-        writeLossListToFile("actionLosses.csv", actionLossList);
-        writeLossListToFile("categoryLosses.csv", catLossList);
-        writeLossListToFile("fellowLosses.csv", fellowLossList);
+        writeLossListToFile("actionTrainLosses.csv", actionTrainLossList);
+        writeLossListToFile("categoryTrainLosses.csv", catTrainLossList);
+        writeLossListToFile("fellowTrainLosses.csv", fellowTrainLossList);
+
+        writeLossListToFile("actionValidationLosses.csv", actionValidLossList);
+        writeLossListToFile("categoryValidationLosses.csv", catValidLossList);
+        writeLossListToFile("fellowValidationLosses.csv", fellowValidLossList);
     }
 
     public void writeLossListToFile(String fileName, List<Double> lossList) {
@@ -125,14 +144,53 @@ public class SimpleTrainer {
         writer.close();
     }
 
-    private void validate(final ConstTreebank treebank, final HatExtractor extractor) {
+    private void validate(final ConstTreebank treebank, HatExtractor extractor) {
+        extractor.startValidating();
+
+        double[] validationLossScores = calculateAverageLossScores(treebank, extractor, DatasetSplit.VALIDATION);
+        double actionValidationLossScore = validationLossScores[0];
+        double catValidationLossScore = validationLossScores[1];
+        double fellowValidationLossScore = validationLossScores[2];
+
+        MLP actionClassifier = extractor.getActionClassifier();
+        MLP catClassifier = extractor.getCatClassifier();
+        MLP fellowClassifier = extractor.getFellowClassifier();
+
+
+        if (measureTrainLoss) {
+            double[] trainLossScores = calculateAverageLossScores(treebank, extractor, DatasetSplit.TRAIN);
+            double actionTrainLossScore = trainLossScores[0];
+            double catTrainScore = trainLossScores[1];
+            double fellowTrainLossScore = trainLossScores[2];
+
+            actionClassifier.applyEarlyStoppingIfApplicable(actionTrainLossScore, actionValidationLossScore);
+            catClassifier.applyEarlyStoppingIfApplicable(catTrainScore, catValidationLossScore);
+            fellowClassifier.applyEarlyStoppingIfApplicable(fellowTrainLossScore, fellowValidationLossScore);
+
+            printLossResults(actionClassifier, actionTrainLossScore, actionValidationLossScore, ClassifierName.ACTION);
+            printLossResults(catClassifier, catTrainScore, catValidationLossScore, ClassifierName.CATEGORY);
+            printLossResults(fellowClassifier, fellowTrainLossScore, fellowValidationLossScore, ClassifierName.FELLOW);
+        } else {
+            actionClassifier.applyEarlyStoppingIfApplicable(actionValidationLossScore);
+            catClassifier.applyEarlyStoppingIfApplicable(catValidationLossScore);
+            fellowClassifier.applyEarlyStoppingIfApplicable(fellowValidationLossScore);
+
+            printLossResults(actionClassifier, actionValidationLossScore, ClassifierName.ACTION);
+            printLossResults(catClassifier, catValidationLossScore, ClassifierName.CATEGORY);
+            printLossResults(fellowClassifier, fellowValidationLossScore, ClassifierName.FELLOW);
+        }
+        System.out.println();
+        System.out.flush();
+
+        extractor.stopValidating();
+    }
+
+    public double[] calculateAverageLossScores(ConstTreebank treebank, HatExtractor extractor, DatasetSplit datasetSplit) {
         double actionClassifierLossScoreSum = 0;
         double catClassifierLossScoreSum = 0;
         double fellowClassifierLossScoreSum = 0;
 
-        extractor.startValidating();
-
-        Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextValidateMiniBatch();
+        Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextMiniBatch(datasetSplit);
         while (miniBatchOptional.isPresent()) {
             Pair<List<ConstTree>, List<double[][]>> miniBatch = miniBatchOptional.get();
             List<ConstTree> trees = miniBatch.getKey();
@@ -146,48 +204,31 @@ public class SimpleTrainer {
                 parser.observe(extractor, embeddings);
             }
 
-            List<Double> lossScoreSum = extractor.validateMiniBatch();
-            actionClassifierLossScoreSum += lossScoreSum.get(0);
-            catClassifierLossScoreSum += lossScoreSum.get(1);
-            fellowClassifierLossScoreSum += lossScoreSum.get(2);
+            List<Double> lossScoreSums = extractor.validateMiniBatch();
+            actionClassifierLossScoreSum += lossScoreSums.get(0);
+            catClassifierLossScoreSum += lossScoreSums.get(1);
+            fellowClassifierLossScoreSum += lossScoreSums.get(2);
 
-            miniBatchOptional = treebank.getNextValidateMiniBatch();
+            miniBatchOptional = treebank.getNextMiniBatch(datasetSplit);
         }
 
-        MLP actionClassifier = extractor.getActionClassifier();
-        MLP catClassifier = extractor.getCatClassifier();
-        MLP fellowClassifier = extractor.getFellowClassifier();
+        treebank.resetTreebankIterator(datasetSplit);
 
-        int n = treebank.getValidateSetSize();
-        double actionClassifierLossScoreAverage = actionClassifierLossScoreSum / n;
-        double catClassifierLossScoreAverage = catClassifierLossScoreSum / n;
-        double fellowClassifierLossScoreAverage = fellowClassifierLossScoreSum / n;
-
-        actionClassifier.applyEarlyStoppingIfApplicable(actionClassifierLossScoreAverage);
-        catClassifier.applyEarlyStoppingIfApplicable(catClassifierLossScoreAverage);
-        fellowClassifier.applyEarlyStoppingIfApplicable(fellowClassifierLossScoreAverage);
-
-        printLossResults(actionClassifier, actionClassifierLossScoreAverage, "Action");
-        printLossResults(catClassifier, catClassifierLossScoreAverage, "Category");
-        printLossResults(fellowClassifier, fellowClassifierLossScoreAverage, "Fellow");
-        System.out.println();
-        System.out.flush();
-
-        treebank.resetValidateTreebankIterator();
-        extractor.stopValidating();
+        int n = treebank.getSetSize(datasetSplit);
+        return new double[] {actionClassifierLossScoreSum / n, catClassifierLossScoreSum / n, fellowClassifierLossScoreSum / n};
     }
 
-    private void printLossResults(MLP classifier, double loss, String classifierName) {
+    private void printLossResults(MLP classifier, double validationLoss, ClassifierName classifierName) {
         List<Double> lossList = null;
         switch (classifierName) {
-            case "Action":
-                lossList = actionLossList;
+            case ACTION:
+                lossList = actionValidLossList;
                 break;
-            case "Category":
-                lossList = catLossList;
+            case CATEGORY:
+                lossList = catValidLossList;
                 break;
-            case "Fellow":
-                lossList = fellowLossList;
+            case FELLOW:
+                lossList = fellowValidLossList;
                 break;
             default:
                 System.err.println("Error: unknown classifier " + classifierName);
@@ -195,13 +236,48 @@ public class SimpleTrainer {
         }
 
         if (classifier.isTraining()) {
-            System.out.println(classifierName + " classifier loss: " + loss + "; " + classifier.getEpochsWithoutImprovement() + " epochs without improvement");
-            lossList.add(loss);
+            System.out.println(classifierName + " classifier loss: " + validationLoss + "; " + classifier.getEpochsWithoutImprovement() + " epochs without improvement");
+            lossList.add(validationLoss);
         } else {
             System.out.println(classifierName + " classifier loss: " + classifier.getLastLossScore() + "; training complete");
 
             if (lossList.get(lossList.size()-1) != classifier.getLastLossScore()) {
-                lossList.add(loss);
+                lossList.add(validationLoss);
+            }
+        }
+    }
+
+    private void printLossResults(MLP classifier, double trainLoss, double validationLoss, ClassifierName classifierName) {
+        List<Double> trainLossList = null;
+        List<Double> validLossList = null;
+        switch (classifierName) {
+            case ACTION:
+                trainLossList = actionTrainLossList;
+                validLossList = actionValidLossList;
+                break;
+            case CATEGORY:
+                trainLossList = catTrainLossList;
+                validLossList = catValidLossList;
+                break;
+            case FELLOW:
+                trainLossList = fellowTrainLossList;
+                validLossList = fellowValidLossList;
+                break;
+            default:
+                System.err.println("Error: unknown classifier " + classifierName);
+                System.exit(1);
+        }
+
+        if (classifier.isTraining()) {
+            System.out.println(classifierName + " classifier train loss: " + trainLoss + "; validation loss: " + validationLoss + "; " + classifier.getEpochsWithoutImprovement() + " epochs without improvement");
+            trainLossList.add(trainLoss);
+            validLossList.add(validationLoss);
+        } else {
+            System.out.println(classifierName + " classifier train loss: " + classifier.getLastTrainLossScore() + "; validation loss: " + classifier.getLastLossScore() + "; " + classifier.getEpochsWithoutImprovement() + " epochs without improvement");
+
+            if (validLossList.get(validLossList.size()-1) != classifier.getLastLossScore()) {
+                trainLossList.add(trainLoss);
+                validLossList.add(validationLoss);
             }
         }
     }
