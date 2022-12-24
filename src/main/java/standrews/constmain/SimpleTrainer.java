@@ -77,44 +77,71 @@ public class SimpleTrainer {
     }
 
     public void train(final ConstTreebank treebank,
+                      String actionFilePath,
+                      String catFilePath,
+                      String fellowFilePath,
                      final int n, final HatExtractor extractor) {
-        train(treebank, null, n, extractor);
+        train(treebank, actionFilePath, catFilePath, fellowFilePath, null, n, extractor);
     }
 
     public void train(final ConstTreebank treebank,
+                      String actionFilePath,
+                      String catFilePath,
+                      String fellowFilePath,
                      final String corpusCopy,
                      final int n, final HatExtractor extractor) {
 //        final ConstTreebank subbank = treebank.part(0, n);
 //        copyTraining(subbank, corpusCopy);
 
-        for (int epoch = 0; epoch < maxEpochs; epoch++) {
-            reportFine("Epoch " + epoch);
+        try {
+            for (int epoch = 0; epoch < maxEpochs; epoch++) {
+                reportFine("Epoch " + epoch);
 
-            Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TRAIN);
-            while (miniBatchOptional.isPresent()) {
-                Pair<List<ConstTree>, List<double[][]>> miniBatch = miniBatchOptional.get();
-                List<ConstTree> trees = miniBatch.getKey();
-                List<double[][]> embeddingsList = miniBatch.getValue();
+                Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TRAIN);
+                while (miniBatchOptional.isPresent()) {
+                    Pair<List<ConstTree>, List<double[][]>> miniBatch = miniBatchOptional.get();
+                    List<ConstTree> trees = miniBatch.getKey();
+                    List<double[][]> embeddingsList = miniBatch.getValue();
 
-                for (int i = 0; i < trees.size(); i++) {
-                    ConstTree tree = trees.get(i);
-                    double[][] embeddings = embeddingsList.get(i);
+                    for (int i = 0; i < trees.size(); i++) {
+                        ConstTree tree = trees.get(i);
+                        double[][] embeddings = embeddingsList.get(i);
 
-                    HatParser parser = makeParser(tree);
-                    parser.observe(extractor, embeddings);
+                        HatParser parser = makeParser(tree);
+                        parser.observe(extractor, embeddings);
+                    }
+
+                    miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TRAIN);
                 }
 
-                miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TRAIN);
+                treebank.resetTreebankIterator(DatasetSplit.TRAIN);
+
+                extractor.train();
+                Runtime runtime = Runtime.getRuntime();
+                System.out.println("memory usage: " + (((double) runtime.totalMemory() - (double) runtime.freeMemory())*100.0/((double) runtime.maxMemory())) + "% of " + runtime.maxMemory()/1000000000 + "gb");
+                validate(treebank, extractor);
+                try {
+                    extractor.saveClassifiers(actionFilePath, catFilePath, fellowFilePath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                if (!extractor.isTraining()) {
+                    return;
+                }
             }
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
 
-            treebank.resetTreebankIterator(DatasetSplit.TRAIN);
+            writeLossListToFile("actionTrainLosses.csv", actionTrainLossList);
+            writeLossListToFile("categoryTrainLosses.csv", catTrainLossList);
+            writeLossListToFile("fellowTrainLosses.csv", fellowTrainLossList);
 
-            extractor.train();
-            validate(treebank, extractor);
+            writeLossListToFile("actionValidationLosses.csv", actionValidLossList);
+            writeLossListToFile("categoryValidationLosses.csv", catValidLossList);
+            writeLossListToFile("fellowValidationLosses.csv", fellowValidLossList);
 
-            if (!extractor.isTraining()) {
-                return;
-            }
+            System.exit(1);
         }
 
         writeLossListToFile("actionTrainLosses.csv", actionTrainLossList);
