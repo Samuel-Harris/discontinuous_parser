@@ -42,7 +42,7 @@ public class MLP {
 
     private void clearObservations() {
         observations.clear();
-        System.gc();
+//        System.gc();
     }
 
     public void addObservation(double[] featureVector, Object response) {

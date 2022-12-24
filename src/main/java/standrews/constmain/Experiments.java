@@ -181,12 +181,21 @@ public class Experiments {
                 l2Lambda,
                 dropoutRate,
                 seed);
+//        final HatExtractor extractor = new HatExtractor(
+//                featureVectorGenerator,
+//                networkMiniBatchSize,
+//                tol,
+//                patience,
+//                actionFilePath,
+//                catFilePath,
+//                fellowFilePath);
         final HatExtractor extractor = new HatExtractor(
                 featureVectorGenerator,
                 mlpFactory,
                 networkMiniBatchSize,
                 tol,
                 patience);
+
         final SimpleTrainer trainer = new SimpleTrainer(featureVectorGenerator, maxEpochs, tmp, measureTrainLoss);
         trainer.setLeftDependentsFirst(leftFirst);
         trainer.train(treebank,
@@ -314,7 +323,7 @@ public class Experiments {
         timer.start();
         trainTestHat(lang, treebank,
                 tmp + "goldfile.export", tmp + "parsedfile.export",
-                tmp + "actionClassifier.model", tmp + "catClassifier.model", tmp + "fellowClassifier.model",
+                tmp + "actionClassifier", tmp + "catClassifier", tmp + "fellowClassifier",
                 nTrain, nTest,
                 leftFirst,
                 measureTrainLoss,
@@ -365,32 +374,33 @@ public class Experiments {
         final String method = "hat";
         // final String method = "hatminus";
 
-        // final String bankname = "negra";
-        final String bankname = "tiger";
-        final String bankPath = "../datasets/tigercorpus2.1_medium/corpus/tiger_negraformat.export";
-
         // final String headSide = "";
         // final String headSide = "left";
         final String headSide = "right";
 
         ConstTreebank treebank = null;
         String lang = "";
-        boolean measureTrainLoss = true;
         int nTrain = 0;
         int nTest = 0;
+        // final String bankname = "negra";
+        final String bankname = "tiger";
+
+        final String bankPath = "../datasets/tigercorpus2.1_medium/corpus/tiger_negraformat.export";
+        boolean measureTrainLoss = false;
         double trainRatio = 0.7;
         double validationRatio = 0.15;  // testRatio = 1 - trainRatio - validationRatio
-        int[] hiddenLayers = new int[]{256, 256};
-        int maxEpochs = 15;  // change to 200 in final run
+        int[] hiddenLayers = new int[]{256, 256, 256};
+        int maxEpochs = 30;  // change to 200 in final run
         double learningRate = 0.001;
-        double l2Lambda = 0.00001;
+        double l2Lambda = 0.0001;
         double dropoutRate = 0.1;
         double tol = 0.001;
-        int patience = 5;  // change to 10 in final run
+        int patience = 20;  // change to 10 in final run
         int seed = 123;
         int fetchMiniBatchSize = 50;
         int networkMiniBatchSize = 128;
         int treebankIteratorQueueSize = 32;
+
         Random rng = new Random(seed);
 
         switch (bankname) {

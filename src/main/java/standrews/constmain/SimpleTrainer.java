@@ -121,7 +121,7 @@ public class SimpleTrainer {
                 System.out.println("memory usage: " + (((double) runtime.totalMemory() - (double) runtime.freeMemory())*100.0/((double) runtime.maxMemory())) + "% of " + runtime.maxMemory()/1000000000 + "gb");
                 validate(treebank, extractor);
                 try {
-                    extractor.saveClassifiers(actionFilePath, catFilePath, fellowFilePath);
+                    extractor.saveClassifiers(actionFilePath + "_" + epoch, catFilePath + "_" + epoch, fellowFilePath + "_" + epoch);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -133,9 +133,11 @@ public class SimpleTrainer {
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
 
-            writeLossListToFile("actionTrainLosses.csv", actionTrainLossList);
-            writeLossListToFile("categoryTrainLosses.csv", catTrainLossList);
-            writeLossListToFile("fellowTrainLosses.csv", fellowTrainLossList);
+            if (measureTrainLoss) {
+                writeLossListToFile("actionTrainLosses.csv", actionTrainLossList);
+                writeLossListToFile("categoryTrainLosses.csv", catTrainLossList);
+                writeLossListToFile("fellowTrainLosses.csv", fellowTrainLossList);
+            }
 
             writeLossListToFile("actionValidationLosses.csv", actionValidLossList);
             writeLossListToFile("categoryValidationLosses.csv", catValidLossList);
@@ -144,9 +146,11 @@ public class SimpleTrainer {
             System.exit(1);
         }
 
-        writeLossListToFile("actionTrainLosses.csv", actionTrainLossList);
-        writeLossListToFile("categoryTrainLosses.csv", catTrainLossList);
-        writeLossListToFile("fellowTrainLosses.csv", fellowTrainLossList);
+        if (measureTrainLoss) {
+            writeLossListToFile("actionTrainLosses.csv", actionTrainLossList);
+            writeLossListToFile("categoryTrainLosses.csv", catTrainLossList);
+            writeLossListToFile("fellowTrainLosses.csv", fellowTrainLossList);
+        }
 
         writeLossListToFile("actionValidationLosses.csv", actionValidLossList);
         writeLossListToFile("categoryValidationLosses.csv", catValidLossList);

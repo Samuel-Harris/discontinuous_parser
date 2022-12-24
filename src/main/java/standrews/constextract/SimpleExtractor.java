@@ -4,14 +4,12 @@
 
 package standrews.constextract;
 
-import standrews.classification.ActionResponseVectorGenerator;
-import standrews.classification.CatResponseVectorGenerator;
-import standrews.classification.FeatureVectorGenerator;
-import standrews.classification.MLP;
-import standrews.classification.MLPFactory;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import standrews.classification.*;
 import standrews.constautomata.HatConfig;
 import standrews.constmethods.SimpleParser;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -69,6 +67,22 @@ public class SimpleExtractor {
         this.actionClassifier = mlpFactory.makeMLP(new ActionResponseVectorGenerator(), networkMiniBatchSize, tol, patience);
         this.catClassifier = mlpFactory.makeMLP(new CatResponseVectorGenerator(featureVectorGenerator.getCatIndexMap()), networkMiniBatchSize, tol, patience);
 //		completeClassifiers(treebank);
+    }
+
+    public SimpleExtractor(final FeatureVectorGenerator featureVectorGenerator, int networkMiniBatchSize, double tol, int patience,
+                        String actionFilePath,
+                        String catFilePath) {
+        this.featureVectorGenerator = featureVectorGenerator;
+
+        try {
+            this.actionClassifier = new MLP(MultiLayerNetwork.load(new File(actionFilePath), false),
+                    new ActionResponseVectorGenerator(), networkMiniBatchSize, tol, patience);
+            this.catClassifier = new MLP(MultiLayerNetwork.load(new File(catFilePath), false),
+                    new CatResponseVectorGenerator(featureVectorGenerator.getCatIndexMap()), networkMiniBatchSize, tol, patience);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
 //    public boolean getContinuousTraining() {

@@ -45,7 +45,7 @@ public class MLPFactory {
                             .nOut(layers[n])
                             .weightInit(WeightInit.XAVIER)
                             .activation(last ? Activation.SOFTMAX : Activation.RELU)
-                            .l2(l2Lambda)
+//                            .l2(l2Lambda)
                             .dropOut(dropoutRate)
                             .build());
         }

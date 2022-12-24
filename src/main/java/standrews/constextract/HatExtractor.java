@@ -4,6 +4,7 @@
 
 package standrews.constextract;
 
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import standrews.classification.FeatureVectorGenerator;
 import standrews.classification.FellowResponseVectorGenerator;
 import standrews.classification.MLP;
@@ -11,6 +12,7 @@ import standrews.classification.MLPFactory;
 import standrews.constautomata.HatConfig;
 import standrews.constmethods.HatParser;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -23,7 +25,7 @@ public class HatExtractor extends SimpleExtractor {
     /**
      * Classifier that determines fellow index.
      */
-    private final MLP fellowClassifier;
+    private MLP fellowClassifier;
 
     public HatExtractor(final FeatureVectorGenerator featureVectorGenerator,
                         final MLPFactory mlpFactory, int networkMiniBatchSize, double tol, int patience) {
@@ -31,6 +33,22 @@ public class HatExtractor extends SimpleExtractor {
 
         this.fellowClassifier = mlpFactory.makeMLP(new FellowResponseVectorGenerator(), networkMiniBatchSize, tol, patience);
 //		completeHatClassifiers(treebank);
+    }
+
+    public HatExtractor(final FeatureVectorGenerator featureVectorGenerator,
+                        int networkMiniBatchSize, double tol, int patience,
+                        String actionFilePath,
+                        String catFilePath,
+                        String fellowFilePath) {
+        super(featureVectorGenerator, networkMiniBatchSize, tol, patience, actionFilePath,  catFilePath);
+
+        try {
+            this.fellowClassifier = new MLP(MultiLayerNetwork.load(new File(fellowFilePath), false),
+                    new FellowResponseVectorGenerator(), networkMiniBatchSize, tol, patience);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     public void train() {
@@ -42,8 +60,6 @@ public class HatExtractor extends SimpleExtractor {
         double actionLossScore = actionClassifier.validateMiniBatch();
         double catLossScore = catClassifier.validateMiniBatch();
         double fellowLossScore = fellowClassifier.validateMiniBatch();
-
-        System.gc();
 
         return List.of(actionLossScore, catLossScore, fellowLossScore);
     }
