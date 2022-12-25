@@ -120,11 +120,6 @@ public class SimpleTrainer {
                 Runtime runtime = Runtime.getRuntime();
                 System.out.println("memory usage: " + (((double) runtime.totalMemory() - (double) runtime.freeMemory())*100.0/((double) runtime.maxMemory())) + "% of " + runtime.maxMemory()/1000000000 + "gb");
                 validate(treebank, extractor);
-                try {
-                    extractor.saveClassifiers(actionFilePath + "_" + epoch, catFilePath + "_" + epoch, fellowFilePath + "_" + epoch);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
 
                 if (!extractor.isTraining()) {
                     return;
@@ -132,6 +127,12 @@ public class SimpleTrainer {
             }
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
+
+            try {
+                extractor.saveClassifiers(actionFilePath, catFilePath, fellowFilePath);
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
 
             if (measureTrainLoss) {
                 writeLossListToFile("actionTrainLosses.csv", actionTrainLossList);

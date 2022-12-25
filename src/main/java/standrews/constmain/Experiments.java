@@ -385,20 +385,21 @@ public class Experiments {
         // final String bankname = "negra";
         final String bankname = "tiger";
 
-        final String bankPath = "../datasets/tigercorpus2.1_medium/corpus/tiger_negraformat.export";
+        final String bankPath = "../datasets/tigercorpus2.1_small/corpus/tiger_negraformat.export";
         boolean measureTrainLoss = false;
         double trainRatio = 0.7;
         double validationRatio = 0.15;  // testRatio = 1 - trainRatio - validationRatio
-        int[] hiddenLayers = new int[]{256, 256, 256};
-        int maxEpochs = 30;  // change to 200 in final run
+        int[] hiddenLayers = new int[]{256, 256};
+        int maxEpochs = 3;  // change to 200 in final run
         double learningRate = 0.001;
         double l2Lambda = 0.0001;
         double dropoutRate = 0.1;
         double tol = 0.001;
-        int patience = 20;  // change to 10 in final run
+        int patience = 5;  // change to 10 in final run
         int seed = 123;
         int fetchMiniBatchSize = 50;
         int networkMiniBatchSize = 128;
+        
         int treebankIteratorQueueSize = 32;
 
         Random rng = new Random(seed);
