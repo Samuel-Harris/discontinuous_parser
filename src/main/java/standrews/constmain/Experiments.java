@@ -269,6 +269,7 @@ public class Experiments {
                 catFilePath,
                 fellowFilePath, nTrain, featureVectorGenerator, leftFirst,
                 measureTrainLoss, hiddenLayers, maxEpochs, networkMiniBatchSize, learningRate, l2Lambda, dropoutRate, tol, patience, seed);
+
         final HatTester tester = new HatTester(featureVectorGenerator);
         tester.test(treebank, goldFile, parsedFile, actionFilePath, catFilePath, fellowFilePath, nTrain, nTest, extractor);
     }
@@ -386,8 +387,8 @@ public class Experiments {
         // final String bankname = "negra";
         final String bankname = "tiger";
 
-        final String bankPath = "../datasets/tigercorpus2.1_small/corpus/tiger_negraformat.export";
-        final int numEmbeddingsFiles = 10;
+        final String bankPath = "../datasets/tigercorpus2.1_original/corpus/tiger_negraformat.export";
+        final int numEmbeddingsFiles = 5;
 
         boolean measureTrainLoss = false;
         double trainRatio = 0.7;

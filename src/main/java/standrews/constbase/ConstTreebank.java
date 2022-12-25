@@ -92,9 +92,9 @@ public class ConstTreebank {
                 .sum();
 
         // set up train and test treebank iterators
-        trainTreebankIterator = new TreebankIterator(miniBatchMetadataList, queueSize, rng);
-        validationTreebankIterator = new TreebankIterator(miniBatchMetadataList, queueSize, rng);
-        testTreebankIterator = new TreebankIterator(miniBatchMetadataList, queueSize, rng);
+        trainTreebankIterator = new TreebankIterator(trainMiniBatchMetadataList, queueSize, rng);
+        validationTreebankIterator = new TreebankIterator(validationMiniBatchMetadataList, queueSize, rng);
+        testTreebankIterator = new TreebankIterator(testMiniBatchMetadataList, queueSize, rng);
     }
 
     public void resetTreebankIterator(DatasetSplit datasetSplit) {

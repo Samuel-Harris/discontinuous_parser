@@ -46,9 +46,10 @@ public class MLP {
     }
 
     public void addObservation(double[] featureVector, Object response) {
-        if (isTraining || isValidating) {
+        if (isValidating) {
             observations.add(new Pair<>(featureVector, responseVectorGenerator.generateResponseVector(response)));
-
+        } else if (isTraining) {
+            observations.add(new Pair<>(featureVector, responseVectorGenerator.generateResponseVector(response)));
             if (isTraining && observations.size() == miniBatchSize) {
                 train();
             }

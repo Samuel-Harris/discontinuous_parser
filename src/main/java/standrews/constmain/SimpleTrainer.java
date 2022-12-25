@@ -110,8 +110,10 @@ public class SimpleTrainer {
                 treebank.resetTreebankIterator(DatasetSplit.TRAIN);
 
                 extractor.train();
+
                 Runtime runtime = Runtime.getRuntime();
                 System.out.println("memory usage: " + (((double) runtime.totalMemory() - (double) runtime.freeMemory())*100.0/((double) runtime.maxMemory())) + "% of " + runtime.maxMemory()/1000000000 + "gb");
+
                 validate(treebank, extractor);
 
                 if (!extractor.isTraining()) {
