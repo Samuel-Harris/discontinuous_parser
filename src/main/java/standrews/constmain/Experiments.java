@@ -45,9 +45,10 @@ public class Experiments {
 //        return bank;
 //    }
 
-    public static ConstTreebank tigerBank(String path, String headSide, Random rng, int miniBatchSize, double trainRatio, double validationRatio, int treebankIteratorQueueSize) throws ArithmeticException {
+    public static ConstTreebank tigerBank(String path, String headSide, Random rng, int numEmbeddingsFiles, double trainRatio, double validationRatio,
+                                          int treebankIteratorQueueSize) throws ArithmeticException {
         String embeddingsDirectory = "../datasets/tiger2.1_bert_corrected_embeddings/";
-        ConstTreebank bank = new NegraTreebank(path, embeddingsDirectory, 505);
+        ConstTreebank bank = new NegraTreebank(path, embeddingsDirectory, numEmbeddingsFiles);
         bank.removeCycles();
         HeadFinder finder = new TigerHeadFinder();
         switch (headSide) {
@@ -60,7 +61,7 @@ public class Experiments {
         }
         finder.makeHeadedTreebank(bank);
         bank.gatherSymbols();
-        bank.setupTreebankIterator(rng, miniBatchSize, trainRatio, validationRatio, treebankIteratorQueueSize);
+        bank.setupTreebankIterator(rng, trainRatio, validationRatio, treebankIteratorQueueSize);
         return bank;
     }
 
@@ -386,6 +387,8 @@ public class Experiments {
         final String bankname = "tiger";
 
         final String bankPath = "../datasets/tigercorpus2.1_small/corpus/tiger_negraformat.export";
+        final int numEmbeddingsFiles = 10;
+
         boolean measureTrainLoss = false;
         double trainRatio = 0.7;
         double validationRatio = 0.15;  // testRatio = 1 - trainRatio - validationRatio
@@ -397,7 +400,6 @@ public class Experiments {
         double tol = 0.001;
         int patience = 5;  // change to 10 in final run
         int seed = 123;
-        int fetchMiniBatchSize = 50;
         int networkMiniBatchSize = 128;
         
         int treebankIteratorQueueSize = 32;
@@ -414,7 +416,7 @@ public class Experiments {
 //                break;
             case "tiger":
                 // Tiger has 50472 trees. 80% is 40377.
-                treebank = tigerBank(bankPath, headSide, rng, fetchMiniBatchSize, trainRatio, validationRatio, treebankIteratorQueueSize);
+                treebank = tigerBank(bankPath, headSide, rng, numEmbeddingsFiles, trainRatio, validationRatio, treebankIteratorQueueSize);
                 lang = "de";
                 nTrain = 800;
                 nTest = 200;
@@ -425,16 +427,16 @@ public class Experiments {
                 fail("Unknown bankname " + bankname);
         }
 
-        reportFine("testing whether each word in each sentence has exactly one embedding vector...");
-        for (ConstTree tree : treebank.getTrees()) {
-            int numEmbeddings = treebank.getSentenceEmbeddingsMetadata("s" + tree.getId()).getSentenceLength();
-            if (tree.length() != numEmbeddings) {
-                System.err.println("Error: sentence " + tree.getId() + " has an incorrect number of word embeddings");
-                System.err.println("Expected: " + tree.length() + ". Found: " + numEmbeddings);
-                System.exit(1);
-            }
-        }
-        reportFine("Embeddings for every word in every sentence have been found");
+//        reportFine("testing whether each word in each sentence has exactly one embedding vector...");
+//        for (ConstTree tree : treebank.getTrees()) {
+//            int numEmbeddings = treebank.getSentenceEmbeddingsMetadata("s" + tree.getId()).getSentenceLength();
+//            if (tree.length() != numEmbeddings) {
+//                System.err.println("Error: sentence " + tree.getId() + " has an incorrect number of word embeddings");
+//                System.err.println("Expected: " + tree.length() + ". Found: " + numEmbeddings);
+//                System.exit(1);
+//            }
+//        }
+//        reportFine("Embeddings for every word in every sentence have been found");
 
         final boolean leftFirst = true;
         // final boolean leftFirst = false;

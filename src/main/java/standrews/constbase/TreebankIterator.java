@@ -5,21 +5,16 @@ import javafx.util.Pair;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class TreebankIterator {
-    private final List<String> sentenceIds;
-    private final ConcurrentHashMap<String, SentenceEmbeddingsMetadata> sentenceIdEmbeddingMap;
+    private final List<MinibatchMetadata> miniBatchMetadataList;
     private int miniBatchesFetched;
     private int miniBatchesReturned;
-    private final int miniBatchSize;
-    private final BlockingQueue<Pair<List<String>, List<double[][]>>> miniBatchQueue;
+    private final BlockingQueue<List<Pair<String, double[][]>>> miniBatchQueue;
     private final Random rng;
 
-    public TreebankIterator(List<String> sentenceIds, HashMap<String, SentenceEmbeddingsMetadata> sentenceIdEmbeddingMap, int miniBatchSize, int queueSize, Random rng) {
-        this.sentenceIds = sentenceIds;
-        this.sentenceIdEmbeddingMap = new ConcurrentHashMap<>(sentenceIdEmbeddingMap);
-        this.miniBatchSize = miniBatchSize;
+    public TreebankIterator(List<MinibatchMetadata> miniBatchMetadataList, int queueSize, Random rng) {
+        this.miniBatchMetadataList = miniBatchMetadataList;
         this.rng = rng;
 
         reset();
@@ -35,26 +30,27 @@ public class TreebankIterator {
     public void reset() {
         miniBatchesFetched = 0;
         miniBatchesReturned = 0;
-        Collections.shuffle(sentenceIds, rng);
+        Collections.shuffle(miniBatchMetadataList, rng);
     }
 
     private boolean hasNext() {
-        return miniBatchesReturned * miniBatchSize < sentenceIds.size();
+        return miniBatchesReturned < miniBatchMetadataList.size();
     }
 
     private boolean canFetchNextBatch() {
-        return miniBatchesFetched * miniBatchSize < sentenceIds.size();
+        return miniBatchesFetched < miniBatchMetadataList.size();
     }
 
-    public Optional<Pair<List<String>, List<double[][]>>> next() {
+    public Optional<List<Pair<String, double[][]>>> next() {
         if (hasNext()) {
             if (canFetchNextBatch()) {
                 fetchNextBatch();
             }
 
             try {
-                Pair<List<String>, List<double[][]>> miniBatch = miniBatchQueue.take();
+                List<Pair<String, double[][]>> miniBatch = miniBatchQueue.take();
                 miniBatchesReturned++;
+                Collections.shuffle(miniBatch, rng);
                 return Optional.of(miniBatch);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -65,9 +61,7 @@ public class TreebankIterator {
     }
 
     private void fetchNextBatch() {
-        List<String> sentenceIdsMiniBatch = new ArrayList<>(sentenceIds.subList(miniBatchesFetched * miniBatchSize, Math.min((miniBatchesFetched + 1) * miniBatchSize, sentenceIds.size())));
-
-        DataLoaderThread dataLoaderThread = new DataLoaderThread(miniBatchQueue, sentenceIdsMiniBatch, sentenceIdEmbeddingMap);
+        DataLoaderThread dataLoaderThread = new DataLoaderThread(miniBatchQueue, miniBatchMetadataList.get(miniBatchesFetched));
         dataLoaderThread.run();
 
         miniBatchesFetched++;

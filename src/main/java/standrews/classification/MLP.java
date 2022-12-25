@@ -148,10 +148,5 @@ public class MLP {
         INDArray output = network.output(features, false);
         final double[] scores = output.toDoubleVector();
         return responseVectorGenerator.getLabelsFromScores(scores);
-//        return IntStream.range(0, scores.length)
-//                .boxed()
-//                .sorted((x, y) -> Double.compare(scores[y], scores[x]))
-//                .map(x -> responseVectorGenerator.getResponseValue(x))
-//                .toArray(Object[]::new);
     }
 }

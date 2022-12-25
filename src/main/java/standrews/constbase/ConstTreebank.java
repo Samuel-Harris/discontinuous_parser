@@ -4,10 +4,13 @@
 
 package standrews.constbase;
 
+import com.codepoetics.protonpack.StreamUtils;
 import javafx.util.Pair;
 
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ConstTreebank {
 
@@ -16,15 +19,21 @@ public class ConstTreebank {
     protected Set<String> cats;
     protected Set<String> labels;
     protected ConstTree[] trees;
-    protected List<String> sentenceIds;
-    protected List<String> trainSetIds;
-    protected List<String> validationSetIds;
-    protected List<String> testSetIds;
-    protected HashMap<String, SentenceEmbeddingsMetadata> sentenceIdEmbeddingMap;
+
+    protected List<MinibatchMetadata> trainMiniBatchMetadataList;
+    protected List<MinibatchMetadata> validationMiniBatchMetadataList;
+    protected List<MinibatchMetadata> testMiniBatchMetadataList;
+
     protected HashMap<String, ConstTree> sentenceIdTreeMap;
+    protected List<MinibatchMetadata> miniBatchMetadataList;
+
     protected TreebankIterator trainTreebankIterator;
     protected TreebankIterator validationTreebankIterator;
     protected TreebankIterator testTreebankIterator;
+
+    protected int nTrain;
+    protected int nValid;
+    protected int nTest;
 
     public ConstTreebank(String id,
                          Set<String> poss, Set<String> cats, Set<String> labels,
@@ -34,11 +43,6 @@ public class ConstTreebank {
         this.cats = cats;
         this.labels = labels;
         this.trees = trees;
-
-        sentenceIds = new ArrayList<>(trees.length);
-        for (ConstTree tree : trees) {
-            sentenceIds.add(tree.id);
-        }
     }
 
     public ConstTreebank() {
@@ -63,24 +67,34 @@ public class ConstTreebank {
         return all;
     }
 
-    public void setupTreebankIterator(Random rng, int miniBatchSize, double trainRatio, double validationRatio, int queueSize) throws ArithmeticException {
+    public void setupTreebankIterator(Random rng, double trainRatio, double validationRatio, int queueSize) throws ArithmeticException {
         if (trainRatio + validationRatio >= 1.0) {
             throw new ArithmeticException("Error: trainRatio and validationRatio add up to more than 1 or more");
         }
 
         // shuffle and split data into train, validation, and test data
-        sentenceIds = new ArrayList<>(sentenceIdTreeMap.keySet());
-        Collections.shuffle(sentenceIds, rng);
-        int trainSize = (int) (trainRatio * sentenceIds.size());
-        int validationSize = (int) (validationRatio * sentenceIds.size());
-        trainSetIds = sentenceIds.subList(0, trainSize);
-        validationSetIds = sentenceIds.subList(trainSize, trainSize + validationSize);
-        testSetIds = sentenceIds.subList(trainSize + validationSize, sentenceIds.size());
+        Collections.shuffle(miniBatchMetadataList, rng);
+        int trainSize = (int) (trainRatio * miniBatchMetadataList.size());
+        int validationSize = (int) Math.ceil(validationRatio * miniBatchMetadataList.size());
+        trainMiniBatchMetadataList = miniBatchMetadataList.subList(0, trainSize);
+        validationMiniBatchMetadataList = miniBatchMetadataList.subList(trainSize, trainSize + validationSize);
+        testMiniBatchMetadataList = miniBatchMetadataList.subList(trainSize + validationSize, miniBatchMetadataList.size());
+
+        // finding sizes of datasets
+        nTrain = trainMiniBatchMetadataList.stream()
+                .mapToInt(MinibatchMetadata::getSize)
+                .sum();
+        nValid = validationMiniBatchMetadataList.stream()
+                .mapToInt(MinibatchMetadata::getSize)
+                .sum();
+        nTest = testMiniBatchMetadataList.stream()
+                .mapToInt(MinibatchMetadata::getSize)
+                .sum();
 
         // set up train and test treebank iterators
-        trainTreebankIterator = new TreebankIterator(trainSetIds, sentenceIdEmbeddingMap, miniBatchSize, queueSize, rng);
-        validationTreebankIterator = new TreebankIterator(validationSetIds, sentenceIdEmbeddingMap, miniBatchSize, queueSize, rng);
-        testTreebankIterator = new TreebankIterator(testSetIds, sentenceIdEmbeddingMap, miniBatchSize, queueSize, rng);
+        trainTreebankIterator = new TreebankIterator(miniBatchMetadataList, queueSize, rng);
+        validationTreebankIterator = new TreebankIterator(miniBatchMetadataList, queueSize, rng);
+        testTreebankIterator = new TreebankIterator(miniBatchMetadataList, queueSize, rng);
     }
 
     public void resetTreebankIterator(DatasetSplit datasetSplit) {
@@ -97,63 +111,47 @@ public class ConstTreebank {
         }
     }
 
-    public Optional<Pair<List<ConstTree>, List<double[][]>>> getNextMiniBatch(DatasetSplit datasetSplit) {
-        TreebankIterator treebankIterator;
+    public Optional<List<Pair<ConstTree, double[][]>>> getNextMiniBatch(DatasetSplit datasetSplit) {
         switch (datasetSplit) {
             case TRAIN:
-                treebankIterator = trainTreebankIterator;
-                break;
+                return getNextMiniBatch(trainTreebankIterator);
             case VALIDATION:
-                treebankIterator = validationTreebankIterator;
-                break;
+                return getNextMiniBatch(validationTreebankIterator);
             case TEST:
-                treebankIterator = testTreebankIterator;
-                break;
+                return getNextMiniBatch(testTreebankIterator);
             default:
                 return Optional.empty();
         }
+    }
 
-        Optional<Pair<List<String>, List<double[][]>>> idsAndEmbeddingsOptional = treebankIterator.next();
+    private Optional<List<Pair<ConstTree, double[][]>>> getNextMiniBatch(TreebankIterator treebankIterator) {
+        Optional<List<Pair<String, double[][]>>> idsAndEmbeddingsOptional = treebankIterator.next();
         if (idsAndEmbeddingsOptional.isEmpty()) {
             return Optional.empty();
         } else {
-            Pair<List<String>, List<double[][]>> idsAndEmbeddings = idsAndEmbeddingsOptional.get();
-            List<ConstTree> miniBatchTrees = new ArrayList<>(idsAndEmbeddings.getKey().size());
-            for (String sentenceId: idsAndEmbeddings.getKey()){
-                miniBatchTrees.add(sentenceIdTreeMap.get(sentenceId));
+            List<Pair<String, double[][]>> idsAndEmbeddings = idsAndEmbeddingsOptional.get();
+            List<ConstTree> miniBatchTrees = new ArrayList<>(idsAndEmbeddings.size());
+            for (Pair<String, double[][]> sentenceIdAndEmbedding: idsAndEmbeddings){
+                miniBatchTrees.add(sentenceIdTreeMap.get(sentenceIdAndEmbedding.getKey()));
             }
-            return Optional.of(new Pair<>(miniBatchTrees, idsAndEmbeddings.getValue()));
-        }
-    }
 
-    public Optional<Pair<List<ConstTree>, List<double[][]>>> getNextTestMiniBatch() {
-        return getNextMiniBatch(testTreebankIterator);
-    }
-
-    private Optional<Pair<List<ConstTree>, List<double[][]>>> getNextMiniBatch(TreebankIterator treebankIterator) {
-        Optional<Pair<List<String>, List<double[][]>>> idsAndEmbeddingsOptional = treebankIterator.next();
-        if (idsAndEmbeddingsOptional.isEmpty()) {
-            return Optional.empty();
-        } else {
-            Pair<List<String>, List<double[][]>> idsAndEmbeddings = idsAndEmbeddingsOptional.get();
-            List<ConstTree> miniBatchTrees = new ArrayList<>(idsAndEmbeddings.getKey().size());
-            for (String sentenceId: idsAndEmbeddings.getKey()){
-                miniBatchTrees.add(sentenceIdTreeMap.get(sentenceId));
-            }
-            return Optional.of(new Pair<>(miniBatchTrees, idsAndEmbeddings.getValue()));
+            return Optional.of(IntStream.range(0, idsAndEmbeddings.size())
+                    .mapToObj(i -> new Pair<>(miniBatchTrees.get(i), idsAndEmbeddings.get(i).getValue()))
+                    .collect(Collectors.toList())
+            );
         }
     }
 
     public NegraTreebank getTestNegraTreebank() {
-        ConstTree[] testTrees = new ConstTree[testSetIds.size()];
-        for (int i = 0; i < testSetIds.size(); i++) {
-            testTrees[i] = sentenceIdTreeMap.get(testSetIds.get(i));
-        }
-        return new NegraTreebank("", poss, cats, labels, testTrees);
-    }
+        List<ConstTree> testTrees = new ArrayList<>();
 
-    public SentenceEmbeddingsMetadata getSentenceEmbeddingsMetadata(String sentenceId) {
-        return sentenceIdEmbeddingMap.get(sentenceId);
+        testMiniBatchMetadataList.forEach(minibatchMetadata ->
+                testTrees.addAll(minibatchMetadata.getSentenceIds()
+                        .stream()
+                        .map(sentenceId -> sentenceIdTreeMap.get(sentenceId))
+                        .collect(Collectors.toList())));
+
+        return new NegraTreebank("", poss, cats, labels, testTrees.toArray(new ConstTree[0]));
     }
 
     public Set<String> getLabels() {
@@ -171,11 +169,11 @@ public class ConstTreebank {
     public int getSetSize(DatasetSplit datasetSplit) {
         switch (datasetSplit) {
             case TRAIN:
-                return trainSetIds.size();
+                return nTrain;
             case VALIDATION:
-                return validationSetIds.size();
+                return nValid;
             case TEST:
-                return testSetIds.size();
+                return nTest;
             default:
                 System.exit(1);
                 return 0;

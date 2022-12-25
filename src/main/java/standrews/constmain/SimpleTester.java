@@ -64,15 +64,13 @@ public class SimpleTester {
 
         reportFine("Testing model");
 
-        Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TEST);
+        Optional<List<Pair<ConstTree, double[][]>>> miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TEST);
         while (miniBatchOptional.isPresent()) {
-            Pair<List<ConstTree>, List<double[][]>> miniBatch = miniBatchOptional.get();
-            List<ConstTree> trees = miniBatch.getKey();
-            List<double[][]> embeddingsList = miniBatch.getValue();
+            List<Pair<ConstTree, double[][]>> miniBatch = miniBatchOptional.get();
 
-            for (int i = 0; i < trees.size(); i++) {
-                ConstTree tree = trees.get(i);
-                double[][] embeddings = embeddingsList.get(i);
+            for (Pair<ConstTree, double[][]> treeAndEmbeddings: miniBatch) {
+                ConstTree tree = treeAndEmbeddings.getKey();
+                double[][] embeddings = treeAndEmbeddings.getValue();
 
                 HatParser parser = makeParser(tree);
                 ConstTree parsed = parser.parse(extractor, embeddings);

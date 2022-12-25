@@ -4,7 +4,6 @@
 
 package standrews.constbase;
 
-import com.codepoetics.protonpack.StreamUtils;
 import javafx.util.Pair;
 
 import java.io.*;
@@ -13,6 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class NegraTreebank extends ConstTreebank {
     public NegraTreebank(String id,
@@ -66,24 +67,10 @@ public class NegraTreebank extends ConstTreebank {
         }
         this.trees = sentenceIdTreeMap.values().toArray(new ConstTree[0]);
 
-        // make map of sentence IDs to their respective embeddings
-        sentenceIdEmbeddingMap = new HashMap<>();
-        for (int i = 0; i < numEmbeddingsFiles; i++) {
-            final int fileNumber = i;
-            try {
-                StreamUtils.zipWithIndex(Files.lines(Paths.get(embeddingsDirectory + "metadata_" + i + ".txt")))
-                        .forEach(zip -> {
-                            String[] sentenceIndexAndLength = zip.getValue().split(":", 2);
-                            sentenceIdEmbeddingMap.put(sentenceIndexAndLength[0],
-                                    new SentenceEmbeddingsMetadata(embeddingsDirectory,
-                                            fileNumber,
-                                            (int) zip.getIndex(),
-                                            Integer.parseInt(sentenceIndexAndLength[1])));
-                        });
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        // make list of minibatch metadata
+        miniBatchMetadataList = IntStream.range(0, numEmbeddingsFiles)
+                .mapToObj(i -> new MinibatchMetadata(embeddingsDirectory, i))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private void readFormat(String line, BufferedReader br) throws IOException {

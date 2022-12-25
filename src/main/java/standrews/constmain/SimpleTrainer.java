@@ -5,6 +5,7 @@
 package standrews.constmain;
 
 import javafx.util.Pair;
+import standrews.aux_.TimerMilli;
 import standrews.classification.FeatureVectorGenerator;
 import standrews.classification.MLP;
 import standrews.constbase.ClassifierName;
@@ -97,19 +98,11 @@ public class SimpleTrainer {
             for (int epoch = 0; epoch < maxEpochs; epoch++) {
                 reportFine("Epoch " + epoch);
 
-                Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TRAIN);
+                Optional<List<Pair<ConstTree, double[][]>>> miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TRAIN);
                 while (miniBatchOptional.isPresent()) {
-                    Pair<List<ConstTree>, List<double[][]>> miniBatch = miniBatchOptional.get();
-                    List<ConstTree> trees = miniBatch.getKey();
-                    List<double[][]> embeddingsList = miniBatch.getValue();
+                    List<Pair<ConstTree, double[][]>> miniBatch = miniBatchOptional.get();
 
-                    for (int i = 0; i < trees.size(); i++) {
-                        ConstTree tree = trees.get(i);
-                        double[][] embeddings = embeddingsList.get(i);
-
-                        HatParser parser = makeParser(tree);
-                        parser.observe(extractor, embeddings);
-                    }
+                    observeMiniBatch(extractor, miniBatch);
 
                     miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TRAIN);
                 }
@@ -222,19 +215,11 @@ public class SimpleTrainer {
         double catClassifierLossScoreSum = 0;
         double fellowClassifierLossScoreSum = 0;
 
-        Optional<Pair<List<ConstTree>, List<double[][]>>> miniBatchOptional = treebank.getNextMiniBatch(datasetSplit);
+        Optional<List<Pair<ConstTree, double[][]>>> miniBatchOptional = treebank.getNextMiniBatch(datasetSplit);
         while (miniBatchOptional.isPresent()) {
-            Pair<List<ConstTree>, List<double[][]>> miniBatch = miniBatchOptional.get();
-            List<ConstTree> trees = miniBatch.getKey();
-            List<double[][]> embeddingsList = miniBatch.getValue();
+            List<Pair<ConstTree, double[][]>> miniBatch = miniBatchOptional.get();
 
-            for (int i = 0; i < trees.size(); i++) {
-                ConstTree tree = trees.get(i);
-                double[][] embeddings = embeddingsList.get(i);
-
-                HatParser parser = makeParser(tree);
-                parser.observe(extractor, embeddings);
-            }
+            observeMiniBatch(extractor, miniBatch);
 
             List<Double> lossScoreSums = extractor.validateMiniBatch();
             actionClassifierLossScoreSum += lossScoreSums.get(0);
@@ -248,6 +233,16 @@ public class SimpleTrainer {
 
         int n = treebank.getSetSize(datasetSplit);
         return new double[] {actionClassifierLossScoreSum / n, catClassifierLossScoreSum / n, fellowClassifierLossScoreSum / n};
+    }
+
+    private void observeMiniBatch(HatExtractor extractor, List<Pair<ConstTree, double[][]>> miniBatch) {
+        for (Pair<ConstTree, double[][]> treeAndEmbeddings: miniBatch) {
+            ConstTree tree = treeAndEmbeddings.getKey();
+            double[][] embeddings = treeAndEmbeddings.getValue();
+
+            HatParser parser = makeParser(tree);
+            parser.observe(extractor, embeddings);
+        }
     }
 
     private void printLossResults(MLP classifier, double validationLoss, ClassifierName classifierName) {
