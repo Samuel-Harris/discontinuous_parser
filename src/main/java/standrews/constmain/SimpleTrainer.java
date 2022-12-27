@@ -81,8 +81,8 @@ public class SimpleTrainer {
                       String actionFilePath,
                       String catFilePath,
                       String fellowFilePath,
-                     final int n, final HatExtractor extractor) {
-        train(treebank, actionFilePath, catFilePath, fellowFilePath, null, n, extractor);
+                     final int n, final HatExtractor extractor, boolean startWithValidation) {
+        train(treebank, actionFilePath, catFilePath, fellowFilePath, null, n, extractor, startWithValidation);
     }
 
     public void train(final ConstTreebank treebank,
@@ -90,11 +90,15 @@ public class SimpleTrainer {
                       String catFilePath,
                       String fellowFilePath,
                      final String corpusCopy,
-                     final int n, final HatExtractor extractor) {
+                     final int n, final HatExtractor extractor, boolean startWithValidation) {
 //        final ConstTreebank subbank = treebank.part(0, n);
 //        copyTraining(subbank, corpusCopy);
 
         try {
+            if (startWithValidation) {
+                validate(treebank, extractor);
+            }
+
             for (int epoch = 0; epoch < maxEpochs; epoch++) {
                 reportFine("Epoch " + epoch);
 
@@ -113,6 +117,12 @@ public class SimpleTrainer {
 
                 Runtime runtime = Runtime.getRuntime();
                 System.out.println("memory usage: " + (((double) runtime.totalMemory() - (double) runtime.freeMemory())*100.0/((double) runtime.maxMemory())) + "% of " + runtime.maxMemory()/1000000000 + "gb");
+
+                try {
+                    extractor.saveClassifiers(actionFilePath + epoch, catFilePath + epoch, fellowFilePath + epoch);
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
 
                 validate(treebank, extractor);
 
@@ -270,7 +280,7 @@ public class SimpleTrainer {
         } else {
             System.out.println(classifierName + " classifier loss: " + classifier.getLastLossScore() + "; training complete");
 
-            if (lossList.get(lossList.size()-1) != classifier.getLastLossScore()) {
+            if (lossList.size() > 0 && lossList.get(lossList.size()-1) != classifier.getLastLossScore()) {
                 lossList.add(validationLoss);
             }
         }

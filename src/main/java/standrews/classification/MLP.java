@@ -4,16 +4,16 @@ import org.deeplearning4j.datasets.iterator.DoublesDataSetIterator;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.common.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class MLP {
     private final MultiLayerNetwork network;
-    private final ArrayList<Pair<double[], double[]>> observations;
+    private ArrayList<Pair<double[], double[]>> observations;
     private final ResponseVectorGenerator responseVectorGenerator;
     private boolean isTraining;
     private boolean isValidating;
@@ -40,8 +40,38 @@ public class MLP {
         lastLossScore = Double.POSITIVE_INFINITY;
     }
 
+    public MLP(MultiLayerNetwork network, ResponseVectorGenerator responseVectorGenerator, int miniBatchSize, double tol, int patience, File lossFile) throws IOException {
+        this.network = network;
+        this.responseVectorGenerator = responseVectorGenerator;
+        this.miniBatchSize = miniBatchSize;
+        this.tol = tol;
+        this.patience = patience;
+
+        observations = new ArrayList<>();
+
+        double[] lossValues;
+        try (BufferedReader br = new BufferedReader(new FileReader(lossFile))) {
+            lossValues = Arrays.stream(br.readLine().split(",")).mapToDouble(Double::parseDouble).toArray();
+        }
+
+        bestLossScore = Double.POSITIVE_INFINITY;
+        int minLossIndex = -1;
+        for (int i = 0; i < lossValues.length; i++) {
+            if (lossValues[i] < bestLossScore-tol) {
+                bestLossScore = lossValues[i];
+                minLossIndex = i;
+            }
+        }
+        epochsWithoutImprovement = lossValues.length-1-minLossIndex;
+
+        isTraining = epochsWithoutImprovement <= patience;
+        isValidating = false;
+        lastLossScore = lossValues[lossValues.length-1];
+    }
+
     private void clearObservations() {
-        observations.clear();
+        observations = new ArrayList<>();
+//        observations.clear();
 //        System.gc();
     }
 
@@ -82,7 +112,7 @@ public class MLP {
             return;
         }
 
-        lastLossScore = lossScore;
+        lastLossScore = lossScore == 0 ? Double.POSITIVE_INFINITY : lossScore;
 
         if (lossScore < bestLossScore-tol) {
             bestLossScore = lossScore;
@@ -126,13 +156,32 @@ public class MLP {
 
     public double validateMiniBatch() {
         if (isTraining && !observations.isEmpty()) {
-            DataSetIterator iter = new DoublesDataSetIterator(observations, observations.size());
 
-            INDArray lossScores = network.scoreExamples(iter, false);
+            Runtime runtime = Runtime.getRuntime();
+//            System.out.println("memory usage: " + (((double) runtime.totalMemory() - (double) runtime.freeMemory())*100.0/((double) runtime.maxMemory())) + "% of " + runtime.maxMemory()/1000000000 + "gb");
 
-            double lossScoreSum = Arrays.stream(lossScores.toDoubleVector()).sum();
+            double[][] featureArray = new double[observations.size()][observations.get(0).getKey().length];
+            double[][] labelArray = new double[observations.size()][observations.get(0).getValue().length];
+            for (int i=0; i<observations.size(); i++) {
+                Pair<double[], double[]> featureLabelPair = observations.get(0);
+                featureArray[i] = featureLabelPair.getKey();
+                labelArray[i] = featureLabelPair.getValue();
+            }
+
+            double lossScoreSum;
+            try (INDArray features = Nd4j.create(featureArray); INDArray labels = Nd4j.create(labelArray)) {
+                DataSet dataset = new DataSet(features, labels);
+                try (INDArray lossScores = network.scoreExamples(dataset, false)) {
+                    lossScoreSum = Arrays.stream(lossScores.toDoubleVector()).sum();
+                }
+            }
+
 
             clearObservations();
+            if (((double) runtime.totalMemory() - (double) runtime.freeMemory())/((double) runtime.maxMemory()) > 0.8) {
+                System.gc();
+                Nd4j.getMemoryManager().invokeGc();
+            }
 
             return lossScoreSum;
         } else {

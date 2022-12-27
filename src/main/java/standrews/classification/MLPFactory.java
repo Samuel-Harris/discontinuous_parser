@@ -14,13 +14,11 @@ public class MLPFactory {
     private final int seed;
     private final int[] layers;
     private final double learningRate;
-    private final double l2Lambda;
     private final double dropoutRate;
 
-    public MLPFactory(int inputSize, int[] hiddenLayerSizes, double learningRate, double l2Lambda, double dropoutRate, int seed) {
+    public MLPFactory(int inputSize, int[] hiddenLayerSizes, double learningRate, double dropoutRate, int seed) {
         this.learningRate = learningRate;
         this.seed = seed;
-        this.l2Lambda = l2Lambda;
         this.dropoutRate = dropoutRate;
 
         // setting network layer sizes

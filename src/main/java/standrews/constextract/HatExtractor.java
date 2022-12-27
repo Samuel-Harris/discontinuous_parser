@@ -43,8 +43,10 @@ public class HatExtractor extends SimpleExtractor {
         super(featureVectorGenerator, networkMiniBatchSize, tol, patience, actionFilePath,  catFilePath);
 
         try {
+            // read csv file, find out whether patience has been hit, and create MLP with csv's best loss and epochs without improvement in it
             this.fellowClassifier = new MLP(MultiLayerNetwork.load(new File(fellowFilePath), false),
-                    new FellowResponseVectorGenerator(), networkMiniBatchSize, tol, patience);
+                    new FellowResponseVectorGenerator(), networkMiniBatchSize, tol, patience,
+                    new File("C:\\my_stuff\\dissertation\\discontinuous_parser_windows\\tmp\\fellowValidationLosses.csv"));
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);

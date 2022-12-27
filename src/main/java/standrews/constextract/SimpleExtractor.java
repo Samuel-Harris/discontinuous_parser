@@ -76,9 +76,11 @@ public class SimpleExtractor {
 
         try {
             this.actionClassifier = new MLP(MultiLayerNetwork.load(new File(actionFilePath), false),
-                    new ActionResponseVectorGenerator(), networkMiniBatchSize, tol, patience);
+                    new ActionResponseVectorGenerator(), networkMiniBatchSize, tol, patience,
+                    new File("C:\\my_stuff\\dissertation\\discontinuous_parser_windows\\tmp\\actionValidationLosses.csv"));
             this.catClassifier = new MLP(MultiLayerNetwork.load(new File(catFilePath), false),
-                    new CatResponseVectorGenerator(featureVectorGenerator.getCatIndexMap()), networkMiniBatchSize, tol, patience);
+                    new CatResponseVectorGenerator(featureVectorGenerator.getCatIndexMap()), networkMiniBatchSize, tol, patience,
+                    new File("C:\\my_stuff\\dissertation\\discontinuous_parser_windows\\tmp\\categoryValidationLosses.csv"));
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);

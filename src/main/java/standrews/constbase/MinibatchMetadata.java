@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MinibatchMetadata {
     private final String embeddingsFilePath;
@@ -21,11 +22,13 @@ public class MinibatchMetadata {
         embeddingsFilePath = fileDirectory + "embeddings_" + fileNumber + ".npy";
 
         try {
-            sentenceMetadataList = StreamUtils.zipWithIndex(Files.lines(Paths.get(fileDirectory + "metadata_" + fileNumber + ".txt")))
-                    .map(zip -> {
-                        String[] sentenceIdAndLength = zip.getValue().split(":", 2);
-                        return new SentenceMetadata(sentenceIdAndLength[0], Integer.parseInt(sentenceIdAndLength[1]), (int) zip.getIndex());
-                    }).collect(Collectors.toCollection(ArrayList::new));
+            try (Stream<String> lines = Files.lines(Paths.get(fileDirectory + "metadata_" + fileNumber + ".txt"))) {
+                sentenceMetadataList = StreamUtils.zipWithIndex(lines)
+                        .map(zip -> {
+                            String[] sentenceIdAndLength = zip.getValue().split(":", 2);
+                            return new SentenceMetadata(sentenceIdAndLength[0], Integer.parseInt(sentenceIdAndLength[1]), (int) zip.getIndex());
+                        }).collect(Collectors.toCollection(ArrayList::new));
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -44,15 +47,15 @@ public class MinibatchMetadata {
     }
 
     public List<Pair<String, double[][]>> loadEmbeddings() {
-        INDArray embeddingsMatrix = Nd4j.readNpy(embeddingsFilePath);
-
-        return sentenceMetadataList.stream()
-                .map(sentenceMetadata ->
-                        new Pair<>(sentenceMetadata.getId(),
-                                embeddingsMatrix.get(NDArrayIndex.point(sentenceMetadata.getIndex()),
-                                        NDArrayIndex.interval(0, sentenceMetadata.getLength()),
-                                        NDArrayIndex.all()
-                                ).toDoubleMatrix()))
-                .collect(Collectors.toList());
+        try (INDArray embeddingsMatrix = Nd4j.readNpy(embeddingsFilePath)) {
+            return sentenceMetadataList.stream()
+                    .map(sentenceMetadata ->
+                            new Pair<>(sentenceMetadata.getId(),
+                                    embeddingsMatrix.get(NDArrayIndex.point(sentenceMetadata.getIndex()),
+                                            NDArrayIndex.interval(0, sentenceMetadata.getLength()),
+                                            NDArrayIndex.all()
+                                    ).toDoubleMatrix()))
+                    .collect(Collectors.toList());
+        }
     }
 }
