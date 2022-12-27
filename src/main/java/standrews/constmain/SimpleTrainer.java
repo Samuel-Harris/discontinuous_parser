@@ -243,7 +243,7 @@ public class SimpleTrainer {
 
         treebank.resetTreebankIterator(datasetSplit);
 
-        int n = treebank.getSetSize(datasetSplit);
+        double n = treebank.getSetSize(datasetSplit);
         return new double[] {actionClassifierLossScoreSum / n, catClassifierLossScoreSum / n, fellowClassifierLossScoreSum / n};
     }
 

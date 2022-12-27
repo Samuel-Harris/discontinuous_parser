@@ -163,7 +163,7 @@ public class MLP {
             double[][] featureArray = new double[observations.size()][observations.get(0).getKey().length];
             double[][] labelArray = new double[observations.size()][observations.get(0).getValue().length];
             for (int i=0; i<observations.size(); i++) {
-                Pair<double[], double[]> featureLabelPair = observations.get(0);
+                Pair<double[], double[]> featureLabelPair = observations.get(i);
                 featureArray[i] = featureLabelPair.getKey();
                 labelArray[i] = featureLabelPair.getValue();
             }
