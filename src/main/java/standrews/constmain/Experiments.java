@@ -406,17 +406,13 @@ public class Experiments {
         // final String bankname = "negra";
         final String bankname = "tiger";
 
-        Nd4j.getMemoryManager().togglePeriodicGc(true);
-        Nd4j.getMemoryManager().setAutoGcWindow(1000);
-        Nd4j.getAffinityManager().allowCrossDeviceAccess(true);
-
         final String bankPath = "../datasets/tigercorpus2.1_original/corpus/tiger_negraformat.export";
         final int numEmbeddingsFiles = 505;
 
         boolean measureTrainLoss = false;
         double trainRatio = 0.7;
         double validationRatio = 0.15;  // testRatio = 1 - trainRatio - validationRatio
-        int[] hiddenLayers = new int[]{256, 256};
+        int[] hiddenLayers = new int[]{512, 512, 512};
         int nAttentionHeads = 3;
         int maxEpochs = 200;  // change to 200 in final run
         double learningRate = 0.001;

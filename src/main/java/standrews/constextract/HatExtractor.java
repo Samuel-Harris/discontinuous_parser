@@ -73,17 +73,17 @@ public class HatExtractor extends SimpleExtractor {
     public void extract(final HatConfig config, final String[] action) {
 //		final Features actionFeats = extract(config);
         final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);
-        actionClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[0]);
+        actionClassifier.addObservation(featureVector, action[0]);
         if (action[0].equals(reduceUpHat)) {
 //			final Features catFeats = extract(config);
-            catClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[1]);
+            catClassifier.addObservation(featureVector, action[1]);
         } else if (action[0].equals(reduceToHat) || action[0].equals(reduceFromHat)) {
             int fellowIndex = Integer.parseInt(action[1]);
             final int compressedFellowIndex = HatParser.actionToCompression(config, action[0], fellowIndex);
 //			final Features fellowFeats = extract(config);
 //			fellowFeats.putString("action", action[0]);
 
-            fellowClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), compressedFellowIndex);
+            fellowClassifier.addObservation(featureVector, compressedFellowIndex);
         }
     }
 

@@ -1,5 +1,6 @@
 package standrews.classification;
 
+//import javafx.util.Pair;
 import org.deeplearning4j.datasets.iterator.DoublesDataSetIterator;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.common.primitives.Pair;
@@ -13,7 +14,7 @@ import java.util.*;
 
 public class MLP {
     private final MultiLayerNetwork network;
-    private ArrayList<Pair<double[], double[]>> observations;
+    private final ArrayList<Pair<double[], double[]>> observations;
     private final ResponseVectorGenerator responseVectorGenerator;
     private boolean isTraining;
     private boolean isValidating;
@@ -70,13 +71,13 @@ public class MLP {
     }
 
     private void clearObservations() {
-        observations = new ArrayList<>();
-//        observations.clear();
+//        observations = new ArrayList<>();
+        observations.clear();
 //        System.gc();
     }
 
     public void addObservation(double[] featureVector, Object response) {
-        if (isValidating) {
+        if (isValidating && isTraining) {
             observations.add(new Pair<>(featureVector, responseVectorGenerator.generateResponseVector(response)));
         } else if (isTraining) {
             observations.add(new Pair<>(featureVector, responseVectorGenerator.generateResponseVector(response)));
@@ -100,6 +101,7 @@ public class MLP {
 
     public void applyEarlyStoppingIfApplicable(double trainLossScore, double validLossScore) {
         if (!isTraining) {
+            clearObservations();
             return;
         }
 
@@ -109,6 +111,7 @@ public class MLP {
 
     public void applyEarlyStoppingIfApplicable(double lossScore) {
         if (!isTraining) {
+            clearObservations();
             return;
         }
 
@@ -140,6 +143,7 @@ public class MLP {
 
     public void train() {
         if (observations.isEmpty() || !isTraining) {
+            clearObservations();
             return;
         }
 
@@ -156,35 +160,18 @@ public class MLP {
 
     public double validateMiniBatch() {
         if (isTraining && !observations.isEmpty()) {
-
-            Runtime runtime = Runtime.getRuntime();
-//            System.out.println("memory usage: " + (((double) runtime.totalMemory() - (double) runtime.freeMemory())*100.0/((double) runtime.maxMemory())) + "% of " + runtime.maxMemory()/1000000000 + "gb");
-
-            double[][] featureArray = new double[observations.size()][observations.get(0).getKey().length];
-            double[][] labelArray = new double[observations.size()][observations.get(0).getValue().length];
-            for (int i=0; i<observations.size(); i++) {
-                Pair<double[], double[]> featureLabelPair = observations.get(i);
-                featureArray[i] = featureLabelPair.getKey();
-                labelArray[i] = featureLabelPair.getValue();
-            }
-
             double lossScoreSum;
-            try (INDArray features = Nd4j.create(featureArray); INDArray labels = Nd4j.create(labelArray)) {
-                DataSet dataset = new DataSet(features, labels);
-                try (INDArray lossScores = network.scoreExamples(dataset, false)) {
-                    lossScoreSum = Arrays.stream(lossScores.toDoubleVector()).sum();
-                }
-            }
 
+            DataSetIterator iter = new DoublesDataSetIterator(observations, observations.size());
+            try (INDArray lossScores = network.scoreExamples(iter, false)) {
+                lossScoreSum = Arrays.stream(lossScores.toDoubleVector()).sum();
+            }
 
             clearObservations();
-            if (((double) runtime.totalMemory() - (double) runtime.freeMemory())/((double) runtime.maxMemory()) > 0.8) {
-                System.gc();
-                Nd4j.getMemoryManager().invokeGc();
-            }
 
             return lossScoreSum;
         } else {
+            clearObservations();
             return 0;
         }
     }
