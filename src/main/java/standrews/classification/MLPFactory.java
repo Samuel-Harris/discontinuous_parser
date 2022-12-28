@@ -4,6 +4,7 @@ import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.layers.SelfAttentionLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.nd4j.linalg.activations.Activation;
@@ -13,13 +14,15 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 public class MLPFactory {
     private final int seed;
     private final int[] layers;
+    private final int nAttentionHeads;
     private final double learningRate;
     private final double dropoutRate;
 
-    public MLPFactory(int inputSize, int[] hiddenLayerSizes, double learningRate, double dropoutRate, int seed) {
+    public MLPFactory(int inputSize, int[] hiddenLayerSizes, int nAttentionHeads, double learningRate, double dropoutRate, int seed) {
         this.learningRate = learningRate;
         this.seed = seed;
         this.dropoutRate = dropoutRate;
+        this.nAttentionHeads = nAttentionHeads;
 
         // setting network layer sizes
         layers = new int[hiddenLayerSizes.length + 2];
@@ -34,6 +37,15 @@ public class MLPFactory {
                 .seed(seed)
                 .updater(new Adam(learningRate))
                 .list();
+        builder = builder.layer(new SelfAttentionLayer.Builder()
+                .nIn(layers[0])
+                .nOut(layers[0])
+                .projectInput(true)
+                .headSize((int) Math.ceil((double) layers[0] / (double) nAttentionHeads))
+                .nHeads(nAttentionHeads)
+                .dropOut(dropoutRate)
+                .weightInit(WeightInit.XAVIER)
+                .build());
         for (int n = 1; n < layers.length; n++) {
             boolean last = n == layers.length - 1;
             builder = builder.layer(n - 1,
