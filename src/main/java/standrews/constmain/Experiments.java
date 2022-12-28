@@ -413,6 +413,7 @@ public class Experiments {
         double trainRatio = 0.7;
         double validationRatio = 0.15;  // testRatio = 1 - trainRatio - validationRatio
         int[] hiddenLayers = new int[]{512, 512, 512};
+        int nAttentionHeads = 3;
         int maxEpochs = 200;  // change to 200 in final run
         double learningRate = 0.001;
         double dropoutRate = 0.1;
