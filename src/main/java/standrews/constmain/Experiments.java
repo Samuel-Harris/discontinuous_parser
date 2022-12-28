@@ -4,7 +4,17 @@
 
 package standrews.constmain;
 
+import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
+import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.layers.SelfAttentionLayer;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.weights.WeightInit;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.learning.config.Adam;
+import org.nd4j.linalg.lossfunctions.LossFunctions;
 import standrews.aux_.LogHandler;
 import standrews.aux_.TimerMilli;
 import standrews.classification.FeatureSpecification;
@@ -174,12 +184,13 @@ public class Experiments {
             final int n,
             final FeatureVectorGenerator featureVectorGenerator,
             final boolean leftFirst,
-            final boolean measureTrainLoss, int[] hiddenLayers, int maxEpochs, int networkMiniBatchSize,
+            final boolean measureTrainLoss, int[] hiddenLayers, int nAttentionHeads, int maxEpochs, int networkMiniBatchSize,
             double learningRate, double dropoutRate, double tol, int patience, int seed,
             boolean loadClassifiers, boolean startWithValidation) {
         final MLPFactory mlpFactory = new MLPFactory(
                 featureVectorGenerator.getVectorLength(),
                 hiddenLayers,
+                nAttentionHeads,
                 learningRate,
                 dropoutRate,
                 seed);
@@ -266,7 +277,7 @@ public class Experiments {
             String fellowFilePath,
             final int nTrain, final int nTest,
             final boolean leftFirst,
-            final boolean measureTrainLoss, int[] hiddenLayers, int maxEpochs, int networkMiniBatchSize,
+            final boolean measureTrainLoss, int[] hiddenLayers, int nAttentionHeads, int maxEpochs, int networkMiniBatchSize,
             double learningRate, double dropoutRate, double tol, int patience, int seed, boolean loadClassifiers,
             boolean startWithValidation) {
         FeatureVectorGenerator featureVectorGenerator = new FeatureVectorGenerator(treebank);
@@ -274,7 +285,7 @@ public class Experiments {
                 actionFilePath,
                 catFilePath,
                 fellowFilePath, nTrain, featureVectorGenerator, leftFirst,
-                measureTrainLoss, hiddenLayers, maxEpochs, networkMiniBatchSize, learningRate, dropoutRate, tol,
+                measureTrainLoss, hiddenLayers, nAttentionHeads, maxEpochs, networkMiniBatchSize, learningRate, dropoutRate, tol,
                 patience, seed, loadClassifiers, startWithValidation);
 
         final HatTester tester = new HatTester(featureVectorGenerator);
@@ -326,7 +337,7 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean measureTrainLoss,
-            final boolean goldPos, int[] hiddenLayers, int maxEpochs, int networkMiniBatchSize,
+            final boolean goldPos, int[] hiddenLayers, int nAttentionHeads, int maxEpochs, int networkMiniBatchSize,
             double learningRate, double dropoutRate, double tol, int patience, int seed, boolean loadClassifiers,
             boolean startWithValidation) {
         final TimerMilli timer = new TimerMilli();
@@ -337,7 +348,7 @@ public class Experiments {
                 nTrain, nTest,
                 leftFirst,
                 measureTrainLoss,
-                hiddenLayers,
+                hiddenLayers, nAttentionHeads,
                 maxEpochs, networkMiniBatchSize,
                 learningRate, dropoutRate, tol, patience, seed, loadClassifiers, startWithValidation);
         timer.stop();
@@ -406,6 +417,7 @@ public class Experiments {
         double trainRatio = 0.7;
         double validationRatio = 0.15;  // testRatio = 1 - trainRatio - validationRatio
         int[] hiddenLayers = new int[]{256, 256};
+        int nAttentionHeads = 3;
         int maxEpochs = 200;  // change to 200 in final run
         double learningRate = 0.001;
         double dropoutRate = 0.1;
@@ -457,7 +469,7 @@ public class Experiments {
         // final boolean leftFirst = false;
         final boolean projectivize = false;
         final boolean goldPos = true;
-        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, measureTrainLoss, goldPos, hiddenLayers,
+        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, measureTrainLoss, goldPos, hiddenLayers, nAttentionHeads,
                 maxEpochs, networkMiniBatchSize, learningRate, dropoutRate, tol, patience, seed, loadClassifiers, startWithValidation);
 
 //        if (method.equals("simple")) {
