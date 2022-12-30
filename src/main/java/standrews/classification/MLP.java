@@ -1,20 +1,18 @@
 package standrews.classification;
 
 //import javafx.util.Pair;
-import org.deeplearning4j.datasets.iterator.DoublesDataSetIterator;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.common.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.MultiDataSet;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.*;
 import java.util.*;
 
 public class MLP {
-    private final MultiLayerNetwork network;
-    private final ArrayList<Pair<double[], double[]>> observations;
+    private final ComputationGraph network;
+    private final ArrayList<Pair<FeatureVector, double[]>> observations;
     private final ResponseVectorGenerator responseVectorGenerator;
     private boolean isTraining;
     private boolean isValidating;
@@ -26,7 +24,7 @@ public class MLP {
     private final double tol;
     private final int patience;
 
-    public MLP(MultiLayerNetwork network, ResponseVectorGenerator responseVectorGenerator, int miniBatchSize, double tol, int patience) {
+    public MLP(ComputationGraph network, ResponseVectorGenerator responseVectorGenerator, int miniBatchSize, double tol, int patience) {
         this.network = network;
         this.responseVectorGenerator = responseVectorGenerator;
         this.miniBatchSize = miniBatchSize;
@@ -41,7 +39,7 @@ public class MLP {
         lastLossScore = Double.POSITIVE_INFINITY;
     }
 
-    public MLP(MultiLayerNetwork network, ResponseVectorGenerator responseVectorGenerator, int miniBatchSize, double tol, int patience, File lossFile) throws IOException {
+    public MLP(ComputationGraph network, ResponseVectorGenerator responseVectorGenerator, int miniBatchSize, double tol, int patience, File lossFile) throws IOException {
         this.network = network;
         this.responseVectorGenerator = responseVectorGenerator;
         this.miniBatchSize = miniBatchSize;
@@ -76,11 +74,11 @@ public class MLP {
 //        System.gc();
     }
 
-    public void addObservation(double[] featureVector, Object response) {
+    public void addObservation(FeatureVector featureVectors, Object response) {
         if (isValidating && isTraining) {
-            observations.add(new Pair<>(featureVector, responseVectorGenerator.generateResponseVector(response)));
+            observations.add(new Pair<>(featureVectors, responseVectorGenerator.generateResponseVector(response)));
         } else if (isTraining) {
-            observations.add(new Pair<>(featureVector, responseVectorGenerator.generateResponseVector(response)));
+            observations.add(new Pair<>(featureVectors, responseVectorGenerator.generateResponseVector(response)));
             if (isTraining && observations.size() == miniBatchSize) {
                 train();
             }
@@ -147,11 +145,38 @@ public class MLP {
             return;
         }
 
-        DataSetIterator iter = new DoublesDataSetIterator(observations, observations.size());
+        double[][] hatFeatureArray = new double[observations.size()][observations.get(0).getKey().getStaticFeatures().length];
+        double[][][] stackFeatureArray = new double[observations.size()][observations.get(0).getKey().getStackElementVectors().length][];
+        double[][][] bufferFeatureArray = new double[observations.size()][observations.get(0).getKey().getBufferElementVectors().length][];
+        double[][] labelArray = new double[observations.size()][observations.get(0).getValue().length];
+        for (int i=0; i<observations.size(); i++) {
+            Pair<FeatureVector, double[]> featureLabelPair = observations.get(i);
+            hatFeatureArray[i] = featureLabelPair.getKey().getStaticFeatures();
+            stackFeatureArray[i] = featureLabelPair.getKey().getStackElementVectors();
+            bufferFeatureArray[i] = featureLabelPair.getKey().getBufferElementVectors();
+            labelArray[i] = featureLabelPair.getValue();
+        }
 
-        network.fit(iter);
+        try (INDArray hatFeatureINDArray = Nd4j.create(hatFeatureArray);
+             INDArray stackFeatureINDArray = Nd4j.create(stackFeatureArray);
+             INDArray bufferFeatureINDArray = Nd4j.create(bufferFeatureArray);
+             INDArray labelINDArray = Nd4j.create(labelArray)) {
+            INDArray[] features = new INDArray[]{hatFeatureINDArray, stackFeatureINDArray, bufferFeatureINDArray};
+            INDArray[] labels = new INDArray[]{labelINDArray};
+            MultiDataSet dataset = new MultiDataSet(features, labels);
+            network.fit(dataset);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("failed scoring");
+            System.exit(1);
+        }
 
         clearObservations();
+        Runtime runtime = Runtime.getRuntime();
+        if (((double) runtime.totalMemory() - (double) runtime.freeMemory())/((double) runtime.maxMemory()) > 0.8) {
+            System.gc();
+            Nd4j.getMemoryManager().invokeGc();
+        }
     }
 
     public void save(String filePath) throws IOException {
@@ -160,14 +185,39 @@ public class MLP {
 
     public double validateMiniBatch() {
         if (isTraining && !observations.isEmpty()) {
-            double lossScoreSum;
+            double[][] hatFeatureArray = new double[observations.size()][observations.get(0).getKey().getStaticFeatures().length];
+            double[][][] stackFeatureArray = new double[observations.size()][observations.get(0).getKey().getStackElementVectors().length][];
+            double[][][] bufferFeatureArray = new double[observations.size()][observations.get(0).getKey().getBufferElementVectors().length][];
+            double[][] labelArray = new double[observations.size()][observations.get(0).getValue().length];
+            for (int i=0; i<observations.size(); i++) {
+                Pair<FeatureVector, double[]> featureLabelPair = observations.get(i);
+                hatFeatureArray[i] = featureLabelPair.getKey().getStaticFeatures();
+                stackFeatureArray[i] = featureLabelPair.getKey().getStackElementVectors();
+                bufferFeatureArray[i] = featureLabelPair.getKey().getBufferElementVectors();
+                labelArray[i] = featureLabelPair.getValue();
+            }
 
-            DataSetIterator iter = new DoublesDataSetIterator(observations, observations.size());
-            try (INDArray lossScores = network.scoreExamples(iter, false)) {
-                lossScoreSum = Arrays.stream(lossScores.toDoubleVector()).sum();
+            double lossScoreSum = 0;
+            try (INDArray hatFeatureINDArray = Nd4j.create(hatFeatureArray);
+                 INDArray stackFeatureINDArray = Nd4j.create(stackFeatureArray);
+                 INDArray bufferFeatureINDArray = Nd4j.create(bufferFeatureArray);
+                 INDArray labelINDArray = Nd4j.create(labelArray)) {
+                INDArray[] features = new INDArray[]{hatFeatureINDArray, stackFeatureINDArray, bufferFeatureINDArray};
+                INDArray[] labels = new INDArray[]{labelINDArray};
+                MultiDataSet dataset = new MultiDataSet(features, labels);
+                lossScoreSum = network.score(dataset, false) * observations.size();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("failed scoring");
+                System.exit(1);
             }
 
             clearObservations();
+            Runtime runtime = Runtime.getRuntime();
+            if (((double) runtime.totalMemory() - (double) runtime.freeMemory())/((double) runtime.maxMemory()) > 0.8) {
+                System.gc();
+                Nd4j.getMemoryManager().invokeGc();
+            }
 
             return lossScoreSum;
         } else {
@@ -176,14 +226,19 @@ public class MLP {
         }
     }
 
-    public Object predict(double[] featureVector) {
+    public Object predict(FeatureVector featureVector) {
         return predictAll(featureVector)[0];
     }
 
-    public Object[] predictAll(double[] featureVector) {  // predicts action and orders them by most probable
-        INDArray features = Nd4j.create(new double[][] {featureVector});
-        INDArray output = network.output(features, false);
-        final double[] scores = output.toDoubleVector();
-        return responseVectorGenerator.getLabelsFromScores(scores);
+    public Object[] predictAll(FeatureVector featureVector) {  // predicts action and orders them by most probable
+        try (INDArray hatFeatureINDArray = Nd4j.create(featureVector.getStaticFeatures());
+             INDArray stackFeatureINDArray = Nd4j.create(featureVector.getStackElementVectors());
+             INDArray bufferFeatureINDArray = Nd4j.create(featureVector.getStackElementVectors())) {
+            INDArray[] features = new INDArray[]{hatFeatureINDArray, stackFeatureINDArray, bufferFeatureINDArray};
+            INDArray[] output = network.output(features);
+            double[] scores = output[0].toDoubleVector();
+
+            return responseVectorGenerator.getLabelsFromScores(scores);
+        }
     }
 }

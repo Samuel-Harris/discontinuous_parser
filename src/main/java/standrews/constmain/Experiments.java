@@ -4,7 +4,6 @@
 
 package standrews.constmain;
 
-import org.nd4j.linalg.factory.Nd4j;
 import standrews.aux_.LogHandler;
 import standrews.aux_.TimerMilli;
 import standrews.classification.FeatureSpecification;
@@ -174,11 +173,17 @@ public class Experiments {
             final int n,
             final FeatureVectorGenerator featureVectorGenerator,
             final boolean leftFirst,
-            final boolean measureTrainLoss, int[] hiddenLayers, int nAttentionHeads, int maxEpochs, int networkMiniBatchSize,
+            final boolean measureTrainLoss, int[] hiddenLayers, int hatLayerOutputSize, int stackLayerOutputSize,
+            int bufferLayerOutputSize, int nAttentionHeads, int maxEpochs, int networkMiniBatchSize,
             double learningRate, double dropoutRate, double tol, int patience, int seed,
             boolean loadClassifiers, boolean startWithValidation) {
         final MLPFactory mlpFactory = new MLPFactory(
-                featureVectorGenerator.getVectorLength(),
+                featureVectorGenerator.getStaticFeaturesVectorSize(),
+                hatLayerOutputSize,
+                featureVectorGenerator.getStackElementVectorSize(),
+                stackLayerOutputSize,
+                featureVectorGenerator.getBufferElementVectorSize(),
+                bufferLayerOutputSize,
                 hiddenLayers,
                 nAttentionHeads,
                 learningRate,
@@ -267,7 +272,8 @@ public class Experiments {
             String fellowFilePath,
             final int nTrain, final int nTest,
             final boolean leftFirst,
-            final boolean measureTrainLoss, int[] hiddenLayers, int nAttentionHeads, int maxEpochs, int networkMiniBatchSize,
+            final boolean measureTrainLoss, int[] hiddenLayers, int hatLayerOutputSize, int stackLayerOutputSize,
+            int bufferLayerOutputSize, int nAttentionHeads, int maxEpochs, int networkMiniBatchSize,
             double learningRate, double dropoutRate, double tol, int patience, int seed, boolean loadClassifiers,
             boolean startWithValidation) {
         FeatureVectorGenerator featureVectorGenerator = new FeatureVectorGenerator(treebank);
@@ -275,7 +281,8 @@ public class Experiments {
                 actionFilePath,
                 catFilePath,
                 fellowFilePath, nTrain, featureVectorGenerator, leftFirst,
-                measureTrainLoss, hiddenLayers, nAttentionHeads, maxEpochs, networkMiniBatchSize, learningRate, dropoutRate, tol,
+                measureTrainLoss, hiddenLayers, hatLayerOutputSize, stackLayerOutputSize,
+                bufferLayerOutputSize, nAttentionHeads, maxEpochs, networkMiniBatchSize, learningRate, dropoutRate, tol,
                 patience, seed, loadClassifiers, startWithValidation);
 
         final HatTester tester = new HatTester(featureVectorGenerator);
@@ -327,7 +334,8 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean measureTrainLoss,
-            final boolean goldPos, int[] hiddenLayers, int nAttentionHeads, int maxEpochs, int networkMiniBatchSize,
+            final boolean goldPos, int[] hiddenLayers, int hatLayerOutputSize, int stackLayerOutputSize,
+            int bufferLayerOutputSize, int nAttentionHeads, int maxEpochs, int networkMiniBatchSize,
             double learningRate, double dropoutRate, double tol, int patience, int seed, boolean loadClassifiers,
             boolean startWithValidation) {
         final TimerMilli timer = new TimerMilli();
@@ -338,7 +346,7 @@ public class Experiments {
                 nTrain, nTest,
                 leftFirst,
                 measureTrainLoss,
-                hiddenLayers, nAttentionHeads,
+                hiddenLayers, hatLayerOutputSize, stackLayerOutputSize, bufferLayerOutputSize, nAttentionHeads,
                 maxEpochs, networkMiniBatchSize,
                 learningRate, dropoutRate, tol, patience, seed, loadClassifiers, startWithValidation);
         timer.stop();
@@ -403,6 +411,9 @@ public class Experiments {
         double trainRatio = 0.7;
         double validationRatio = 0.15;  // testRatio = 1 - trainRatio - validationRatio
         int[] hiddenLayers = new int[]{512, 512, 512};
+        int hatLayerOutputSize = 512;
+        int stackLayerOutputSize = 512;
+        int bufferLayerOutputSize = 512;
         int nAttentionHeads = 3;
         int maxEpochs = 200;  // change to 200 in final run
         double learningRate = 0.001;
@@ -455,7 +466,8 @@ public class Experiments {
         // final boolean leftFirst = false;
         final boolean projectivize = false;
         final boolean goldPos = true;
-        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, measureTrainLoss, goldPos, hiddenLayers, nAttentionHeads,
+        doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, measureTrainLoss, goldPos, hiddenLayers,
+                hatLayerOutputSize, stackLayerOutputSize, bufferLayerOutputSize, nAttentionHeads,
                 maxEpochs, networkMiniBatchSize, learningRate, dropoutRate, tol, patience, seed, loadClassifiers, startWithValidation);
 
 //        if (method.equals("simple")) {

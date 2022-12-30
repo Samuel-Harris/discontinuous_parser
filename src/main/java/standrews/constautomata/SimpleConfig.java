@@ -213,11 +213,8 @@ public class SimpleConfig {
         input.add(0, vertex);
     }
 
-    public Vector<ConstLeaf> inputList() {
-        final Vector<ConstLeaf> list = new Vector<>();
-        for (int i = 0; i < inputLength(); i++)
-            list.add(getInputLeft(i));
-        return list;
+    public List<EnhancedConstLeaf> inputList() {
+        return input;
     }
 
     public int totalLength() {

@@ -4,11 +4,9 @@
 
 package standrews.constextract;
 
+import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import standrews.classification.FeatureVectorGenerator;
-import standrews.classification.FellowResponseVectorGenerator;
-import standrews.classification.MLP;
-import standrews.classification.MLPFactory;
+import standrews.classification.*;
 import standrews.constautomata.HatConfig;
 import standrews.constmethods.HatParser;
 
@@ -44,7 +42,7 @@ public class HatExtractor extends SimpleExtractor {
 
         try {
             // read csv file, find out whether patience has been hit, and create MLP with csv's best loss and epochs without improvement in it
-            this.fellowClassifier = new MLP(MultiLayerNetwork.load(new File(fellowFilePath), false),
+            this.fellowClassifier = new MLP(ComputationGraph.load(new File(fellowFilePath), false),
                     new FellowResponseVectorGenerator(), networkMiniBatchSize, tol, patience,
                     new File("C:\\my_stuff\\dissertation\\discontinuous_parser_windows\\tmp\\fellowValidationLosses.csv"));
         } catch (IOException e) {
@@ -72,22 +70,22 @@ public class HatExtractor extends SimpleExtractor {
 
     public void extract(final HatConfig config, final String[] action) {
 //		final Features actionFeats = extract(config);
-        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);
-        actionClassifier.addObservation(featureVector, action[0]);
+        final FeatureVector featureVectors = featureVectorGenerator.generateFeatureVectors(config);
+        actionClassifier.addObservation(featureVectors, action[0]);
         if (action[0].equals(reduceUpHat)) {
 //			final Features catFeats = extract(config);
-            catClassifier.addObservation(featureVector, action[1]);
+            catClassifier.addObservation(featureVectors, action[1]);
         } else if (action[0].equals(reduceToHat) || action[0].equals(reduceFromHat)) {
             int fellowIndex = Integer.parseInt(action[1]);
             final int compressedFellowIndex = HatParser.actionToCompression(config, action[0], fellowIndex);
 //			final Features fellowFeats = extract(config);
 //			fellowFeats.putString("action", action[0]);
 
-            fellowClassifier.addObservation(featureVector, compressedFellowIndex);
+            fellowClassifier.addObservation(featureVectors, compressedFellowIndex);
         }
     }
 
-    protected double[] extract(final HatConfig config) {
+    protected FeatureVector extract(final HatConfig config) {
 //		final Features feats = super.extract(config);
 //		extractHatCats(feats, config);
 //		extractHatPoss(feats, config);
@@ -101,7 +99,7 @@ public class HatExtractor extends SimpleExtractor {
 //			extractCompressionRight(feats, config);
 //		}
 //		return feats;
-        return	featureVectorGenerator.generateFeatureVector(config);
+        return featureVectorGenerator.generateFeatureVectors(config);
     }
 
     public void saveClassifiers(String actionFilePath, String catFilePath, String fellowFilePath) throws IOException {
@@ -151,8 +149,8 @@ public class HatExtractor extends SimpleExtractor {
     @Override
     public Iterator<String[]> predict(final HatConfig config) {
 //		final Features actionFeats = extract(config);
-        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);
-        final String[] acs = (String[]) actionClassifier.predictAll(featureVector);
+        final FeatureVector featureVectors = featureVectorGenerator.generateFeatureVectors(config);
+        final String[] acs = (String[]) actionClassifier.predictAll(featureVectors);
         return new ActionIterator(config, acs);
     }
 
@@ -180,13 +178,13 @@ public class HatExtractor extends SimpleExtractor {
                     ac = null;
                     return true;
                 } else if (ac.equals(reduceUpHat)) {
-                    final double[] catFeats = extract(config);
+                    final FeatureVector catFeats = extract(config);
                     final String cat = (String) catClassifier.predict(catFeats);
                     action = new String[]{ac, cat};
                     ac = null;
                     return true;
                 } else {
-                    final double[] fellowFeats = extract(config);
+                    final FeatureVector fellowFeats = extract(config);
                     final Integer[] fs = (Integer[]) fellowClassifier.predictAll(fellowFeats);
                     fellows = new LinkedList<>(Arrays.asList(fs));
                 }

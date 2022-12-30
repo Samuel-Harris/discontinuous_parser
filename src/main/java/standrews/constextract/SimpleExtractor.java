@@ -4,6 +4,7 @@
 
 package standrews.constextract;
 
+import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import standrews.classification.*;
 import standrews.constautomata.HatConfig;
@@ -75,10 +76,10 @@ public class SimpleExtractor {
         this.featureVectorGenerator = featureVectorGenerator;
 
         try {
-            this.actionClassifier = new MLP(MultiLayerNetwork.load(new File(actionFilePath), false),
+            this.actionClassifier = new MLP(ComputationGraph.load(new File(actionFilePath), false),
                     new ActionResponseVectorGenerator(), networkMiniBatchSize, tol, patience,
                     new File("C:\\my_stuff\\dissertation\\discontinuous_parser_windows\\tmp\\actionValidationLosses.csv"));
-            this.catClassifier = new MLP(MultiLayerNetwork.load(new File(catFilePath), false),
+            this.catClassifier = new MLP(ComputationGraph.load(new File(catFilePath), false),
                     new CatResponseVectorGenerator(featureVectorGenerator.getCatIndexMap()), networkMiniBatchSize, tol, patience,
                     new File("C:\\my_stuff\\dissertation\\discontinuous_parser_windows\\tmp\\categoryValidationLosses.csv"));
         } catch (IOException e) {
@@ -114,11 +115,11 @@ public class SimpleExtractor {
 
     public void extract(final HatConfig config, final String[] action) {
 //		final Features actionFeats = extract(config);
-        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);
-        actionClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[0]);
+        final FeatureVector featureVector = featureVectorGenerator.generateFeatureVectors(config);
+        actionClassifier.addObservation(featureVector, action[0]);
         if (action.length > 1) {
 //			final Features catFeats = extract(config);
-            catClassifier.addObservation(Arrays.copyOf(featureVector, featureVector.length), action[1]);
+            catClassifier.addObservation(featureVector, action[1]);
         }
     }
 
@@ -173,7 +174,7 @@ public class SimpleExtractor {
 
     public Iterator<String[]> predict(final HatConfig config) {
 //		final Features actionFeats = extract(config);
-        final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);
+        final FeatureVector featureVector = featureVectorGenerator.generateFeatureVectors(config);
         final String[] acs = (String[]) actionClassifier.predictAll(featureVector);
         return new ActionIterator(config, acs);
     }
@@ -201,8 +202,8 @@ public class SimpleExtractor {
                 return new String[]{ac};
             } else {
 //				final Features catFeats = extract(config);
-                final double[] featureVector = featureVectorGenerator.generateFeatureVector(config);
-                final String cat = (String) catClassifier.predict(featureVector);
+                final FeatureVector featureVectors = featureVectorGenerator.generateFeatureVectors(config);
+                final String cat = (String) catClassifier.predict(featureVectors);
                 return new String[]{ac, cat};
             }
         }

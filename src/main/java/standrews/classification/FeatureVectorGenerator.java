@@ -12,11 +12,13 @@ public class FeatureVectorGenerator {
     private final Map<String, Integer> posIndexMap;
     private final Map<String, Integer> catAndPosIndexMap;
     private final static int embeddingVectorLength = 768;
-    private final int vectorLength;
     private final int embeddingAndPosVectorLength;
     private final int posVectorLength;
     private final Double[] blankEmbeddingsAndPosVector;
     private final Double[] blankCategoryVector;
+    private final int staticFeaturesVectorSize;
+    private final int stackElementVectorSize;
+    private final int bufferElementVectorSize;
 
     public FeatureVectorGenerator(final ConstTreebank treebank) {
         // making map to one-hot encode parts of speech
@@ -45,23 +47,29 @@ public class FeatureVectorGenerator {
         Arrays.fill(blankCategoryVector, 0.0);
 
         HatConfig testConfig = new HatConfig("", new ConstLeaf[0], new double[0][0]);
-        vectorLength = generateFeatureVector(testConfig).length;
+        FeatureVector blankFeatureVectors = generateFeatureVectors(testConfig);
+
+        staticFeaturesVectorSize = blankFeatureVectors.getStaticFeatures().length;
+        stackElementVectorSize = blankFeatureVectors.getStackElementVectors().length;
+        bufferElementVectorSize = blankFeatureVectors.getBufferElementVectors().length;
     }
 
-    public double[] generateFeatureVector(HatConfig config) {
-        List<Double> features = new ArrayList<>();
+    public FeatureVector generateFeatureVectors(HatConfig config) {
+        List<Double> staticFeatures = new ArrayList<>();
 
-        features.addAll(getHatFeatures(config));
+        staticFeatures.addAll(getHatFeatures(config));
 
-        features.addAll(getStackFeatures(config));
+        staticFeatures.addAll(getStaticStackFeatures(config));
 
-        features.addAll(getInputBufferFeatures(config));
+        staticFeatures.addAll(getStaticInputBufferFeatures(config));
 
         // to get fellow index cat:
 //        final int abs = config.getHatAbsoluteIndex(fellowIndex);
 //        String cat = config.getStackLeft(abs).getCat();
 
-        return features.stream().mapToDouble(x -> x).toArray();
+        return new FeatureVector(staticFeatures.stream().mapToDouble(x -> x).toArray(),
+                getDynamicStackFeatures(config),
+                getDynamicInputBufferFeatures(config));
     }
 
     private List<Double> getHatFeatures(HatConfig config) {
@@ -84,7 +92,6 @@ public class FeatureVectorGenerator {
             hatFeatures.addAll(Arrays.asList(blankEmbeddingsAndPosVector.clone()));
         }
 
-
         return hatFeatures;
     }
 
@@ -97,7 +104,7 @@ public class FeatureVectorGenerator {
         return Arrays.asList(categoryVector);
     }
 
-    private List<Double> getStackFeatures(HatConfig config) {
+    private List<Double> getStaticStackFeatures(HatConfig config) {
         List<Double> stackFeatures = new ArrayList<>();
 
         // add embeddings and parts of speech of leftmost and rightmost dependencies of top 2 elements of the stack
@@ -133,7 +140,26 @@ public class FeatureVectorGenerator {
         return stackFeatures;
     }
 
-    private List<Double> getInputBufferFeatures(HatConfig config) {
+    private double[][] getDynamicStackFeatures(HatConfig config) {
+        double[][] stackFeatures = new double[blankCategoryVector.length + 2*blankEmbeddingsAndPosVector.length][config.stackLength()];
+
+        // add embeddings and parts of speech of leftmost and rightmost dependencies of all elements of the stack
+        if (config.stackLength() > 1) {
+            List<ConstNode> stackList = config.stackList();
+            for (int timeIndex=0; timeIndex<stackList.size(); timeIndex++) {
+                List<Double> features = getLeftmostAndRightmostDependentEmbeddingsAndPos(stackList.get(timeIndex));
+                features.addAll(oneHotEncodeCategory(stackList.get(timeIndex)));
+
+                for (int featureIndex = 0; featureIndex < features.size(); featureIndex++) {
+                    stackFeatures[featureIndex][timeIndex] = features.get(featureIndex);
+                }
+            }
+        }
+
+        return stackFeatures; // test whether the length of the last dimension must be bigger than 1
+    }
+
+    private List<Double> getStaticInputBufferFeatures(HatConfig config) {
         List<Double> inputBufferFeatures = new ArrayList<>();
 
         // add embeddings and parts of speech of next 2 elements of the input buffer
@@ -153,6 +179,26 @@ public class FeatureVectorGenerator {
         }
 
         return inputBufferFeatures;
+    }
+
+    private double[][] getDynamicInputBufferFeatures(HatConfig config) {
+        double[][] inputBufferFeatures = new double[blankEmbeddingsAndPosVector.length][config.stackLength()];
+
+        // add embeddings and parts of speech of all elements of the input buffer
+        if (config.stackLength() > 1) {
+            List<EnhancedConstLeaf> bufferElements = config.inputList();
+            for (int timeIndex=0; timeIndex<bufferElements.size(); timeIndex++) {
+                Double[] values = getEmbeddingsAndPos(bufferElements.get(timeIndex));
+
+                for (int featureIndex = 0; featureIndex < values.length; featureIndex++) {
+                    inputBufferFeatures[featureIndex][timeIndex] = values[featureIndex];
+                }
+            }
+
+            return inputBufferFeatures;
+        }
+
+        return inputBufferFeatures;  // test whether the length of the last dimension must be bigger than 1
     }
 
     private List<Double> getLeftmostAndRightmostDependentEmbeddingsAndPos(ConstNode node) {
@@ -214,8 +260,16 @@ public class FeatureVectorGenerator {
         }
     }
 
-    public int getVectorLength() {
-        return vectorLength;
+    public int getStaticFeaturesVectorSize() {
+        return staticFeaturesVectorSize;
+    }
+
+    public int getStackElementVectorSize() {
+        return stackElementVectorSize;
+    }
+
+    public int getBufferElementVectorSize() {
+        return bufferElementVectorSize;
     }
 
     public Map<String, Integer> getCatIndexMap() {
