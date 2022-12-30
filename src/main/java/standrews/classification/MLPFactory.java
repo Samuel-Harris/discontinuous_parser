@@ -3,6 +3,7 @@ package standrews.classification;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
+import org.deeplearning4j.nn.conf.layers.LearnedSelfAttentionLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.SelfAttentionLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -15,14 +16,16 @@ public class MLPFactory {
     private final int seed;
     private final int[] layers;
     private final int nAttentionHeads;
+    private final int attentionHeadSize;
     private final double learningRate;
-    private final double dropoutRate;
+    private final double inputRetainProbability;
 
-    public MLPFactory(int inputSize, int[] hiddenLayerSizes, int nAttentionHeads, double learningRate, double dropoutRate, int seed) {
+    public MLPFactory(int inputSize, int[] hiddenLayerSizes, int nAttentionHeads, int attentionHeadSize, double learningRate, double dropoutRate, int seed) {
         this.learningRate = learningRate;
         this.seed = seed;
-        this.dropoutRate = dropoutRate;
+        this.inputRetainProbability = 1.0-dropoutRate;
         this.nAttentionHeads = nAttentionHeads;
+        this.attentionHeadSize = attentionHeadSize;
 
         // setting network layer sizes
         layers = new int[hiddenLayerSizes.length + 2];
@@ -37,26 +40,56 @@ public class MLPFactory {
                 .seed(seed)
                 .updater(new Adam(learningRate))
                 .list();
-        builder = builder.layer(new SelfAttentionLayer.Builder()
-                .nIn(layers[0])
-                .nOut(layers[0])
-                .projectInput(true)
-                .headSize((int) Math.ceil((double) layers[0] / (double) nAttentionHeads))
-                .nHeads(nAttentionHeads)
-                .dropOut(dropoutRate)
-                .weightInit(WeightInit.XAVIER)
-                .build());
-        for (int n = 1; n < layers.length; n++) {
-            boolean last = n == layers.length - 1;
-            builder = builder.layer(n - 1,
-                    (last ? new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD) :
-                            new DenseLayer.Builder())
-                            .nIn(layers[n - 1])
-                            .nOut(layers[n])
+        if (nAttentionHeads > 0) {
+            builder = builder.layer(0, new SelfAttentionLayer.Builder()
+                    .nIn(layers[0])
+                    .nOut(layers[0])
+                    .projectInput(false)
+                    .nHeads(1)
+                    .headSize(attentionHeadSize)
+                    .dropOut(inputRetainProbability)
+                    .weightInit(WeightInit.XAVIER)
+                    .build());
+
+            builder = builder.layer(1,
+                    new DenseLayer.Builder()
+                            .nIn(layers[0])
+                            .nOut(layers[1])
+                            .weightInit(WeightInit.XAVIER)
+                            .activation(Activation.RELU)
+                            .dropOut(inputRetainProbability)
+                            .build());
+
+//            builder = builder.layer(1,
+//                    new DenseLayer.Builder()
+//                            .nIn(layers[0])
+//                            .nOut(layers[1])
+//                            .weightInit(WeightInit.XAVIER)
+//                            .activation(Activation.RELU)
+//                            .dropOut(inputRetainProbability)
+//                            .build());
+
+//            builder = builder.layer(0, new SelfAttentionLayer.Builder()
+//                    .nIn(layers[1])
+//                    .nOut(layers[1])
+//                    .projectInput(true)
+//                    .nHeads(nAttentionHeads)
+//                    .headSize(attentionHeadSize)
+//                    .dropOut(inputRetainProbability)
+//                    .weightInit(WeightInit.XAVIER)
+//                    .build());
+        }
+
+        for (int i = (nAttentionHeads > 0 ? 3 : 1); i < layers.length; i++) {
+            boolean last = i == layers.length - 1;
+            builder = builder.layer(i-1,
+                    (last ? new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD): new DenseLayer.Builder())
+                            .nIn(layers[i - 1])
+                            .nOut(layers[i])
                             .weightInit(WeightInit.XAVIER)
                             .activation(last ? Activation.SOFTMAX : Activation.RELU)
 //                            .l2(l2Lambda)
-                            .dropOut(dropoutRate)
+                            .dropOut(inputRetainProbability)
                             .build());
         }
         MultiLayerConfiguration conf = builder.build();

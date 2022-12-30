@@ -160,14 +160,30 @@ public class MLP {
 
     public double validateMiniBatch() {
         if (isTraining && !observations.isEmpty()) {
-            double lossScoreSum;
+            double[][] featureArray = new double[observations.size()][observations.get(0).getKey().length];
+            double[][] labelArray = new double[observations.size()][observations.get(0).getValue().length];
+            for (int i=0; i<observations.size(); i++) {
+                Pair<double[], double[]> featureLabelPair = observations.get(i);
+                featureArray[i] = featureLabelPair.getKey();
+                labelArray[i] = featureLabelPair.getValue();
+            }
 
-            DataSetIterator iter = new DoublesDataSetIterator(observations, observations.size());
-            try (INDArray lossScores = network.scoreExamples(iter, false)) {
-                lossScoreSum = Arrays.stream(lossScores.toDoubleVector()).sum();
+            double lossScoreSum = 0;
+            try (INDArray features = Nd4j.create(featureArray); INDArray labels = Nd4j.create(labelArray)) {
+                DataSet dataset = new DataSet(features, labels);
+                lossScoreSum = network.score(dataset, false) * dataset.numExamples();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("failed scoring");
+                System.exit(1);
             }
 
             clearObservations();
+            Runtime runtime = Runtime.getRuntime();
+            if (((double) runtime.totalMemory() - (double) runtime.freeMemory())/((double) runtime.maxMemory()) > 0.8) {
+                System.gc();
+                Nd4j.getMemoryManager().invokeGc();
+            }
 
             return lossScoreSum;
         } else {
