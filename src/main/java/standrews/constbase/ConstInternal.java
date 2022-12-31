@@ -101,6 +101,10 @@ public class ConstInternal extends ConstNode {
         return children.stream().toArray(ConstNode[]::new);
     }
 
+    public int getNumChildren() {
+        return children.size();
+    }
+
     public ConstNode getLeftMostChild() {
         return children.get(0);
     }

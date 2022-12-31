@@ -141,14 +141,14 @@ public class FeatureVectorGenerator {
     }
 
     private double[][] getDynamicStackFeatures(HatConfig config) {
-        double[][] stackFeatures = new double[blankCategoryVector.length + 2*blankEmbeddingsAndPosVector.length][config.stackLength()];
+        double[][] stackFeatures = new double[blankCategoryVector.length + 2*blankEmbeddingsAndPosVector.length][Math.max(1, config.stackLength()-1)];
 
         // add embeddings and parts of speech of leftmost and rightmost dependencies of all elements of the stack
         if (config.stackLength() > 1) {
             List<ConstNode> stackList = config.stackList();
-            for (int timeIndex=0; timeIndex<stackList.size(); timeIndex++) {
-                List<Double> features = getLeftmostAndRightmostDependentEmbeddingsAndPos(stackList.get(timeIndex));
-                features.addAll(oneHotEncodeCategory(stackList.get(timeIndex)));
+            for (int timeIndex=0; timeIndex<stackList.size()-1; timeIndex++) {
+                List<Double> features = getLeftmostAndRightmostDependentEmbeddingsAndPos(stackList.get(timeIndex+1));  // first element is skipped as it is null
+                features.addAll(oneHotEncodeCategory(stackList.get(timeIndex+1)));  // first element is skipped as it is null
 
                 for (int featureIndex = 0; featureIndex < features.size(); featureIndex++) {
                     stackFeatures[featureIndex][timeIndex] = features.get(featureIndex);
@@ -182,7 +182,7 @@ public class FeatureVectorGenerator {
     }
 
     private double[][] getDynamicInputBufferFeatures(HatConfig config) {
-        double[][] inputBufferFeatures = new double[blankEmbeddingsAndPosVector.length][config.stackLength()];
+        double[][] inputBufferFeatures = new double[blankEmbeddingsAndPosVector.length][config.inputLength()];
 
         // add embeddings and parts of speech of all elements of the input buffer
         if (config.stackLength() > 1) {

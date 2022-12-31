@@ -1,9 +1,19 @@
 package standrews.classification;
 
 //import javafx.util.Pair;
+import javafx.beans.value.WritableDoubleValue;
+import org.datavec.api.records.reader.RecordReader;
+import org.datavec.api.records.reader.SequenceRecordReader;
+import org.datavec.api.records.reader.factory.RecordReaderFactory;
+import org.datavec.api.records.reader.impl.collection.CollectionRecordReader;
+import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
+import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
+import org.deeplearning4j.datasets.datavec.RecordReaderMultiDataSetIterator;
+import org.deeplearning4j.datasets.iterator.DoublesDataSetIterator;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.common.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.MultiDataSet;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -145,31 +155,7 @@ public class MLP {
             return;
         }
 
-        double[][] hatFeatureArray = new double[observations.size()][observations.get(0).getKey().getStaticFeatures().length];
-        double[][][] stackFeatureArray = new double[observations.size()][observations.get(0).getKey().getStackElementVectors().length][];
-        double[][][] bufferFeatureArray = new double[observations.size()][observations.get(0).getKey().getBufferElementVectors().length][];
-        double[][] labelArray = new double[observations.size()][observations.get(0).getValue().length];
-        for (int i=0; i<observations.size(); i++) {
-            Pair<FeatureVector, double[]> featureLabelPair = observations.get(i);
-            hatFeatureArray[i] = featureLabelPair.getKey().getStaticFeatures();
-            stackFeatureArray[i] = featureLabelPair.getKey().getStackElementVectors();
-            bufferFeatureArray[i] = featureLabelPair.getKey().getBufferElementVectors();
-            labelArray[i] = featureLabelPair.getValue();
-        }
-
-        try (INDArray hatFeatureINDArray = Nd4j.create(hatFeatureArray);
-             INDArray stackFeatureINDArray = Nd4j.create(stackFeatureArray);
-             INDArray bufferFeatureINDArray = Nd4j.create(bufferFeatureArray);
-             INDArray labelINDArray = Nd4j.create(labelArray)) {
-            INDArray[] features = new INDArray[]{hatFeatureINDArray, stackFeatureINDArray, bufferFeatureINDArray};
-            INDArray[] labels = new INDArray[]{labelINDArray};
-            MultiDataSet dataset = new MultiDataSet(features, labels);
-            network.fit(dataset);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("failed scoring");
-            System.exit(1);
-        }
+        network.fit(new CustomMultiDataSetIterator(observations));
 
         clearObservations();
         Runtime runtime = Runtime.getRuntime();
