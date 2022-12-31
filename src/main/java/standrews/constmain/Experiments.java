@@ -419,7 +419,7 @@ public class Experiments {
         int nAttentionHeads = 0;
         int attentionHeadSize = 512;
         int maxEpochs = 200;  // change to 200 in final run
-        double learningRate = 0.001;
+        double learningRate = 0.0001;
         double dropoutRate = 0.1;
         double tol = 0.1;
         int patience = 10;  // change to 10 in final run
