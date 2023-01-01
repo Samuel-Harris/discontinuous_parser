@@ -403,16 +403,16 @@ public class Experiments {
         final String bankname = "tiger";
 
         final String bankPath = "../datasets/tigercorpus2.1_original/corpus/tiger_negraformat.export";
-        final int numEmbeddingsFiles = 5;
+        final int numEmbeddingsFiles = 505;
 
         boolean measureTrainLoss = false;
         double trainRatio = 0.7;
         double validationRatio = 0.15;  // testRatio = 1 - trainRatio - validationRatio
         int stackBiLSTMSize = 256;
         int bufferBiLSTMSize = 256;
-        int[] hiddenLayers = new int[]{512, 512};
+        int[] hiddenLayers = new int[]{512, 512, 512};
         int nAttentionHeads = 3;
-        int maxEpochs = 200;  // change to 200 in final run
+        int maxEpochs = 3;  // change to 200 in final run
         double learningRate = 0.0001;
         double dropoutRate = 0.1;
         double tol = 0.1;

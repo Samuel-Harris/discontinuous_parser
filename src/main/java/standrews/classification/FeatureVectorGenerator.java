@@ -141,7 +141,7 @@ public class FeatureVectorGenerator {
     }
 
     private double[][] getDynamicStackFeatures(HatConfig config) {
-        double[][] stackFeatures = new double[blankCategoryVector.length + 2*blankEmbeddingsAndPosVector.length][Math.max(1, config.stackLength()-1)];
+        double[][] stackFeatures = new double[blankCategoryVector.length + 2*blankEmbeddingsAndPosVector.length + 1][Math.max(1, config.stackLength()-1)];
 
         // add embeddings and parts of speech of leftmost and rightmost dependencies of all elements of the stack
         if (config.stackLength() > 1) {
@@ -154,6 +154,8 @@ public class FeatureVectorGenerator {
                     stackFeatures[featureIndex][timeIndex] = features.get(featureIndex);
                 }
             }
+        } else {
+            stackFeatures[blankCategoryVector.length + 2*blankEmbeddingsAndPosVector.length][0] = 1;
         }
 
         return stackFeatures; // test whether the length of the last dimension must be bigger than 1
@@ -182,10 +184,10 @@ public class FeatureVectorGenerator {
     }
 
     private double[][] getDynamicInputBufferFeatures(HatConfig config) {
-        double[][] inputBufferFeatures = new double[blankEmbeddingsAndPosVector.length][config.inputLength()];
+        double[][] inputBufferFeatures = new double[blankEmbeddingsAndPosVector.length + 1][Math.max(1, config.inputLength())];
 
         // add embeddings and parts of speech of all elements of the input buffer
-        if (config.stackLength() > 1) {
+        if (config.inputLength() > 0) {
             List<EnhancedConstLeaf> bufferElements = config.inputList();
             for (int timeIndex=0; timeIndex<bufferElements.size(); timeIndex++) {
                 Double[] values = getEmbeddingsAndPos(bufferElements.get(timeIndex));
@@ -194,8 +196,8 @@ public class FeatureVectorGenerator {
                     inputBufferFeatures[featureIndex][timeIndex] = values[featureIndex];
                 }
             }
-
-            return inputBufferFeatures;
+        } else {
+            inputBufferFeatures[blankEmbeddingsAndPosVector.length][0] = 1;
         }
 
         return inputBufferFeatures;  // test whether the length of the last dimension must be bigger than 1

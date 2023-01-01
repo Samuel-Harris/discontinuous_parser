@@ -171,34 +171,14 @@ public class MLP {
 
     public double validateMiniBatch() {
         if (isTraining && !observations.isEmpty()) {
-            double[][] hatFeatureArray = new double[observations.size()][observations.get(0).getKey().getStaticFeatures().length];
-            double[][][] stackFeatureArray = new double[observations.size()][observations.get(0).getKey().getStackElementVectors().length][];
-            double[][][] bufferFeatureArray = new double[observations.size()][observations.get(0).getKey().getBufferElementVectors().length][];
-            double[][] labelArray = new double[observations.size()][observations.get(0).getValue().length];
-            for (int i=0; i<observations.size(); i++) {
-                Pair<FeatureVector, double[]> featureLabelPair = observations.get(i);
-                hatFeatureArray[i] = featureLabelPair.getKey().getStaticFeatures();
-                stackFeatureArray[i] = featureLabelPair.getKey().getStackElementVectors();
-                bufferFeatureArray[i] = featureLabelPair.getKey().getBufferElementVectors();
-                labelArray[i] = featureLabelPair.getValue();
-            }
 
-            double lossScoreSum = 0;
-            try (INDArray hatFeatureINDArray = Nd4j.create(hatFeatureArray);
-                 INDArray stackFeatureINDArray = Nd4j.create(stackFeatureArray);
-                 INDArray bufferFeatureINDArray = Nd4j.create(bufferFeatureArray);
-                 INDArray labelINDArray = Nd4j.create(labelArray)) {
-                INDArray[] features = new INDArray[]{hatFeatureINDArray, stackFeatureINDArray, bufferFeatureINDArray};
-                INDArray[] labels = new INDArray[]{labelINDArray};
-                MultiDataSet dataset = new MultiDataSet(features, labels);
-                lossScoreSum = network.score(dataset, false) * observations.size();
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("failed scoring");
-                System.exit(1);
-            }
+            INDArray lossScores = network.scoreExamples(new CustomMultiDataSetIterator(observations).next(), false);
+            double[] scores = lossScores.toDoubleVector();
+
+            double lossScoreSum = network.score(new CustomMultiDataSetIterator(observations).next());
 
             clearObservations();
+
             Runtime runtime = Runtime.getRuntime();
             if (((double) runtime.totalMemory() - (double) runtime.freeMemory())/((double) runtime.maxMemory()) > 0.8) {
                 System.gc();

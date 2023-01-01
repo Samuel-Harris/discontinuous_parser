@@ -1,6 +1,7 @@
 package standrews.classification;
 
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
+import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.*;
@@ -96,6 +97,9 @@ public class MLPFactory {
                                         .forgetGateBiasInit(1)
 //                            .l2(l2Lambda)
                                         .dropOut(dropoutRate)
+                                        .gradientNormalization(GradientNormalization.ClipL2PerLayer)
+                                        .gradientNormalizationThreshold(1.0)
+                                        .biasInit(1.0)
                                         .build()),
                         "stackInput")
                 .addLayer("poolStackLSTMLayer",
@@ -110,9 +114,11 @@ public class MLPFactory {
                                         .nOut(bufferBiLSTMSize)
                                         .weightInit(WeightInit.XAVIER)
                                         .activation(Activation.TANH)
-                                        .forgetGateBiasInit(1)
 //                            .l2(l2Lambda)
                                         .dropOut(dropoutRate)
+                                        .gradientNormalization(GradientNormalization.ClipL2PerLayer)
+                                        .gradientNormalizationThreshold(1.0)
+                                        .biasInit(1.0)
                                         .build()),
                         "bufferInput")
                 .addLayer("poolBufferLSTMLayer",
