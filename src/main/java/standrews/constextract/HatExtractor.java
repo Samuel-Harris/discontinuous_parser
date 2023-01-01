@@ -5,7 +5,6 @@
 package standrews.constextract;
 
 import org.deeplearning4j.nn.graph.ComputationGraph;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import standrews.classification.*;
 import standrews.constautomata.HatConfig;
 import standrews.constmethods.HatParser;
@@ -57,9 +56,9 @@ public class HatExtractor extends SimpleExtractor {
     }
 
     public List<Double> validateMiniBatch() {
-        double actionLossScore = actionClassifier.validateMiniBatch();
-        double catLossScore = catClassifier.validateMiniBatch();
-        double fellowLossScore = fellowClassifier.validateMiniBatch();
+        double actionLossScore = actionClassifier.getValidationScoreSum();
+        double catLossScore = catClassifier.getValidationScoreSum();
+        double fellowLossScore = fellowClassifier.getValidationScoreSum();
 
         return List.of(actionLossScore, catLossScore, fellowLossScore);
     }

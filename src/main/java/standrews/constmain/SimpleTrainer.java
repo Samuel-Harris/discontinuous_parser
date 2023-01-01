@@ -231,15 +231,22 @@ public class SimpleTrainer {
         while (miniBatchOptional.isPresent()) {
             List<Pair<ConstTree, double[][]>> miniBatch = miniBatchOptional.get();
 
-            int validateBatchSize = 10;
-            for (int i = 0; i < Math.ceil((double) miniBatch.size() / (double) validateBatchSize); i++) {
-                observeMiniBatch(extractor, miniBatch.subList(i*validateBatchSize, Math.min((i+1)*validateBatchSize, miniBatch.size())));
+            observeMiniBatch(extractor, miniBatch);
 
-                List<Double> lossScoreSums = extractor.validateMiniBatch();
-                actionClassifierLossScoreSum += lossScoreSums.get(0);
-                catClassifierLossScoreSum += lossScoreSums.get(1);
-                fellowClassifierLossScoreSum += lossScoreSums.get(2);
-            }
+            List<Double> lossScoreSums = extractor.validateMiniBatch();
+            actionClassifierLossScoreSum += lossScoreSums.get(0);
+            catClassifierLossScoreSum += lossScoreSums.get(1);
+            fellowClassifierLossScoreSum += lossScoreSums.get(2);
+
+//            int validateBatchSize = 5;
+//            for (int i = 0; i < Math.ceil((double) miniBatch.size() / (double) validateBatchSize); i++) {
+//                observeMiniBatch(extractor, miniBatch.subList(i*validateBatchSize, Math.min((i+1)*validateBatchSize, miniBatch.size())));
+//
+//                List<Double> lossScoreSums = extractor.validateMiniBatch();
+//                actionClassifierLossScoreSum += lossScoreSums.get(0);
+//                catClassifierLossScoreSum += lossScoreSums.get(1);
+//                fellowClassifierLossScoreSum += lossScoreSums.get(2);
+//            }
 
             miniBatchOptional = treebank.getNextMiniBatch(datasetSplit);
         }

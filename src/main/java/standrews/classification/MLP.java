@@ -33,6 +33,7 @@ public class MLP {
     private final int miniBatchSize;
     private final double tol;
     private final int patience;
+    private double lossScoreSum;
 
     public MLP(ComputationGraph network, ResponseVectorGenerator responseVectorGenerator, int miniBatchSize, double tol, int patience) {
         this.network = network;
@@ -47,6 +48,7 @@ public class MLP {
         epochsWithoutImprovement = 0;
         bestLossScore = Double.POSITIVE_INFINITY;
         lastLossScore = Double.POSITIVE_INFINITY;
+        lossScoreSum = 0;
     }
 
     public MLP(ComputationGraph network, ResponseVectorGenerator responseVectorGenerator, int miniBatchSize, double tol, int patience, File lossFile) throws IOException {
@@ -58,24 +60,30 @@ public class MLP {
 
         observations = new ArrayList<>();
 
+        bestLossScore = Double.POSITIVE_INFINITY;
+
         double[] lossValues;
         try (BufferedReader br = new BufferedReader(new FileReader(lossFile))) {
             lossValues = Arrays.stream(br.readLine().split(",")).mapToDouble(Double::parseDouble).toArray();
-        }
 
-        bestLossScore = Double.POSITIVE_INFINITY;
-        int minLossIndex = -1;
-        for (int i = 0; i < lossValues.length; i++) {
-            if (lossValues[i] < bestLossScore-tol) {
-                bestLossScore = lossValues[i];
-                minLossIndex = i;
+            int minLossIndex = -1;
+            for (int i = 0; i < lossValues.length; i++) {
+                if (lossValues[i] < bestLossScore-tol) {
+                    bestLossScore = lossValues[i];
+                    minLossIndex = i;
+                }
             }
-        }
-        epochsWithoutImprovement = lossValues.length-1-minLossIndex;
+            epochsWithoutImprovement = lossValues.length-1-minLossIndex;
 
-        isTraining = epochsWithoutImprovement <= patience;
-        isValidating = false;
-        lastLossScore = lossValues[lossValues.length-1];
+            isTraining = epochsWithoutImprovement <= patience;
+            lastLossScore = lossValues[lossValues.length-1];
+        } catch (NullPointerException e) {
+            epochsWithoutImprovement = 0;
+            isTraining = true;
+            lastLossScore = Double.POSITIVE_INFINITY;
+        } finally {
+            isValidating = false;
+        }
     }
 
     private void clearObservations() {
@@ -87,9 +95,12 @@ public class MLP {
     public void addObservation(FeatureVector featureVectors, Object response) {
         if (isValidating && isTraining) {
             observations.add(new Pair<>(featureVectors, responseVectorGenerator.generateResponseVector(response)));
+            if (observations.size() == miniBatchSize) {
+                lossScoreSum += validateMiniBatch();
+            }
         } else if (isTraining) {
             observations.add(new Pair<>(featureVectors, responseVectorGenerator.generateResponseVector(response)));
-            if (isTraining && observations.size() == miniBatchSize) {
+            if (observations.size() == miniBatchSize) {
                 train();
             }
         }
@@ -169,23 +180,27 @@ public class MLP {
         network.save(new File(filePath));
     }
 
-    public double validateMiniBatch() {
+    private double validateMiniBatch() {
+        double score = network.score(new CustomMultiDataSetIterator(observations).next());
+
+        clearObservations();
+
+        Runtime runtime = Runtime.getRuntime();
+        if (((double) runtime.totalMemory() - (double) runtime.freeMemory())/((double) runtime.maxMemory()) > 0.8) {
+            System.gc();
+            Nd4j.getMemoryManager().invokeGc();
+        }
+
+        return score;
+    }
+
+    public double getValidationScoreSum() {
         if (isTraining && !observations.isEmpty()) {
+            double score = lossScoreSum + validateMiniBatch();
 
-            INDArray lossScores = network.scoreExamples(new CustomMultiDataSetIterator(observations).next(), false);
-            double[] scores = lossScores.toDoubleVector();
+            lossScoreSum = 0;
 
-            double lossScoreSum = network.score(new CustomMultiDataSetIterator(observations).next());
-
-            clearObservations();
-
-            Runtime runtime = Runtime.getRuntime();
-            if (((double) runtime.totalMemory() - (double) runtime.freeMemory())/((double) runtime.maxMemory()) > 0.8) {
-                System.gc();
-                Nd4j.getMemoryManager().invokeGc();
-            }
-
-            return lossScoreSum;
+            return score;
         } else {
             clearObservations();
             return 0;

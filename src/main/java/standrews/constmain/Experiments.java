@@ -403,7 +403,7 @@ public class Experiments {
         final String bankname = "tiger";
 
         final String bankPath = "../datasets/tigercorpus2.1_original/corpus/tiger_negraformat.export";
-        final int numEmbeddingsFiles = 505;
+        final int numEmbeddingsFiles = 50;
 
         boolean measureTrainLoss = false;
         double trainRatio = 0.7;
@@ -412,15 +412,15 @@ public class Experiments {
         int bufferBiLSTMSize = 256;
         int[] hiddenLayers = new int[]{512, 512, 512};
         int nAttentionHeads = 3;
-        int maxEpochs = 3;  // change to 200 in final run
+        int maxEpochs = 200;  // change to 200 in final run
         double learningRate = 0.0001;
         double dropoutRate = 0.1;
-        double tol = 0.1;
+        double tol = 0.001;
         int patience = 10;  // change to 10 in final run
         int seed = 123;
         int networkMiniBatchSize = 128;
 
-        boolean loadClassifiers = false;
+        boolean loadClassifiers = true;
         boolean startWithValidation = false;
         
         int treebankIteratorQueueSize = 32;

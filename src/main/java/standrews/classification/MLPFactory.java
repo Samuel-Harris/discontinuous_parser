@@ -88,7 +88,7 @@ public class MLPFactory {
                 .addInputs("staticStateInput", "stackInput", "bufferInput")
                 .setInputTypes(InputType.feedForward(staticFeatureVectorSize), InputType.recurrent(stackLayerInputSize), InputType.recurrent(bufferLayerInputSize))
                 .addLayer("stackLSTMLayer",
-                        new Bidirectional(Bidirectional.Mode.AVERAGE,
+                        new Bidirectional(Bidirectional.Mode.CONCAT,
                                 new LSTM.Builder()
                                         .nIn(stackLayerInputSize)
                                         .nOut(stackBiLSTMSize)
@@ -108,7 +108,7 @@ public class MLPFactory {
                                 .build()
                         , "stackLSTMLayer")
                 .addLayer("bufferLSTMLayer",
-                        new Bidirectional(Bidirectional.Mode.AVERAGE,
+                        new Bidirectional(Bidirectional.Mode.CONCAT,
                                 new LSTM.Builder()
                                         .nIn(bufferLayerInputSize)
                                         .nOut(bufferBiLSTMSize)
