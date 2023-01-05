@@ -4,17 +4,6 @@
 
 package standrews.constmain;
 
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
-import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.layers.DenseLayer;
-import org.deeplearning4j.nn.conf.layers.OutputLayer;
-import org.deeplearning4j.nn.conf.layers.SelfAttentionLayer;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.nn.weights.WeightInit;
-import org.nd4j.linalg.activations.Activation;
-import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.learning.config.Adam;
-import org.nd4j.linalg.lossfunctions.LossFunctions;
 import standrews.aux_.LogHandler;
 import standrews.aux_.TimerMilli;
 import standrews.classification.FeatureSpecification;
@@ -409,8 +398,9 @@ public class Experiments {
         // final String bankname = "negra";
         final String bankname = "tiger";
 
-        final String bankPath = "../datasets/tigercorpus2.1_original/corpus/tiger_negraformat.export";
-        final int numEmbeddingsFiles = 505;
+        // *************BEGINNING OF configuration variables***************
+        final String bankPath = "../test_data/tiger_negraformat.export";
+        final int numEmbeddingsFiles = 5;
 
         boolean measureTrainLoss = false;
         double trainRatio = 0.7;
@@ -430,6 +420,7 @@ public class Experiments {
         boolean startWithValidation = false;
         
         int treebankIteratorQueueSize = 32;
+        // *************END OF configuration variables***************
 
         Random rng = new Random(seed);
 
