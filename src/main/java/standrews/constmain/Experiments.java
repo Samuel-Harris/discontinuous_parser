@@ -174,7 +174,7 @@ public class Experiments {
             final FeatureVectorGenerator featureVectorGenerator,
             final boolean leftFirst,
             final boolean measureTrainLoss, int[] hiddenLayers, int stackBiLSTMSize, int bufferBiLSTMSize,
-            int nAttentionHeads, int maxEpochs, int networkMiniBatchSize,
+            int maxEpochs, int networkMiniBatchSize,
             double learningRate, double dropoutRate, double tol, int patience, int seed,
             boolean loadClassifiers, boolean startWithValidation) {
         final MLPFactory mlpFactory = new MLPFactory(
@@ -184,7 +184,6 @@ public class Experiments {
                 featureVectorGenerator.getBufferElementVectorSize(),
                 bufferBiLSTMSize,
                 hiddenLayers,
-                nAttentionHeads,
                 learningRate,
                 dropoutRate,
                 seed);
@@ -272,15 +271,14 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean measureTrainLoss, int[] hiddenLayers, int stackBiLSTMSize, int bufferBiLSTMSize,
-            int nAttentionHeads, int maxEpochs, int networkMiniBatchSize,
-            double learningRate, double dropoutRate, double tol, int patience, int seed, boolean loadClassifiers,
-            boolean startWithValidation) {
+            int maxEpochs, int networkMiniBatchSize, double learningRate, double dropoutRate, double tol, int patience,
+            int seed, boolean loadClassifiers, boolean startWithValidation) {
         FeatureVectorGenerator featureVectorGenerator = new FeatureVectorGenerator(treebank);
         final HatExtractor extractor = trainHat(lang, treebank,
                 actionFilePath,
                 catFilePath,
                 fellowFilePath, nTrain, featureVectorGenerator, leftFirst,
-                measureTrainLoss, hiddenLayers, stackBiLSTMSize, bufferBiLSTMSize, nAttentionHeads, maxEpochs,
+                measureTrainLoss, hiddenLayers, stackBiLSTMSize, bufferBiLSTMSize, maxEpochs,
                 networkMiniBatchSize, learningRate, dropoutRate, tol,
                 patience, seed, loadClassifiers, startWithValidation);
 
@@ -333,7 +331,7 @@ public class Experiments {
             final int nTrain, final int nTest,
             final boolean leftFirst,
             final boolean measureTrainLoss,
-            final boolean goldPos, int[] hiddenLayers, int stackBiLSTMSize, int bufferBiLSTMSize, int nAttentionHeads, int maxEpochs, int networkMiniBatchSize,
+            final boolean goldPos, int[] hiddenLayers, int stackBiLSTMSize, int bufferBiLSTMSize, int maxEpochs, int networkMiniBatchSize,
             double learningRate, double dropoutRate, double tol, int patience, int seed, boolean loadClassifiers,
             boolean startWithValidation) {
         final TimerMilli timer = new TimerMilli();
@@ -344,7 +342,7 @@ public class Experiments {
                 nTrain, nTest,
                 leftFirst,
                 measureTrainLoss,
-                hiddenLayers, stackBiLSTMSize, bufferBiLSTMSize, nAttentionHeads,
+                hiddenLayers, stackBiLSTMSize, bufferBiLSTMSize,
                 maxEpochs, networkMiniBatchSize,
                 learningRate, dropoutRate, tol, patience, seed, loadClassifiers, startWithValidation);
         timer.stop();
@@ -402,8 +400,9 @@ public class Experiments {
         // final String bankname = "negra";
         final String bankname = "tiger";
 
-        final String bankPath = "../datasets/tigercorpus2.1_original/corpus/tiger_negraformat.export";
-        final int numEmbeddingsFiles = 50;
+        // *************BEGINNING OF configuration variables***************
+        final String bankPath = "../test_data/tiger_negraformat.export";
+        final int numEmbeddingsFiles = 5;
 
         boolean measureTrainLoss = false;
         double trainRatio = 0.7;
@@ -411,7 +410,6 @@ public class Experiments {
         int stackBiLSTMSize = 256;
         int bufferBiLSTMSize = 256;
         int[] hiddenLayers = new int[]{512, 512, 512};
-        int nAttentionHeads = 3;
         int maxEpochs = 200;  // change to 200 in final run
         double learningRate = 0.0001;
         double dropoutRate = 0.1;
@@ -424,6 +422,7 @@ public class Experiments {
         boolean startWithValidation = false;
         
         int treebankIteratorQueueSize = 32;
+        // *************END OF configuration variables***************
 
         Random rng = new Random(seed);
 
@@ -464,8 +463,8 @@ public class Experiments {
         final boolean projectivize = false;
         final boolean goldPos = true;
         doTrainingAndTestingHat(lang, treebank, nTrain, nTest, leftFirst, measureTrainLoss, goldPos, hiddenLayers,
-                stackBiLSTMSize, bufferBiLSTMSize, nAttentionHeads,
-                maxEpochs, networkMiniBatchSize, learningRate, dropoutRate, tol, patience, seed, loadClassifiers, startWithValidation);
+                stackBiLSTMSize, bufferBiLSTMSize, maxEpochs, networkMiniBatchSize, learningRate, dropoutRate, tol,
+                patience, seed, loadClassifiers, startWithValidation);
 
 //        if (method.equals("simple")) {
 //			doTrainingAndTestingSimple(lang, treebank, nTrain, nTest,

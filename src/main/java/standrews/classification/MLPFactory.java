@@ -16,7 +16,6 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 public class MLPFactory {
     private final int seed;
     private final int[] layers;
-    private final int nAttentionHeads;
     private final double learningRate;
     private final double dropoutRate;
     private final int staticFeatureVectorSize;
@@ -26,12 +25,11 @@ public class MLPFactory {
     private final int bufferBiLSTMSize;
 
     public MLPFactory(int staticFeatureVectorSize, int stackLayerInputSize, int stackBiLSTMSize,
-                      int bufferLayerInputSize, int bufferBiLSTMSize, int[] hiddenLayerSizes, int nAttentionHeads,
+                      int bufferLayerInputSize, int bufferBiLSTMSize, int[] hiddenLayerSizes,
                       double learningRate, double dropoutRate, int seed) {
         this.learningRate = learningRate;
         this.seed = seed;
         this.dropoutRate = dropoutRate;
-        this.nAttentionHeads = nAttentionHeads;
         this.staticFeatureVectorSize = staticFeatureVectorSize;
         this.stackLayerInputSize = stackLayerInputSize;
         this.stackBiLSTMSize = stackBiLSTMSize;
@@ -45,41 +43,6 @@ public class MLPFactory {
 
     public MLP makeMLP(ResponseVectorGenerator responseVectorGenerator, int miniBatchSize, double tol, int patience) {
         layers[layers.length - 1] = responseVectorGenerator.getVectorSize();
-
-//        ComputationGraphConfiguration.GraphBuilder graphBuilder = new NeuralNetConfiguration.Builder()
-//                .seed(seed)
-//                .updater(new Adam(learningRate))
-//                .graphBuilder()
-////                .addInputs("staticStateInput", "stackInput", "bufferInput")
-//                .addInputs("stackInput")
-////                .setInputTypes(InputType.feedForward(staticFeatureVectorSize), InputType.recurrent(stackLayerInputSize), InputType.recurrent(bufferLayerInputSize))
-//                .setInputTypes(InputType.recurrent(stackLayerInputSize))
-//                .addLayer("stackInputLayer",
-//                        new Bidirectional(Bidirectional.Mode.CONCAT,
-//                                new LSTM.Builder()
-//                                        .nIn(stackLayerInputSize)
-//                                        .nOut(stackLayerOutputSize)
-//                                        .weightInit(WeightInit.XAVIER)
-//                                        .activation(Activation.TANH)
-//                                        .forgetGateBiasInit(1)
-////                            .l2(l2Lambda)
-//                                        .dropOut(dropoutRate)
-//                                        .build()),
-//                        "stackInput")
-//                .addLayer("poolingLayer",
-//                        new GlobalPoolingLayer.Builder()
-//                                .poolingType(PoolingType.AVG)
-//                                .dropOut(dropoutRate)
-//                                .build(),
-//                        "stackInputLayer")
-//                .addLayer("outputLayer", new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-//                        .activation(Activation.SOFTMAX)
-//                        .weightInit(WeightInit.XAVIER)
-//                        .nIn(stackLayerOutputSize)
-//                        .nOut(layers[layers.length-1])
-//                        .build(),
-//                        "poolingLayer")
-//                .setOutputs("outputLayer");
 
         ComputationGraphConfiguration.GraphBuilder graphBuilder = new NeuralNetConfiguration.Builder()
                 .seed(seed)
