@@ -65,7 +65,9 @@ public class SimpleTester {
         reportFine("Testing model");
 
         Optional<List<Pair<ConstTree, double[][]>>> miniBatchOptional = treebank.getNextMiniBatch(DatasetSplit.TEST);
+        int i=0;
         while (miniBatchOptional.isPresent()) {
+            reportFine("Testing mini-batch " + i);
             List<Pair<ConstTree, double[][]>> miniBatch = miniBatchOptional.get();
 
             for (Pair<ConstTree, double[][]> treeAndEmbeddings: miniBatch) {
