@@ -1,20 +1,9 @@
 package standrews.classification;
 
-//import javafx.util.Pair;
-import javafx.beans.value.WritableDoubleValue;
-import org.datavec.api.records.reader.RecordReader;
-import org.datavec.api.records.reader.SequenceRecordReader;
-import org.datavec.api.records.reader.factory.RecordReaderFactory;
-import org.datavec.api.records.reader.impl.collection.CollectionRecordReader;
-import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
-import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
-import org.deeplearning4j.datasets.datavec.RecordReaderMultiDataSetIterator;
-import org.deeplearning4j.datasets.iterator.DoublesDataSetIterator;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.common.primitives.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.dataset.MultiDataSet;
+import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.*;
@@ -77,7 +66,7 @@ public class MLP {
 
             isTraining = epochsWithoutImprovement <= patience;
             lastLossScore = lossValues[lossValues.length-1];
-        } catch (NullPointerException e) {
+        } catch (NullPointerException|FileNotFoundException e) {
             epochsWithoutImprovement = 0;
             isTraining = true;
             lastLossScore = Double.POSITIVE_INFINITY;
@@ -214,10 +203,10 @@ public class MLP {
     public Object[] predictAll(FeatureVector featureVector) {  // predicts action and orders them by most probable
         try (INDArray hatFeatureINDArray = Nd4j.create(featureVector.getStaticFeatures());
              INDArray stackFeatureINDArray = Nd4j.create(featureVector.getStackElementVectors());
-             INDArray bufferFeatureINDArray = Nd4j.create(featureVector.getStackElementVectors())) {
-            INDArray[] features = new INDArray[]{hatFeatureINDArray, stackFeatureINDArray, bufferFeatureINDArray};
-            INDArray[] output = network.output(features);
-            double[] scores = output[0].toDoubleVector();
+             INDArray bufferFeatureINDArray = Nd4j.create(featureVector.getBufferElementVectors())) {
+//            INDArray[] features = new INDArray[]{hatFeatureINDArray, stackFeatureINDArray, bufferFeatureINDArray};
+            INDArray output = network.outputSingle(new CustomMultiDataSetIterator(List.of(new Pair<>(featureVector, new double[]{0}))));
+            double[] scores = output.toDoubleVector();
 
             return responseVectorGenerator.getLabelsFromScores(scores);
         }

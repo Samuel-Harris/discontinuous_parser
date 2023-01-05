@@ -9,6 +9,7 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
 public class CustomMultiDataSetIterator implements MultiDataSetIterator {
@@ -22,7 +23,7 @@ public class CustomMultiDataSetIterator implements MultiDataSetIterator {
     double[][] stackFeatureMaskArray;
     double[][] bufferFeatureMaskArray;
 
-    public CustomMultiDataSetIterator(ArrayList<Pair<FeatureVector, double[]>> observations) {
+    public CustomMultiDataSetIterator(List<Pair<FeatureVector, double[]>> observations) {
         largestStackSize = 0;
         largestBufferSize = 0;
 
