@@ -1,0 +1,1 @@
+The code for my dissertation: neural networks in a derivational model of discontinuous parsing. In this dissertation, I used neural networks to inform the decisions of a discontinuous constituency parser for the German language.
